@@ -8,10 +8,10 @@
 #include "three_by_matrices.hpp"
 #include <Arduino.h>
 #include "log_levels.hpp"
+#include "mux.hpp"
 
 
 double zero_points[NUM_LEGS][NUM_AXES_PER_LEG] = ZERO_POINTS;
-int pwm_pins[NUM_LEGS][NUM_AXES_PER_LEG] = PWM_PINS;
 double min_pos[NUM_LEGS][NUM_AXES_PER_LEG] = MIN_POS;
 double max_pos[NUM_LEGS][NUM_AXES_PER_LEG] = MAX_POS;
 double scale_fact[NUM_LEGS][NUM_AXES_PER_LEG] = SCALE_FACT;
@@ -23,10 +23,17 @@ Leg::Leg() {
     _leg_number = 0;
 }
 
+void Leg::begin(){
+    mux.begin();
+    axes[0].link(D11, D12, 5, mux);
+    axes[1].link(D8, D9, 6, mux);
+    //axes[2].link(D6, D7, 7, mux);
+}
+
 void Leg::initializeAxes(uint8_t leg_number) {
     _leg_number = leg_number;
     for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
-        axes[i].initializePositionLimits(pwm_pins[_leg_number][i], min_pos[_leg_number][i], max_pos[_leg_number][i]);
+        axes[i].initializePositionLimits(min_pos[_leg_number][i], max_pos[_leg_number][i]);
         axes[i].setMapping(zero_points[_leg_number][i], scale_fact[_leg_number][i], reverse_axis[_leg_number][i]);
     }
 }

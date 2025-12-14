@@ -14,7 +14,8 @@ SerialParser::SerialParser(
 
 void SerialParser::parseCommand(String command_str) {
 
-    String caps_command = command_str.toUpperCase();
+    command_str.toUpperCase();
+    String caps_command = command_str;
     JsonDocument command;
     DeserializationError json_error = deserializeJson(command, caps_command);
 
@@ -73,7 +74,7 @@ void SerialParser::performPreset(String preset) {
         #if LOG_LEVEL >= BASIC_DEBUG
             Serial.println("JSON parsing success; detach all servos preset selected.\n");
         #endif
-        _Hexapod.detachAllServos();
+        _Hexapod.detachAll();
     }
     else if (preset == "SIT"){
         #if LOG_LEVEL >= BASIC_DEBUG

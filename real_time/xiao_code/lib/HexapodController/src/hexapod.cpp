@@ -18,7 +18,9 @@ Hexapod::Hexapod()
 }
 
 void Hexapod::startUp() {
-
+	for (uint8_t i = 0; i < NUM_LEGS; i++) {
+		legs[i].begin();
+	}
 }
 
 void Hexapod::moveLegAxisToPos(uint8_t leg_number, uint8_t axis_number, double target_position) {
@@ -37,10 +39,10 @@ void Hexapod::moveToZeros() {
     }
 } 
 
-void Hexapod::detachAllServos() {
+void Hexapod::detachAll() {
 	for (uint8_t i = 0; i < NUM_LEGS; i++) {
 		for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
-			legs[i].axes[j].detachServo();
+			legs[i].axes[j].detach();
 		}        
     }
 }

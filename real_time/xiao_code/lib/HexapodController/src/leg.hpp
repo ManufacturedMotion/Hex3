@@ -1,6 +1,7 @@
 #include "axis.hpp"
 #include "config.hpp"
 #include "three_by_matrices.hpp"
+#include "mux.hpp"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -23,7 +24,8 @@
 			uint8_t linearMovePerform();
 			_Bool isMoving();
 			void wait(uint32_t time_ms);
-
+			void begin();
+			Mux mux;
 		private:
 			uint8_t _leg_number;
 			double _length0 = 63.00;
@@ -42,6 +44,7 @@
 			uint32_t _move_time;
 			_Bool _moving_flag = false;
 			void * _movement_function;
+			uint8_t _volage_pin; //TODO get this value
 	};
 
 #endif
