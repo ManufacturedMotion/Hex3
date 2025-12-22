@@ -26,8 +26,9 @@ Leg::Leg() {
 void Leg::begin(){
     mux.begin();
     axes[0].link(D11, D12, 5, mux);
-    axes[1].link(D8, D9, 6, mux);
-    //axes[2].link(D6, D7, 7, mux);
+    axes[1].link(D18, D2, D17, D3, 6, mux);
+    axes[2].link(D16, D15, 7, mux);
+    pinMode(TOE_PIN, INPUT); 
 }
 
 void Leg::initializeAxes(uint8_t leg_number) {
@@ -36,6 +37,19 @@ void Leg::initializeAxes(uint8_t leg_number) {
         axes[i].initializePositionLimits(min_pos[_leg_number][i], max_pos[_leg_number][i]);
         axes[i].setMapping(zero_points[_leg_number][i], scale_fact[_leg_number][i], reverse_axis[_leg_number][i]);
     }
+}
+
+void Leg::runSpeed() {
+    for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
+        axes[j].runSpeed();
+    }
+}
+
+_Bool Leg::toePressed(){
+    _Bool is_pressed = false;
+    if (analogRead(TOE_PIN) < toe_threshold)
+        is_pressed = true;
+    return is_pressed;
 }
 
 _Bool Leg::_inverseKinematics(double x, double y, double z) {

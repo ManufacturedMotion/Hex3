@@ -72,15 +72,6 @@ void Axis::updatePos() {
         stopAxis();
         return;
     }
-    Serial.print("Current Pos: ");
-    Serial.print(current_pos);
-    Serial.print(" Target Pos: ");  
-    Serial.print(_target_pos);
-    Serial.print(" Raw error: ");
-    Serial.print(_target_pos - current_pos);
-    Serial.print(" Wrapped error: ");
-    Serial.println(error);
-    Serial.print("\n");
     if (error < 0) {
         analogWrite(_pin_a, (_speed));
         digitalWrite(_pin_b, LOW);

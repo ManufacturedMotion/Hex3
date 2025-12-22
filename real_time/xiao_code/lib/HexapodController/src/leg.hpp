@@ -10,6 +10,7 @@
 
 	#define NUM_AXES_PER_LEG 3
 	#define MOVEMENT_INTERVAL_US 5000
+	#define TOE_PIN D0
 	class Leg {
 		public:
 			Leg();
@@ -26,11 +27,14 @@
 			void wait(uint32_t time_ms);
 			void begin();
 			Mux mux;
+			_Bool toePressed();
+			void runSpeed();
 		private:
 			uint8_t _leg_number;
 			double _length0 = 63.00;
 			double _length1 = 92.00;
 			double _length2 = 157.5;
+			uint8_t toe_threshold = 100;
 			void _moveAxes();
 			_Bool _checkSafeCoords(double x, double y, double z);
 			_Bool _inverseKinematics(double x, double y, double z);
