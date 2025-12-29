@@ -40,9 +40,37 @@ void Leg::initializeAxes(uint8_t leg_number) {
 }
 
 void Leg::runSpeed() {
-    for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
-        axes[j].runSpeed();
+    // for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
+    //     axes[j].runSpeed();
+    // }
+    static uint32_t last_print_time = 0;
+    if (millis() - last_print_time > 1000) {
+        last_print_time = millis();
+        Serial.printf("Leg %d positions: Axis0: %f; Axis1: %f; Axis2: %f\n", _leg_number, axes[0].getCurrentPos(), axes[1].getCurrentPos(), axes[2].getCurrentPos());
+        Serial.printf("Leg %d velocities: Axis0: %f; Axis1: %f; Axis2: %f\n", _leg_number, axes[0].getCurrentVelocity(), axes[1].getCurrentVelocity(), axes[2].getCurrentVelocity());
+        Serial.printf("Leg %d accelerations: Axis0: %f; Axis1: %f; Axis2: %f\n", _leg_number, axes[0].getCurrentAcceleration(), axes[1].getCurrentAcceleration(), axes[2].getCurrentAcceleration());
     }
+    for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
+        axes[j].trackMotion();
+        axes[j].moveToPos();
+    }
+}
+
+void Leg::stopAxis(uint8_t axis_number) {
+    axes[axis_number].allowMotion(false);
+}
+
+void Leg::setAxisTargetPos(uint8_t axis_number, double pos) {
+    axes[axis_number].allowMotion(true);
+    axes[axis_number].setTargetPos(pos);
+}
+
+void Leg::setAxisPIDConstants(uint8_t axis_number, double Kp, double Ki, double Kd) {
+    axes[axis_number].setPIDConstants(Kp, Ki, Kd);
+}
+
+void Leg::setAxisDutyCycle(uint8_t axis_number, bool dir, float duty_cycle) {
+    axes[axis_number].setDutyCycle(dir, duty_cycle);
 }
 
 _Bool Leg::toePressed(){

@@ -48,7 +48,7 @@ void Mux::setChannel(uint8_t channel) {
 
 double Mux::readEncoder(uint8_t channel) {
     setChannel(channel);
-    delayMicroseconds(2000);
+    delayMicroseconds(500);
     Wire.beginTransmission(ENC_ADDR);
     Wire.write(0x0E); 
     Wire.endTransmission();
@@ -57,8 +57,8 @@ double Mux::readEncoder(uint8_t channel) {
         uint8_t highByte = Wire.read();
         uint8_t lowByte  = Wire.read();
         uint16_t rawAngle = ((highByte & 0x0F) << 8) | lowByte; 
-        double degrees = (rawAngle * 360.0) / 4096.0;
-        return degrees;
+        double radians = (rawAngle * M_PI * 2.0) / 4096.0 - M_PI; // Map to -pi to pi
+        return radians;
     }
-    return -1200;
+    return NAN;
 }

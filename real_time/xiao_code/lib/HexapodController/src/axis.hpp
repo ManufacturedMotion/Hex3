@@ -1,9 +1,13 @@
 #include <Arduino.h>
 #include <stdint.h>
 #include "mux.hpp"
+#include <RP2040_PWM.h>
+#include <PID_v1.h>
 
 #ifndef HEX3_AXIS
 #define HEX3_AXIS
+    #define AXIS_MOTION_TRACK_INTERVAL_MS 10
+    #define AXIS_POSITION_TOLERANCE 0.005 //rads
 
     //pindefs for use in leg.cpp
     //S1: 11 12;            ch 5 (?)
@@ -19,6 +23,7 @@
             void link(uint8_t pin_a, uint8_t pin_b, uint8_t pin_c, uint8_t pin_d, uint8_t encoder_ch, Mux& mux_ref);
             void stopAxis();
             void initializePositionLimits(double min_pos, double max_pos);
+            uint8_t moveToPos();
             uint8_t moveToPos(double pos);
             uint8_t moveToPosAtSpeed(double pos, double target_speed);
 			_Bool setMaxPos(double max_pos);
@@ -33,18 +38,30 @@
 			void detach();
             void updatePos();
             void setSpeed(double speed);
+            uint8_t setDutyCycle(bool dir, float duty_cycle);
+            uint8_t setTargetPos(double pos);
+            void trackMotion();
+            double getCurrentVelocity();
+            double getCurrentAcceleration();
+            void allowMotion(bool allowed);
+            void setPIDConstants(double Kp, double Ki, double Kd);
+
         private:
+            bool _allowed_to_move = true;
             uint8_t _pin_a = 0;
             uint8_t _pin_b = 0; 
             uint8_t _pin_c = 0;
             uint8_t _pin_d = 0;
             uint8_t _encoder_ch = 0;
+            double _Kp;
+            double _Ki;
+            double _Kd;
             _Bool _4_pin = false;
             //_Bool _need_to_move = false;
-            double _target_pos = -1234;
+            double _target_pos = NAN;
             void _initializeAxis(); 
             Mux* _mux;
-            const float POS_TOLERANCE = 3; //degrees //TODO - lower me once encoder mounted
+            const float POS_TOLERANCE = .1; //rad //TODO - lower me once encoder mounted
             double _max_speed = 10000;      //rad/s
             double _speed = 0.0;    //rad/s //TODO - fixme
 			double _max_pos;        //rad
@@ -62,6 +79,14 @@
 			double _axisMap(double x);
 			double _radsToDegrees(double rads);
 			double _degreesToRads(double degrees);
+            RP2040_PWM* _pwm_instances[4]; //max 4 pins
+            double _getCurrentPos();
+            double _current_velocity = 0.0;
+            double _current_acceleration = 0.0;
+            double _last_position = 0.0;
+            double _last_velocity = 0.0;
+            double _control = 0.0;
+            PID* _pid;
     };
 
 #endif

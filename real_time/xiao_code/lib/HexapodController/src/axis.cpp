@@ -3,14 +3,18 @@
 #include <math.h>
 #include "axis.hpp"
 #include "mux.hpp"
+#include <RP2040_PWM.h>
 
 //Must call runSpeed() frequently when moving motors
+#define PWM_FREQUENCY 30000 // Hz, adjust as needed
 
 Axis::Axis() : _mux(nullptr){}
 
 void Axis::link(uint8_t pin_a, uint8_t pin_b, uint8_t encoder_ch, Mux& mux_ref) {
     _pin_a = pin_a;
     _pin_b = pin_b;
+    _pwm_instances[0] = new RP2040_PWM(_pin_a, PWM_FREQUENCY, 0);
+    _pwm_instances[1] = new RP2040_PWM(_pin_b, PWM_FREQUENCY, 0);
     _encoder_ch = encoder_ch;
     _mux = &mux_ref;
     _initializeAxis();
@@ -21,6 +25,10 @@ void Axis::link(uint8_t pin_a, uint8_t pin_b, uint8_t pin_c, uint8_t pin_d, uint
     _pin_b = pin_b;
     _pin_c = pin_c;
     _pin_d = pin_d;
+    _pwm_instances[0] = new RP2040_PWM(_pin_a, PWM_FREQUENCY, 0);
+    _pwm_instances[1] = new RP2040_PWM(_pin_b, PWM_FREQUENCY, 0);
+    _pwm_instances[2] = new RP2040_PWM(_pin_c, PWM_FREQUENCY, 0);
+    _pwm_instances[3] = new RP2040_PWM(_pin_d, PWM_FREQUENCY, 0);
     _encoder_ch = encoder_ch;
     _mux = &mux_ref;
     _initializeAxis();
@@ -40,7 +48,8 @@ void Axis::_initializeAxis() {
         digitalWrite(_pin_c, LOW);
         digitalWrite(_pin_d, LOW);  
     }
-} 
+}
+    
 
 void Axis::initializePositionLimits(double min_pos, double max_pos) {
     _min_pos = min_pos;
@@ -48,11 +57,51 @@ void Axis::initializePositionLimits(double min_pos, double max_pos) {
 }
 
 double Axis::getCurrentPos() {
+    return _current_pos;
+}
+
+double Axis::getCurrentVelocity() {
+    return _current_velocity;
+}
+
+double Axis::getCurrentAcceleration() {
+    return _current_acceleration;
+}
+
+double Axis::_getCurrentPos() {
     if (_mux == nullptr){
-        return -3000;
-    }    
+        return NAN;
+    }  
     return _mux->readEncoder(_encoder_ch);
 }
+
+void Axis::trackMotion() {
+    static uint32_t _last_update_time = 0;
+    if (millis() - _last_update_time > AXIS_MOTION_TRACK_INTERVAL_MS) {
+        uint32_t delta_time = millis() - _last_update_time;
+        uint32_t temp_last_update_time = millis();
+        double current_pos = _getCurrentPos();
+        if (isnan(current_pos)) {
+            return;
+        }
+        _last_update_time = temp_last_update_time; //avoid time skew due to I2C delay
+        _last_position = _current_pos;
+        _last_velocity = _current_velocity;
+        _current_pos = current_pos;
+        double distance_traversed = _current_pos - _last_position;
+        distance_traversed += (distance_traversed > M_PI) ? -2 * M_PI : (distance_traversed < -M_PI) ? 2 * M_PI : 0; // Assume shortest path
+        _current_velocity = (_current_pos - _last_position) / (delta_time / 1000.0); //rad/s
+        _current_acceleration = (_current_velocity - _last_velocity) / (delta_time / 1000.0); //rad/s^2
+    }
+}
+
+uint8_t Axis::setTargetPos(double pos) {
+    if (pos < _min_pos || pos > _max_pos)
+        return 255;     //Move out of range
+    _target_pos = pos;
+    return 0;
+}
+
 
 void Axis::setSpeed(double speed) {
     _speed = speed;
@@ -61,44 +110,72 @@ void Axis::setSpeed(double speed) {
 //TODO need to have some limits & logic here. do not want to always rotate shortest path, might end up breaking leg
 void Axis::updatePos() { 
     float current_pos = getCurrentPos();
-    float error = _target_pos - current_pos;
-    if (error > 180.0) {
-        error -= 360.0;
-    }
-    if (error < -180.0) {
-        error += 360.0;
-    }
-    if (fabs(error) <= POS_TOLERANCE) {
-        stopAxis();
-        return;
-    }
-    if (error < 0) {
-        analogWrite(_pin_a, (_speed));
-        digitalWrite(_pin_b, LOW);
+    // float error = _target_pos - current_pos;
+    // if (error > M_PI_2) {
+    //     error -= M_2_PI;
+    // }
+    // if (error < -M_PI_2) {
+    //     error += M_2_PI;
+    // }
+    // if (fabs(error) <= POS_TOLERANCE) {
+    //     stopAxis();
+    //     return;
+    // }
+    // if (error < 0) {
+    //     setDutyCycle(-_speed);
+    // } 
+    // else {
+    //     setDutyCycle(_speed);
+    // }
+}
+
+uint8_t Axis::setDutyCycle(bool dir, float duty_cycle) {
+    duty_cycle = constrain(duty_cycle, 0.0, 100.0);
+    if (dir) {
+        _pwm_instances[0]->setPWM(_pin_a, PWM_FREQUENCY, 0.0);
+        _pwm_instances[1]->setPWM(_pin_b, PWM_FREQUENCY, duty_cycle);
         if (_4_pin) {
-            digitalWrite(_pin_c, LOW);
-            analogWrite(_pin_d, (_speed));
+            _pwm_instances[2]->setPWM(_pin_c, PWM_FREQUENCY, 0.0);
+            _pwm_instances[3]->setPWM(_pin_d, PWM_FREQUENCY, duty_cycle);
         }
     } 
     else {
-        digitalWrite(_pin_a, LOW);
-        analogWrite(_pin_b, _speed);
+        _pwm_instances[0]->setPWM(_pin_a, PWM_FREQUENCY, duty_cycle);
+        _pwm_instances[1]->setPWM(_pin_b, PWM_FREQUENCY, 0.0);
         if (_4_pin) {
-            analogWrite(_pin_c, _speed);
-            digitalWrite(_pin_d, LOW);
+            _pwm_instances[2]->setPWM(_pin_c, PWM_FREQUENCY, duty_cycle);
+            _pwm_instances[3]->setPWM(_pin_d, PWM_FREQUENCY, 0.0);
         }
+    }
+    return 0;
+}
+
+void Axis::setPIDConstants(double Kp, double Ki, double Kd) {
+    _Kp = Kp;
+    _Ki = Ki;
+    _Kd = Kd;
+    _pid = new PID(&_current_pos, &_control, &_target_pos, _Kp, _Ki, _Kd, DIRECT);
+    Serial.printf("Axis PID set: Kp=%f, Ki=%f, Kd=%f\n", Kp, Ki, Kd);
+    _pid->SetMode(AUTOMATIC);
+}
+
+
+void Axis::allowMotion(bool allowed) {
+    _allowed_to_move = allowed;
+    if (!allowed) {
+        stopAxis();
     }
 }
 
-uint8_t Axis::moveToPos(double pos) {
-    if (pos < _min_pos || pos > _max_pos)
-        return 255;     //Move out of range
-    if (_next_go_time > millis())
-        return 254;     //Moving too quickly
-    uint32_t millis_to_pos = (fabs(getCurrentPos() - pos) / _max_speed) * 1000;
-    _next_go_time = millis() + millis_to_pos;
-    _target_pos = _axisMap(pos); 
-    return _target_pos;
+uint8_t Axis::moveToPos() {
+    if (_allowed_to_move == false) {
+        return 254; // move not allowed
+    }
+    static uint32_t last_run_time = 0;
+    double dt = static_cast<double>(micros() - (last_run_time)) / 1000000.0;//seconds
+    _pid->Compute();
+    setDutyCycle(_control >= 0.0, fabs(_control));
+    return 0;
 }
 
 uint8_t Axis::moveToPosAtSpeed(double pos, double target_speed) {
@@ -138,13 +215,7 @@ double Axis::runSpeed() { //TODO - fixme
 }
 
 void Axis::stopAxis() {
-    digitalWrite(_pin_a, HIGH);
-    digitalWrite(_pin_b, HIGH);
-    if (_4_pin) {
-        digitalWrite(_pin_c, HIGH);
-        digitalWrite(_pin_d, HIGH);
-    }
-    Serial.println("Axis Stopped");
+    setDutyCycle(false, 0);
 }
 
 _Bool Axis::setMapping(double zero_pos, double map_mult, _Bool reverse_axis) {
