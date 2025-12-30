@@ -154,6 +154,9 @@ void Axis::setPIDConstants(double Kp, double Ki, double Kd) {
     _Kp = Kp;
     _Ki = Ki;
     _Kd = Kd;
+    if (_pid != nullptr) {
+        delete _pid;
+    }
     _pid = new PID(&_current_pos, &_control, &_target_pos, _Kp, _Ki, _Kd, DIRECT);
     Serial.printf("Axis PID set: Kp=%f, Ki=%f, Kd=%f\n", Kp, Ki, Kd);
     _pid->SetMode(AUTOMATIC);
@@ -169,12 +172,18 @@ void Axis::allowMotion(bool allowed) {
 
 uint8_t Axis::moveToPos() {
     if (_allowed_to_move == false) {
-        return 254; // move not allowed
+        return 255; // move not allowed
     }
-    static uint32_t last_run_time = 0;
-    double dt = static_cast<double>(micros() - (last_run_time)) / 1000000.0;//seconds
+    if (isnan(_target_pos)) {
+        return 254; // no target position set
+    }
+    if (_pid == nullptr) {
+        Serial.println("Error: PID not initialized for Axis");
+        return 254; // PID not initialized
+    }
     _pid->Compute();
-    setDutyCycle(_control >= 0.0, fabs(_control));
+    Serial.printf("PID Control: %f\n", _control);
+    // setDutyCycle(_control >= 0.0, fabs(_control)); //TODO - scale control to duty cycle, commented out for safety during testing
     return 0;
 }
 

@@ -20,7 +20,7 @@ void loop() {
     float receivedValue = receivedCommand.toFloat();
     Serial.print("Setting target pos to: ");
     Serial.println(receivedValue);
-    if (receivedValue > 0) {
+    if (receivedValue > -9.0) {
       leg.setAxisTargetPos(1, receivedValue);
     }
     else {
