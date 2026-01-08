@@ -92,6 +92,7 @@ void Axis::trackMotion() {
         distance_traversed += (distance_traversed > M_PI) ? -2 * M_PI : (distance_traversed < -M_PI) ? 2 * M_PI : 0; // Assume shortest path
         _current_velocity = (_current_pos - _last_position) / (delta_time / 1000.0); //rad/s
         _current_acceleration = (_current_velocity - _last_velocity) / (delta_time / 1000.0); //rad/s^2
+        
     }
 }
 
@@ -122,10 +123,10 @@ void Axis::updatePos() {
     //     return;
     // }
     // if (error < 0) {
-    //     setDutyCycle(-_speed);
+    //     setDutyCycle(false, _speed);
     // } 
     // else {
-    //     setDutyCycle(_speed);
+    //     setDutyCycle(true, _speed);
     // }
 }
 
@@ -158,6 +159,7 @@ void Axis::setPIDConstants(double Kp, double Ki, double Kd) {
         delete _pid;
     }
     _pid = new PID(&_current_pos, &_control, &_target_pos, _Kp, _Ki, _Kd, DIRECT);
+    _pid->SetOutputLimits(-100, 100); 
     Serial.printf("Axis PID set: Kp=%f, Ki=%f, Kd=%f\n", Kp, Ki, Kd);
     _pid->SetMode(AUTOMATIC);
 }
@@ -181,9 +183,31 @@ uint8_t Axis::moveToPos() {
         Serial.println("Error: PID not initialized for Axis");
         return 254; // PID not initialized
     }
+
     _pid->Compute();
-    Serial.printf("PID Control: %f\n", _control);
-    // setDutyCycle(_control >= 0.0, fabs(_control)); //TODO - scale control to duty cycle, commented out for safety during testing
+    //notes for future; assume max distance is 2 rads; assume kp = .5, ki = 0, kd = 0.05; worst case we get control output of about 3.65
+    //to get 100% duty cycle at max control output, need to scale by about 27.5 (100 / 3.65). 3.65 is also how I decided to set min/max for PID compute to +/- 4
+    //PID library is not doing any target position wrapping, it always goes the long way around. We can assume the control speed is correct and 
+    //determine direction on our own
+    float scaled_duty_cycle = constrain(_control * 27.5, -100, 100.0);
+    float min_duty = 55.0; //minimum duty cycle to overcome motor deadzone from standstill. Might need to bump this up when we have a load on the motors...
+    if (scaled_duty_cycle != 0.0 && fabs(scaled_duty_cycle) < min_duty) {
+        scaled_duty_cycle = (scaled_duty_cycle > 0) ? min_duty : -min_duty;
+    }
+
+    float error = _target_pos - _current_pos;
+    float accepted_error = 0.01745; //about 1 degree in radians
+    if (fabs(error) <= accepted_error) {
+        scaled_duty_cycle = 0;
+    }
+
+    static uint32_t last_print_time = 0;
+    if (millis() - last_print_time > 1000) {
+        last_print_time = millis();
+        Serial.printf("raw control is %f\n", _control);
+        Serial.printf("PID Control: %f\n", scaled_duty_cycle);
+    }
+    setDutyCycle(scaled_duty_cycle >= 0.0, fabs(scaled_duty_cycle)); //TODO - scale control to duty cycle, commented out for safety during testing
     return 0;
 }
 

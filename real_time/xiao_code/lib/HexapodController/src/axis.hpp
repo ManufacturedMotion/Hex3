@@ -45,7 +45,7 @@
             double getCurrentAcceleration();
             void allowMotion(bool allowed);
             void setPIDConstants(double Kp, double Ki, double Kd);
-
+double _target_pos = NAN;
         private:
             bool _allowed_to_move = true;
             uint8_t _pin_a = 0;
@@ -58,7 +58,7 @@
             double _Kd;
             _Bool _4_pin = false;
             //_Bool _need_to_move = false;
-            double _target_pos = NAN;
+            //TODO put back ; double _target_pos = NAN;
             void _initializeAxis(); 
             Mux* _mux;
             const float POS_TOLERANCE = .1; //rad //TODO - lower me once encoder mounted

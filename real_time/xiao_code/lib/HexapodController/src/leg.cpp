@@ -51,8 +51,9 @@ void Leg::runSpeed() {
         Serial.printf("Leg %d accelerations: Axis0: %f; Axis1: %f; Axis2: %f\n", _leg_number, axes[0].getCurrentAcceleration(), axes[1].getCurrentAcceleration(), axes[2].getCurrentAcceleration());
     }
     // for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
-    axes[1].trackMotion();
-    axes[1].moveToPos();
+    axes[0].trackMotion();
+    uint8_t retval = axes[0].moveToPos();
+    //Serial.printf("moveToPos returned: %d\n", retval);
     // }
 }
 
@@ -63,6 +64,8 @@ void Leg::stopAxis(uint8_t axis_number) {
 void Leg::setAxisTargetPos(uint8_t axis_number, double pos) {
     axes[axis_number].allowMotion(true);
     axes[axis_number].setTargetPos(pos);
+    Serial.printf("setting axis %d target pos to %f\n", axis_number, pos);
+    Serial.printf("target pos: %f\n", axes[axis_number]._target_pos);
 }
 
 void Leg::setAxisPIDConstants(uint8_t axis_number, double Kp, double Ki, double Kd) {
