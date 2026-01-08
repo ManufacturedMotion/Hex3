@@ -185,16 +185,13 @@ uint8_t Axis::moveToPos() {
     }
 
     _pid->Compute();
-    //notes for future; assume max distance is 2 rads; assume kp = .5, ki = 0, kd = 0.05; worst case we get control output of about 3.65
-    //to get 100% duty cycle at max control output, need to scale by about 27.5 (100 / 3.65). 3.65 is also how I decided to set min/max for PID compute to +/- 4
-    //PID library is not doing any target position wrapping, it always goes the long way around. We can assume the control speed is correct and 
-    //determine direction on our own
     float scaled_duty_cycle = constrain(_control * 27.5, -100, 100.0);
     float min_duty = 55.0; //minimum duty cycle to overcome motor deadzone from standstill. Might need to bump this up when we have a load on the motors...
     if (scaled_duty_cycle != 0.0 && fabs(scaled_duty_cycle) < min_duty) {
         scaled_duty_cycle = (scaled_duty_cycle > 0) ? min_duty : -min_duty;
     }
 
+    //TODO - more tuning work... this was an attempt to avoid oscillations at target pos
     float error = _target_pos - _current_pos;
     float accepted_error = 0.01745; //about 1 degree in radians
     if (fabs(error) <= accepted_error) {
@@ -207,7 +204,7 @@ uint8_t Axis::moveToPos() {
         Serial.printf("raw control is %f\n", _control);
         Serial.printf("PID Control: %f\n", scaled_duty_cycle);
     }
-    setDutyCycle(scaled_duty_cycle >= 0.0, fabs(scaled_duty_cycle)); //TODO - scale control to duty cycle, commented out for safety during testing
+    setDutyCycle(scaled_duty_cycle >= 0.0, fabs(scaled_duty_cycle));
     return 0;
 }
 
