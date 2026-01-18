@@ -163,6 +163,7 @@ void Axis::setPIDConstants(double Kp, double Ki, double Kd) {
     }
     _pid = new PID(&_current_pos, &_control, &_target_pos, _Kp, _Ki, _Kd, DIRECT);
     _pid->SetOutputLimits(-100, 100); 
+    _pid->SetSampleTime(10); //10 ms
     Serial.printf("Axis PID set: Kp=%f, Ki=%f, Kd=%f\n", Kp, Ki, Kd);
     _pid->SetMode(AUTOMATIC);
 }
@@ -188,10 +189,14 @@ uint8_t Axis::moveToPos() {
     }
 
     _pid->Compute();
-    float scaled_duty_cycle = constrain(_control * 27.5, -100, 100.0);
+    float scaled_duty_cycle = constrain(_control, -100, 100.0);
     float min_duty = 55.0; //minimum duty cycle to overcome motor deadzone from standstill. Might need to bump this up when we have a load on the motors...
-    if (scaled_duty_cycle != 0.0 && fabs(scaled_duty_cycle) < min_duty) {
-        scaled_duty_cycle = (scaled_duty_cycle > 0) ? min_duty : -min_duty;
+    
+    if (scaled_duty_cycle > 0.0) {
+        scaled_duty_cycle = map(scaled_duty_cycle, 0.0, 100.0, min_duty, 100.0);
+    }
+    else if (scaled_duty_cycle < 0.0) {
+        scaled_duty_cycle = map(scaled_duty_cycle, -100.0, 0.0, -100.0, -min_duty);
     }
 
     //TODO - more tuning work... this was an attempt to avoid oscillations at target pos

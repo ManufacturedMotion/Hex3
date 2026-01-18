@@ -11,7 +11,7 @@ void setup() {
   Serial.println("Starting...");
   leg.begin();
   leg.initializeAxes(0);
-  leg.setAxisPIDConstants(1, 25.0, 1.0, 0.08);
+  leg.setAxisPIDConstants(1, 200.0, 20.0, 3.5);
 }
 
 void loop() {
