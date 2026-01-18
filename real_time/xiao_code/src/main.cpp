@@ -11,7 +11,7 @@ void setup() {
   Serial.println("Starting...");
   leg.begin();
   leg.initializeAxes(0);
-  leg.setAxisPIDConstants(0, 1, 0.0, .98);
+  leg.setAxisPIDConstants(1, 25.0, 1.0, 0.08);
 }
 
 void loop() {
@@ -21,10 +21,10 @@ void loop() {
     Serial.print("Setting target pos to: ");
     Serial.println(receivedValue);
     if (receivedValue > -9.0) {
-      leg.setAxisTargetPos(0, receivedValue);
+      leg.setAxisTargetPos(1, receivedValue);
     }
     else {
-      leg.stopAxis(0);
+      leg.stopAxis(1);
     }
   }
   leg.runSpeed();

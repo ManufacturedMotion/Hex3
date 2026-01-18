@@ -132,6 +132,9 @@ void Axis::updatePos() {
 
 uint8_t Axis::setDutyCycle(bool dir, float duty_cycle) {
     duty_cycle = constrain(duty_cycle, 0.0, 100.0);
+    if (_reverse_axis) {
+        dir = !dir;
+    }
     if (dir) {
         _pwm_instances[0]->setPWM(_pin_a, PWM_FREQUENCY, 0.0);
         _pwm_instances[1]->setPWM(_pin_b, PWM_FREQUENCY, duty_cycle);
@@ -193,7 +196,7 @@ uint8_t Axis::moveToPos() {
 
     //TODO - more tuning work... this was an attempt to avoid oscillations at target pos
     float error = _target_pos - _current_pos;
-    float accepted_error = 0.01745; //about 1 degree in radians
+    float accepted_error = AXIS_POSITION_TOLERANCE; //about 1 degree in radians
     if (fabs(error) <= accepted_error) {
         scaled_duty_cycle = 0;
     }

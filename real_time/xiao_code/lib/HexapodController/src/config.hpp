@@ -8,9 +8,9 @@
 	#define STEP_THRESHOLD 40 
 	#define FIFO_IDLE_THRESHOLD 100
     #define ZERO_POINTS {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}}
-    #define MIN_POS {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}}
-    #define MAX_POS {{2 * M_PI, 2 * M_PI, 2 * M_PI}, {2 * M_PI, 2 * M_PI, 2 * M_PI}, {2 * M_PI, 2 * M_PI, 2 * M_PI}, {2 * M_PI, 2 * M_PI, 2 * M_PI}, {2 * M_PI, 2 * M_PI, 2 * M_PI}, {2 * M_PI, 2 * M_PI, 2 * M_PI}}
+    #define MIN_POS {{-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}}
+    #define MAX_POS {{M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}}
     #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
-    #define REVERSE_AXIS {{false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}}
+    #define REVERSE_AXIS {{false, true, false}, {false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}}
 
 #endif

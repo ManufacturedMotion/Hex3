@@ -36,9 +36,9 @@
 
 		private:
 			uint8_t _leg_number;
-			double _length0 = 63.00;
-			double _length1 = 92.00;
-			double _length2 = 157.5;
+			double _length0 = 112.929;
+			double _length1 = 96.00;
+			double _length2 = 150.5;
 			uint8_t toe_threshold = 100;
 			void _moveAxes();
 			_Bool _checkSafeCoords(double x, double y, double z);

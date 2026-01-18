@@ -50,10 +50,10 @@ void Leg::runSpeed() {
         Serial.printf("Leg %d velocities: Axis0: %f; Axis1: %f; Axis2: %f\n", _leg_number, axes[0].getCurrentVelocity(), axes[1].getCurrentVelocity(), axes[2].getCurrentVelocity());
         Serial.printf("Leg %d accelerations: Axis0: %f; Axis1: %f; Axis2: %f\n", _leg_number, axes[0].getCurrentAcceleration(), axes[1].getCurrentAcceleration(), axes[2].getCurrentAcceleration());
     }
-    // for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
-    axes[0].trackMotion();
-    axes[0].moveToPos();
-    // }
+    for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
+        axes[j].trackMotion();
+        axes[j].moveToPos();
+    }
 }
 
 void Leg::stopAxis(uint8_t axis_number) {
@@ -226,7 +226,7 @@ _Bool Leg::linearMoveSetup(double x,  double y, double z, double target_speed, _
 
 void Leg::_moveAxes() {
     for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
-        axes[i].moveToPos(_next_angles[i]);
+        axes[i].setTargetPos(_next_angles[i]);
         current_angles[i] = _next_angles[i];
     }
 }

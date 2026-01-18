@@ -47,6 +47,7 @@ void Mux::setChannel(uint8_t channel) {
 }
 
 double Mux::readEncoder(uint8_t channel) {
+    // static uint32_t last_read_time = 0;
     setChannel(channel);
     delayMicroseconds(500);
     Wire.beginTransmission(ENC_ADDR);
@@ -54,11 +55,14 @@ double Mux::readEncoder(uint8_t channel) {
     Wire.endTransmission();
     Wire.requestFrom(ENC_ADDR, 2);
     if (Wire.available() == 2) {
+        // Serial.printf("Time since last read: %dus\n", micros() - last_read_time);
+        // last_read_time = micros();
         uint8_t highByte = Wire.read();
         uint8_t lowByte  = Wire.read();
         uint16_t rawAngle = ((highByte & 0x0F) << 8) | lowByte; 
         double radians = (rawAngle * M_PI * 2.0) / 4096.0 - M_PI; // Map to -pi to pi
         return radians;
     }
+    Serial.println("Failed to read encoder");
     return NAN;
 }

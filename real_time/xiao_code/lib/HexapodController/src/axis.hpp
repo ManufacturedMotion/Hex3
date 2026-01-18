@@ -6,8 +6,8 @@
 
 #ifndef HEX3_AXIS
 #define HEX3_AXIS
-    #define AXIS_MOTION_TRACK_INTERVAL_MS 10
-    #define AXIS_POSITION_TOLERANCE 0.005 //rads
+    #define AXIS_MOTION_TRACK_INTERVAL_MS 1
+    #define AXIS_POSITION_TOLERANCE 0.01 //rads
 
     //pindefs for use in leg.cpp
     //S1: 11 12;            ch 5 (?)
