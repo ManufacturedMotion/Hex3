@@ -8,10 +8,10 @@
 #include "three_by_matrices.hpp"
 #include <Arduino.h>
 #include "log_levels.hpp"
+#include "mux.hpp"
 
 
 double zero_points[NUM_LEGS][NUM_AXES_PER_LEG] = ZERO_POINTS;
-int pwm_pins[NUM_LEGS][NUM_AXES_PER_LEG] = PWM_PINS;
 double min_pos[NUM_LEGS][NUM_AXES_PER_LEG] = MIN_POS;
 double max_pos[NUM_LEGS][NUM_AXES_PER_LEG] = MAX_POS;
 double scale_fact[NUM_LEGS][NUM_AXES_PER_LEG] = SCALE_FACT;
@@ -23,12 +23,61 @@ Leg::Leg() {
     _leg_number = 0;
 }
 
+void Leg::begin(){
+    mux.begin();
+    axes[0].link(D11, D12, 5, mux);
+    axes[1].link(D18, D2, D17, D3, 6, mux);
+    axes[2].link(D16, D15, 7, mux);
+    pinMode(TOE_PIN, INPUT); 
+}
+
 void Leg::initializeAxes(uint8_t leg_number) {
     _leg_number = leg_number;
     for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
-        axes[i].initializePositionLimits(pwm_pins[_leg_number][i], min_pos[_leg_number][i], max_pos[_leg_number][i]);
+        axes[i].initializePositionLimits(min_pos[_leg_number][i], max_pos[_leg_number][i]);
         axes[i].setMapping(zero_points[_leg_number][i], scale_fact[_leg_number][i], reverse_axis[_leg_number][i]);
     }
+}
+
+void Leg::runSpeed() {
+    // for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
+    //     axes[j].runSpeed();
+    // }
+    static uint32_t last_print_time = 0;
+    if (millis() - last_print_time > 1000) {
+        last_print_time = millis();
+        Serial.printf("Leg %d positions: Axis0: %f; Axis1: %f; Axis2: %f\n", _leg_number, axes[0].getCurrentPos(), axes[1].getCurrentPos(), axes[2].getCurrentPos());
+        Serial.printf("Leg %d velocities: Axis0: %f; Axis1: %f; Axis2: %f\n", _leg_number, axes[0].getCurrentVelocity(), axes[1].getCurrentVelocity(), axes[2].getCurrentVelocity());
+        Serial.printf("Leg %d accelerations: Axis0: %f; Axis1: %f; Axis2: %f\n", _leg_number, axes[0].getCurrentAcceleration(), axes[1].getCurrentAcceleration(), axes[2].getCurrentAcceleration());
+    }
+    for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
+        axes[j].trackMotion();
+        axes[j].moveToPos();
+    }
+}
+
+void Leg::stopAxis(uint8_t axis_number) {
+    axes[axis_number].allowMotion(false);
+}
+
+void Leg::setAxisTargetPos(uint8_t axis_number, double pos) {
+    axes[axis_number].allowMotion(true);
+    axes[axis_number].setTargetPos(pos);
+}
+
+void Leg::setAxisPIDConstants(uint8_t axis_number, double Kp, double Ki, double Kd) {
+    axes[axis_number].setPIDConstants(Kp, Ki, Kd);
+}
+
+void Leg::setAxisDutyCycle(uint8_t axis_number, bool dir, float duty_cycle) {
+    axes[axis_number].setDutyCycle(dir, duty_cycle);
+}
+
+_Bool Leg::toePressed(){
+    _Bool is_pressed = false;
+    if (analogRead(TOE_PIN) < toe_threshold)
+        is_pressed = true;
+    return is_pressed;
 }
 
 _Bool Leg::_inverseKinematics(double x, double y, double z) {
@@ -177,7 +226,7 @@ _Bool Leg::linearMoveSetup(double x,  double y, double z, double target_speed, _
 
 void Leg::_moveAxes() {
     for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
-        axes[i].moveToPos(_next_angles[i]);
+        axes[i].setTargetPos(_next_angles[i]);
         current_angles[i] = _next_angles[i];
     }
 }

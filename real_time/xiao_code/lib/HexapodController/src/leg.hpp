@@ -1,6 +1,7 @@
 #include "axis.hpp"
 #include "config.hpp"
 #include "three_by_matrices.hpp"
+#include "mux.hpp"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -9,6 +10,7 @@
 
 	#define NUM_AXES_PER_LEG 3
 	#define MOVEMENT_INTERVAL_US 5000
+	#define TOE_PIN D0
 	class Leg {
 		public:
 			Leg();
@@ -23,12 +25,21 @@
 			uint8_t linearMovePerform();
 			_Bool isMoving();
 			void wait(uint32_t time_ms);
+			void begin();
+			Mux mux;
+			_Bool toePressed();
+			void runSpeed();
+			void setAxisDutyCycle(uint8_t axis_number, bool dir, float duty_cycle);
+			void setAxisTargetPos(uint8_t axis_number, double pos);
+			void stopAxis(uint8_t axis_number);
+			void setAxisPIDConstants(uint8_t axis_number, double Kp, double Ki, double Kd);
 
 		private:
 			uint8_t _leg_number;
-			double _length0 = 63.00;
-			double _length1 = 92.00;
-			double _length2 = 157.5;
+			double _length0 = 112.929;
+			double _length1 = 96.00;
+			double _length2 = 150.5;
+			uint8_t toe_threshold = 100;
 			void _moveAxes();
 			_Bool _checkSafeCoords(double x, double y, double z);
 			_Bool _inverseKinematics(double x, double y, double z);
@@ -42,6 +53,9 @@
 			uint32_t _move_time;
 			_Bool _moving_flag = false;
 			void * _movement_function;
+			uint8_t _volage_pin; //TODO get this value
+			
+
 	};
 
 #endif
