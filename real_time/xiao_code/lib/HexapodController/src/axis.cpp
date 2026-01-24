@@ -72,28 +72,49 @@ double Axis::_getCurrentPos() {
     if (_mux == nullptr){
         return NAN;
     }  
-    return _mux->readEncoder(_encoder_ch);
+    double encoder_reading = _mux->readEncoder(_encoder_ch);
+    encoder_reading -= _zero_pos;
+    if (encoder_reading > M_PI) {
+        encoder_reading -= 2.0 * M_PI;
+    }
+    if (encoder_reading < -M_PI) {
+        encoder_reading += 2.0 * M_PI;
+    }
+    return encoder_reading;
+}
+
+bool Axis::targetPosReached() {
+    if (fabs(_target_pos - _current_pos) <= AXIS_POSITION_TOLERANCE) {
+        return true;
+    }
+    return false;
 }
 
 void Axis::trackMotion() {
-    static uint32_t _last_update_time = 0;
-    if (millis() - _last_update_time > AXIS_MOTION_TRACK_INTERVAL_MS) {
-        uint32_t delta_time = millis() - _last_update_time;
+    
+    if (millis() - _last_pos_update_time > AXIS_POSITION_TRACK_INTERVAL_MS) {
+        uint32_t delta_time = millis() - _last_pos_update_time;
         uint32_t temp_last_update_time = millis();
         double current_pos = _getCurrentPos();
         if (isnan(current_pos)) {
             return;
         }
-        _last_update_time = temp_last_update_time; //avoid time skew due to I2C delay
-        _last_position = _current_pos;
-        _last_velocity = _current_velocity;
+        _last_pos_update_time = temp_last_update_time; //avoid time skew due to I2C delay
         _current_pos = current_pos;
-        double distance_traversed = _current_pos - _last_position;
-        distance_traversed += (distance_traversed > M_PI) ? -2 * M_PI : (distance_traversed < -M_PI) ? 2 * M_PI : 0; // Assume shortest path
-        _current_velocity = (_current_pos - _last_position) / (delta_time / 1000.0); //rad/s
-        _current_acceleration = (_current_velocity - _last_velocity) / (delta_time / 1000.0); //rad/s^2
-        
     }
+    if (millis() - _last_vel_update_time > AXIS_VELOCITY_TRACK_INTERVAL_MS) {
+        uint32_t delta_time = millis() - _last_vel_update_time;
+        _last_velocity = getCurrentVelocity();
+
+        double distance_traversed = getCurrentPos() - _last_position;
+        distance_traversed += (distance_traversed > M_PI) ? -2 * M_PI : (distance_traversed < -M_PI) ? 2 * M_PI : 0; // Assume shortest path
+        _current_velocity = distance_traversed / (static_cast<double>(delta_time) / 1000.0); //rad/s
+
+        _current_acceleration = (getCurrentVelocity() - _last_velocity) / (static_cast<double>(delta_time) / 1000.0); //rad/s^2
+        _last_position = getCurrentPos();
+        _last_vel_update_time = millis();
+    } 
+    
 }
 
 uint8_t Axis::setTargetPos(double pos) {
@@ -163,7 +184,7 @@ void Axis::setPIDConstants(double Kp, double Ki, double Kd) {
     }
     _pid = new PID(&_current_pos, &_control, &_target_pos, _Kp, _Ki, _Kd, DIRECT);
     _pid->SetOutputLimits(-100, 100); 
-    _pid->SetSampleTime(10); //10 ms
+    _pid->SetSampleTime(3);
     Serial.printf("Axis PID set: Kp=%f, Ki=%f, Kd=%f\n", Kp, Ki, Kd);
     _pid->SetMode(AUTOMATIC);
 }
@@ -188,6 +209,12 @@ uint8_t Axis::moveToPos() {
         return 254; // PID not initialized
     }
 
+    float error = _target_pos - _current_pos;
+    float accepted_error = AXIS_POSITION_TOLERANCE; //about 1 degree in radians
+    if (fabs(error) <= accepted_error) {
+        setDutyCycle(0, 0.0);
+        return 0;
+    }
     _pid->Compute();
     float scaled_duty_cycle = constrain(_control, -100, 100.0);
     float min_duty = 55.0; //minimum duty cycle to overcome motor deadzone from standstill. Might need to bump this up when we have a load on the motors...
@@ -197,20 +224,6 @@ uint8_t Axis::moveToPos() {
     }
     else if (scaled_duty_cycle < 0.0) {
         scaled_duty_cycle = map(scaled_duty_cycle, -100.0, 0.0, -100.0, -min_duty);
-    }
-
-    //TODO - more tuning work... this was an attempt to avoid oscillations at target pos
-    float error = _target_pos - _current_pos;
-    float accepted_error = AXIS_POSITION_TOLERANCE; //about 1 degree in radians
-    if (fabs(error) <= accepted_error) {
-        scaled_duty_cycle = 0;
-    }
-
-    static uint32_t last_print_time = 0;
-    if (millis() - last_print_time > 1000) {
-        last_print_time = millis();
-        Serial.printf("raw control is %f\n", _control);
-        Serial.printf("PID Control: %f\n", scaled_duty_cycle);
     }
     setDutyCycle(scaled_duty_cycle >= 0.0, fabs(scaled_duty_cycle));
     return 0;

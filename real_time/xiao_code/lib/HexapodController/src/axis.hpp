@@ -6,8 +6,9 @@
 
 #ifndef HEX3_AXIS
 #define HEX3_AXIS
-    #define AXIS_MOTION_TRACK_INTERVAL_MS 1
+    #define AXIS_POSITION_TRACK_INTERVAL_MS 1
     #define AXIS_POSITION_TOLERANCE 0.01 //rads
+    #define AXIS_VELOCITY_TRACK_INTERVAL_MS 200
 
     //pindefs for use in leg.cpp
     //S1: 11 12;            ch 5 (?)
@@ -45,6 +46,7 @@
             double getCurrentAcceleration();
             void allowMotion(bool allowed);
             void setPIDConstants(double Kp, double Ki, double Kd);
+            bool targetPosReached();
 
         private:
             bool _allowed_to_move = true;
@@ -85,6 +87,8 @@
             double _current_acceleration = 0.0;
             double _last_position = 0.0;
             double _last_velocity = 0.0;
+            uint32_t _last_pos_update_time = 0;
+            uint32_t _last_vel_update_time = 0;
             double _control = 0.0;
             PID* _pid;
     };
