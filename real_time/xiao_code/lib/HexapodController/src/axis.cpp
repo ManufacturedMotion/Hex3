@@ -124,6 +124,15 @@ uint8_t Axis::setTargetPos(double pos) {
     return 0;
 }
 
+uint8_t Axis::setTargetVelocity(double velocity) {
+    _target_velocity = velocity;
+    return 0;
+}
+
+uint8_t Axis::setTargetAcceleration(double acceleration) {
+    _target_acceleration = acceleration;
+    return 0;
+}
 
 void Axis::setSpeed(double speed) {
     _speed = speed;
@@ -175,17 +184,19 @@ uint8_t Axis::setDutyCycle(bool dir, float duty_cycle) {
     return 0;
 }
 
-void Axis::setPIDConstants(double Kp, double Ki, double Kd) {
+void Axis::setControlConstants(double Kp, double Ki, double Kd, double Kv_ff, double Ka_ff) {
     _Kp = Kp;
     _Ki = Ki;
     _Kd = Kd;
+    _Kv_ff = Kv_ff;
+    _Ka_ff = Ka_ff;
     if (_pid != nullptr) {
         delete _pid;
     }
     _pid = new PID(&_current_pos, &_control, &_target_pos, _Kp, _Ki, _Kd, DIRECT);
     _pid->SetOutputLimits(-100, 100); 
     _pid->SetSampleTime(3);
-    Serial.printf("Axis PID set: Kp=%f, Ki=%f, Kd=%f\n", Kp, Ki, Kd);
+    Serial.printf("Axis PID set: Kp=%f, Ki=%f, Kd=%f, Kv_ff=%f, Ka_ff=%f\n", Kp, Ki, Kd, Kv_ff, Ka_ff);
     _pid->SetMode(AUTOMATIC);
 }
 
@@ -210,14 +221,16 @@ uint8_t Axis::moveToPos() {
     }
 
     float error = _target_pos - _current_pos;
-    float accepted_error = AXIS_POSITION_TOLERANCE; //about 1 degree in radians
+    float accepted_error = AXIS_POSITION_TOLERANCE;
     if (fabs(error) <= accepted_error) {
         setDutyCycle(0, 0.0);
         return 0;
     }
     _pid->Compute();
-    float scaled_duty_cycle = constrain(_control, -100, 100.0);
-    float min_duty = 55.0; //minimum duty cycle to overcome motor deadzone from standstill. Might need to bump this up when we have a load on the motors...
+    double control = _control + (_Kv_ff * _target_velocity) + (_Ka_ff * _target_acceleration);
+    float scaled_duty_cycle = constrain(control, -100, 100.0);
+    float min_duty = 52.5
+    ; //minimum duty cycle to overcome motor deadzone from standstill. Might need to bump this up when we have a load on the motors...
     
     if (scaled_duty_cycle > 0.0) {
         scaled_duty_cycle = map(scaled_duty_cycle, 0.0, 100.0, min_duty, 100.0);
@@ -226,32 +239,30 @@ uint8_t Axis::moveToPos() {
         scaled_duty_cycle = map(scaled_duty_cycle, -100.0, 0.0, -100.0, -min_duty);
     }
     setDutyCycle(scaled_duty_cycle >= 0.0, fabs(scaled_duty_cycle));
+    Serial.printf("Axis moveToPos: current_pos=%f, target_pos=%f, error=%f, control=%f, duty_cycle=%f\n", _current_pos, _target_pos, error, control, scaled_duty_cycle);
     return 0;
 }
 
 uint8_t Axis::moveToPosAtSpeed(double pos, double target_speed) {
-    if (pos < _min_pos || pos > _max_pos)
-        return 255; // move out of range
-    double speed = target_speed;
-    uint8_t retval = 0;
-    if (target_speed > _max_speed) {
-        speed = _max_speed;
-        retval = 1; // move speed capped
+    if (_allowed_to_move == false) {
+        return 255; // move not allowed
     }
-    if ((getCurrentPos() - pos) <= POS_TOLERANCE) {
-        _move_time = 1;
-        stopAxis();
+    if (isnan(_target_pos)) {
+        return 254; // no target position set
     }
-    else {
-        _move_time = (fabs(getCurrentPos() - pos) / speed) * 1000;
+    if (_pid == nullptr) {
+        Serial.println("Error: PID not initialized for Axis");
+        return 254; // PID not initialized
     }
-    _start_rads = getCurrentPos();
-    _end_rads = pos;
-    _target_pos = _axisMap(pos);
-    _move_progress = 0;
-    _move_start_time = millis();
-    _speed = speed;
-    return retval;
+    _pid->Compute();
+    float error = _target_pos - _current_pos;
+    float accepted_error = AXIS_POSITION_TOLERANCE;
+    if (fabs(error) <= accepted_error) {
+        setDutyCycle(0, 0.0);
+        return 0;
+    }
+
+    return 1;
 }
 
 double Axis::runSpeed() { //TODO - fixme

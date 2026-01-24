@@ -65,8 +65,8 @@ void Leg::setAxisTargetPos(uint8_t axis_number, double pos) {
     axes[axis_number].setTargetPos(pos);
 }
 
-void Leg::setAxisPIDConstants(uint8_t axis_number, double Kp, double Ki, double Kd) {
-    axes[axis_number].setPIDConstants(Kp, Ki, Kd);
+void Leg::setAxisControlConstants(uint8_t axis_number, double Kp, double Ki, double Kd, double Kv_ff, double Ka_ff) {
+    axes[axis_number].setControlConstants(Kp, Ki, Kd, Kv_ff, Ka_ff);
 }
 
 void Leg::setAxisDutyCycle(uint8_t axis_number, bool dir, float duty_cycle) {
@@ -108,24 +108,49 @@ _Bool Leg::_inverseKinematics(double x, double y, double z) {
 
     potential_results[2] = atan2(sqrt(1 - (theta2_tool*theta2_tool)), theta2_tool);
     
-    double theta1_tool0 = atan2(z, y_virtual_planar);
-    double theta1_tool1 = atan2(_length2 * sin(potential_results[2]), _length1 + _length2 * cos(potential_results[2]));
-    potential_results[1] = theta1_tool0 - theta1_tool1;
-
+    // if (z < 0) {
+    //     potential_results[2] = -potential_results[2];
+    //     double theta1_tool1 = atan2(_length2 * sin(potential_results[2]), _length1 + _length2 * cos(potential_results[2]));
+    //     double theta1_tool0 = atan2(z, y_virtual_planar);
+    //     potential_results[1] = theta1_tool0 + theta1_tool1;
+    // }
+    // else {
+        double theta1_tool0 = atan2(z, y_virtual_planar);
+        double theta1_tool1 = atan2(_length2 * sin(potential_results[2]), _length1 + _length2 * cos(potential_results[2]));
+        potential_results[1] = theta1_tool0 - theta1_tool1;
+    // }
+    if (z < 0) {
+        potential_results[2] = -potential_results[2];
+        potential_results[1] = theta1_tool0 + theta1_tool1;
+    }
+    
     for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
         if (potential_results[i] != potential_results[i]) { //Check for NaN
             // Serial.println(i);
             // Serial.println(potential_results[i]);
             return false;
-        }
-    }
+        }   
+        #ifdef LEG_DEBUG
 
+            
+            if (potential_results[i] < min_pos[_leg_number][i] || potential_results[i] > max_pos[_leg_number][i]) {
+                #ifdef LEG_DEBUG
+                    Serial.printf("Potential result %d: %f is ", i, potential_results[i]);
+                    Serial.println("OUT OF BOUNDS");
+                #endif
+            }
+            else {
+                _next_angles[i] = potential_results[i];
+            }
+        #endif
+    }
+    
     // ThreeByOne resulting_pos = forwardKinematics(potential_results[0], potential_results[1], potential_results[2]);
     // Serial.printf("Result\n  x: %f; y: %f; z: %f\n", resulting_pos.values[0], resulting_pos.values[1], resulting_pos.values[2]);
 
     // Serial.printf("Result\n  angle0: %f; angle1: %f; angle2: %f\n", potential_results[0], potential_results[1], potential_results[2]);
     for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
-        _next_angles[i] = potential_results[i];
+        
     }
     return true;
 }
@@ -149,17 +174,34 @@ _Bool Leg::rapidMove(double x,  double y, double z) {
 }
 
 uint8_t Leg::linearMovePerform() {
-    double move_progress = (float)(millis() - _move_start_time) / ((float) _move_time);
-    if (move_progress <= 1.0) {
-        // Serial.printf("Move start time: %d, _move_time %d\n", millis() - _move_start_time, _move_time);
-        double next_x = move_progress * (_end_cartesian[0] - _start_cartesian[0]) + _start_cartesian[0];
-        double next_y = move_progress * (_end_cartesian[1] - _start_cartesian[1]) + _start_cartesian[1];
-        double next_z = move_progress * (_end_cartesian[2] - _start_cartesian[2]) + _start_cartesian[2];
-        _moving_flag = true;
-        return rapidMove(next_x, next_y, next_z);
-    }
-    else {
-        _moving_flag = false;
+    uint32_t delta = millis() - _last_linear_move_time;
+    if (delta >= LINEAR_MOVE_INTERVAL_MS) {
+        _last_linear_move_time = millis();
+        double move_progress = (float)(millis() - _move_start_time) / ((float) _move_time);
+        if (move_progress <= 1.0) {
+            // Serial.printf("Move start time: %d, _move_time %d\n", millis() - _move_start_time, _move_time);
+            double next_x = move_progress * (_end_cartesian[0] - _start_cartesian[0]) + _start_cartesian[0];
+            double next_y = move_progress * (_end_cartesian[1] - _start_cartesian[1]) + _start_cartesian[1];
+            double next_z = move_progress * (_end_cartesian[2] - _start_cartesian[2]) + _start_cartesian[2];
+            _moving_flag = true;
+            for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
+                _current_angles[i] = axes[i].getCurrentPos();
+                _current_velocities[i] = axes[i].getCurrentVelocity(); 
+            }
+            rapidMove(next_x, next_y, next_z); //updates _next_angles
+            for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
+                axes[i].setTargetVelocity((_next_angles[i] - _current_angles[i]) / (static_cast<double>(delta) * 1000.0)); //rad/s
+                // axes[i].setTargetAcceleration((_current_velocities[i] - ))
+            }
+        }
+        else {
+            for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
+                axes[i].setTargetVelocity(0.0); //rad/s
+                // axes[i].setTargetAcceleration((_current_velocities[i] - ))
+            }
+            _moving_flag = false;
+        }
+        return 1;
     }
     return 0;
 }

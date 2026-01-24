@@ -5,11 +5,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define LEG_DEBUG
+
 #ifndef HEXA_LEG
 #define HEXA_LEG
 
 	#define NUM_AXES_PER_LEG 3
-	#define MOVEMENT_INTERVAL_US 5000
+	#define LINEAR_MOVE_INTERVAL_MS 6
 	#define TOE_PIN D0
 	class Leg {
 		public:
@@ -32,7 +34,7 @@
 			void setAxisDutyCycle(uint8_t axis_number, bool dir, float duty_cycle);
 			void setAxisTargetPos(uint8_t axis_number, double pos);
 			void stopAxis(uint8_t axis_number);
-			void setAxisPIDConstants(uint8_t axis_number, double Kp, double Ki, double Kd);
+			void setAxisControlConstants(uint8_t axis_number, double Kp, double Ki, double Kd, double Kv_ff, double Ka_ff);
 
 		private:
 			uint8_t _leg_number;
@@ -43,7 +45,13 @@
 			void _moveAxes();
 			_Bool _checkSafeCoords(double x, double y, double z);
 			_Bool _inverseKinematics(double x, double y, double z);
+
 			double _next_angles[NUM_AXES_PER_LEG];
+			double _current_angles[NUM_AXES_PER_LEG];
+			double _next_velocities[NUM_AXES_PER_LEG];
+			double _current_velocities[NUM_AXES_PER_LEG];
+			uint32_t _last_linear_move_time = 0;
+
 			double _current_cartesian[NUM_AXES_PER_LEG];
 			double _next_cartesian[NUM_AXES_PER_LEG];
 			double _start_cartesian[NUM_AXES_PER_LEG];

@@ -7,7 +7,7 @@
 #ifndef HEX3_AXIS
 #define HEX3_AXIS
     #define AXIS_POSITION_TRACK_INTERVAL_MS 1
-    #define AXIS_POSITION_TOLERANCE 0.01 //rads
+    #define AXIS_POSITION_TOLERANCE 0.001 //rads
     #define AXIS_VELOCITY_TRACK_INTERVAL_MS 200
 
     //pindefs for use in leg.cpp
@@ -41,11 +41,13 @@
             void setSpeed(double speed);
             uint8_t setDutyCycle(bool dir, float duty_cycle);
             uint8_t setTargetPos(double pos);
+            uint8_t setTargetVelocity(double velocity);
+            uint8_t setTargetAcceleration(double acceleration);
             void trackMotion();
             double getCurrentVelocity();
             double getCurrentAcceleration();
             void allowMotion(bool allowed);
-            void setPIDConstants(double Kp, double Ki, double Kd);
+            void setControlConstants(double Kp, double Ki, double Kd, double Kv_ff, double Ka_ff);
             bool targetPosReached();
 
         private:
@@ -58,9 +60,13 @@
             double _Kp;
             double _Ki;
             double _Kd;
+            double _Kv_ff = 0.0; //0.0 unless otherwise specified
+            double _Ka_ff = 0.0; //0.0 unless otherwise specified
             _Bool _4_pin = false;
             //_Bool _need_to_move = false;
             double _target_pos = NAN;
+            double _target_velocity = 0.0;
+            double _target_acceleration = 0.0;
             void _initializeAxis(); 
             Mux* _mux;
             const float POS_TOLERANCE = .1; //rad //TODO - lower me once encoder mounted
