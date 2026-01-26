@@ -12,9 +12,9 @@ void setup() {
   Serial.println("Starting...");
   leg.begin();
   leg.initializeAxes(0);
-  leg.setAxisControlConstants(0, 200.0, 20.0, 3.5, 1000000.0, 10000.0);
-  leg.setAxisControlConstants(1, 200.0, 20.0, 2.5, 1000000.0, 10000.0);
-  leg.setAxisControlConstants(2, 300.0, 30.0, 2.5, 1000000.0, 10000.0);
+  leg.setAxisControlConstants(0, 300.0, 30.0, 2.5, 1.0, 0.05);
+  leg.setAxisControlConstants(1, 300.0, 20.0, 2.5, 1.0, 0.05);
+  leg.setAxisControlConstants(2, 300.0, 30.0, 2.5, 1.0, 0.05);
   leg.setAxisTargetPos(0, 0.0);
   leg.setAxisTargetPos(1, 0.0);
   leg.setAxisTargetPos(2, 0.0);

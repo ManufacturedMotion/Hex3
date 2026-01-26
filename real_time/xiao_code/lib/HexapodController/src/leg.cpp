@@ -190,13 +190,16 @@ uint8_t Leg::linearMovePerform() {
             }
             rapidMove(next_x, next_y, next_z); //updates _next_angles
             for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
-                axes[i].setTargetVelocity((_next_angles[i] - _current_angles[i]) / (static_cast<double>(delta) * 1000.0)); //rad/s
-                // axes[i].setTargetAcceleration((_current_velocities[i] - ))
+                double next_velocity = (_next_angles[i] - _current_angles[i]) / (static_cast<double>(delta) / 1000.0);
+                double next_acceleration = (next_velocity - _current_velocities[i]) / (static_cast<double>(delta) / 1000.0);
+                axes[i].setTargetVelocity(next_velocity); //rad/s
+                axes[i].setTargetAcceleration(next_acceleration); //rad/s^2
             }
         }
         else {
             for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
                 axes[i].setTargetVelocity(0.0); //rad/s
+                axes[i].setTargetAcceleration(0.0); //rad/s^2
                 // axes[i].setTargetAcceleration((_current_velocities[i] - ))
             }
             _moving_flag = false;

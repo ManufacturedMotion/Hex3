@@ -229,8 +229,7 @@ uint8_t Axis::moveToPos() {
     _pid->Compute();
     double control = _control + (_Kv_ff * _target_velocity) + (_Ka_ff * _target_acceleration);
     float scaled_duty_cycle = constrain(control, -100, 100.0);
-    float min_duty = 52.5
-    ; //minimum duty cycle to overcome motor deadzone from standstill. Might need to bump this up when we have a load on the motors...
+    float min_duty = 52.5; //minimum duty cycle to overcome motor deadzone from standstill
     
     if (scaled_duty_cycle > 0.0) {
         scaled_duty_cycle = map(scaled_duty_cycle, 0.0, 100.0, min_duty, 100.0);
@@ -239,7 +238,6 @@ uint8_t Axis::moveToPos() {
         scaled_duty_cycle = map(scaled_duty_cycle, -100.0, 0.0, -100.0, -min_duty);
     }
     setDutyCycle(scaled_duty_cycle >= 0.0, fabs(scaled_duty_cycle));
-    Serial.printf("Axis moveToPos: current_pos=%f, target_pos=%f, error=%f, control=%f, duty_cycle=%f\n", _current_pos, _target_pos, error, control, scaled_duty_cycle);
     return 0;
 }
 
