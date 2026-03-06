@@ -2,12 +2,11 @@
 #include <stdbool.h>
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include <Wire.h>
 #include <string.h>
 #include "leg.hpp"
 #include <RP2040_PWM.h>
 
-#define INPUT_I2C_ADDRESS 0x10
+#define INPUT_I2C_ADDRESS 13
 
 
 Leg leg;
@@ -21,37 +20,39 @@ static char i2cBuf[256];
 void receiveI2C(int howMany) {
   size_t i = 0;
   // read as many bytes as available up to the buffer size - 1 (for null)
-  while (Wire.available() && i < (sizeof(i2cBuf) - 1)) {
-    i2cBuf[i++] = (char)Wire.read();
+  while (Wire1.available() && i < (sizeof(i2cBuf) - 1)) {
+    i2cBuf[i++] = (char)Wire1.read();
+    Serial.println(i2cBuf[i-1]);
+    Serial.flush();
   }
   i2cBuf[i] = '\0';
   // if extra bytes remain, consume them (avoid leaving them on the bus)
-  while (Wire.available()) Wire.read();
+  while (Wire1.available()) Wire1.read();
   i2cLen = i;
   i2cReceived = true;
 }
 void setup() {
   Serial.begin(115200);
-  delay(5000);
+  delay(3000);
   Serial.println("Starting...");
   leg.begin();
 
   leg.initializeAxes(LEG_NUMBER);
-  leg.setAxisControlConstants(0, 300.0, 30.0, 2.5, 1.0, 0.05);
-  leg.setAxisControlConstants(1, 300.0, 20.0, 2.5, 1.0, 0.05);
-  leg.setAxisControlConstants(2, 300.0, 30.0, 2.5, 1.0, 0.05);
-  leg.setAxisTargetPos(0, 0.0);
-  leg.setAxisTargetPos(1, 0.0);
-  leg.setAxisTargetPos(2, 0.0);
+  leg.setAxisControlConstants(0, 100.0, 00.0, 0.0, 0.5, .01);
+  leg.setAxisControlConstants(1, 100.0, 00.0, 0.0, 0.5, .01);
+  leg.setAxisControlConstants(2, 100.0, 00.0, 0.0, 0.5, .01);
+  leg.rapidMove(150.0, 150.0, -200.0);
 
-  Wire.begin(INPUT_I2C_ADDRESS);
-  Wire.onReceive(receiveI2C);
+  Wire1.begin(INPUT_I2C_ADDRESS);
+  Wire1.onReceive(receiveI2C);
   Serial.print("I2C slave ready at address 0x"); Serial.println(INPUT_I2C_ADDRESS, HEX);
 }
 
 void loop() {
   static double speed = 0.0; //rads per second
   static bool stop = true;
+  bool newCommand = false;
+  String receivedCommand = "";
   if (i2cReceived) {
     noInterrupts();
     size_t len = i2cLen;
@@ -60,15 +61,28 @@ void loop() {
     char localBuf[sizeof(i2cBuf)];
     memcpy(localBuf, (const void*)i2cBuf, len + 1);
     interrupts();
-
-    String receivedCommand = String(localBuf);
+    receivedCommand = String(localBuf);
     receivedCommand.trim();
+    newCommand = true;
+  }
 
-    StaticJsonDocument<256> doc;
+  if (Serial.available()) {
+    receivedCommand = Serial.readStringUntil('\n');
+    newCommand = true;
+  }
+
+
+  if (newCommand) {
+    Serial.print("Received command: ");
+    Serial.println(receivedCommand);
+    JsonDocument
+     doc;
     DeserializationError err = deserializeJson(doc, receivedCommand.c_str());
     if (err) {
       Serial.print("JSON parse failed (I2C): ");
       Serial.println(err.c_str());
+      Serial.print("Received command: ");
+      Serial.println(receivedCommand);
     } else {
       double x = 0.0, y = 0.0, z = 0.0, speed = 0.0;
       uint8_t move_type = 0;
@@ -102,6 +116,60 @@ void loop() {
       }
     }
   }
+  // static uint32_t last_move_time = 0;
+  // if (millis() - last_move_time > 5000) {
+  //   last_move_time = millis();
+  //   leg.rapidMove(0.0, 112.5, -230.0);
+  // } 
   leg.linearMovePerform();
   leg.runSpeed();
 }
+
+
+// #include <Wire.h>
+
+// void receiveI2C() {
+//   char buf[32];
+//   size_t i = 0;
+//   while (Wire1.available() && i < (sizeof(buf) - 1)) {
+//     buf[i++] = (char)Wire1.read();
+//   }
+//   buf[i] = '\0';
+//   Serial.print("Received I2C data: ");
+//   Serial.println(buf);
+//   Wire1.write("Hello from I2C slave!"); // Optionally send a response back
+// }
+
+// void receiveI2C1() {
+//   char buf[32];
+//   size_t i = 0;
+//   while (Wire1.available() && i < (sizeof(buf) - 1)) {
+//     buf[i++] = (char)Wire1.read();
+//   }
+//   buf[i] = '\0';
+//   Serial.print("Received I2C data on Wire: ");
+//   Serial.println(buf);
+//   Wire.write("Hello from I2C slave!"); // Optionally send a response back
+// }
+
+// void receiveI2C(int howMany) {
+//     receiveI2C();
+// }
+
+// void setup() {
+//     Serial.begin(115200);
+//     pinMode(INPUT_PULLUP, 6);
+//     pinMode(INPUT_PULLUP, 7);
+//     Wire1.begin(13);
+//     Wire.begin(14);
+//     Serial.println("I2C Scanner Ready");
+//     Wire1.onRequest(receiveI2C);
+//     Wire.onRequest(receiveI2C1);
+//     Wire.onReceive(receiveI2C);
+//     Wire1.onReceive(receiveI2C);
+// }
+
+// void loop() {
+//     // Nothing to do in the main loop for this simple I2C slave example
+//   delay(500);
+// }

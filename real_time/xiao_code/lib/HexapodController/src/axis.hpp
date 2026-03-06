@@ -8,7 +8,7 @@
 #define HEX3_AXIS
     #define AXIS_POSITION_TRACK_INTERVAL_MS 1
     #define AXIS_POSITION_TOLERANCE 0.001 //rads
-    #define AXIS_VELOCITY_TRACK_INTERVAL_MS 200
+    #define AXIS_VELOCITY_TRACK_INTERVAL_MS 50
 
     //pindefs for use in leg.cpp
     //S1: 11 12;            ch 5 (?)
@@ -49,6 +49,7 @@
             void allowMotion(bool allowed);
             void setControlConstants(double Kp, double Ki, double Kd, double Kv_ff, double Ka_ff);
             bool targetPosReached();
+            float getDutyCycle();
 
         private:
             bool _allowed_to_move = true;
@@ -96,6 +97,8 @@
             uint32_t _last_pos_update_time = 0;
             uint32_t _last_vel_update_time = 0;
             double _control = 0.0;
+            float _duty_cycle = 0;
+            bool _dir = false;
             PID* _pid;
     };
 

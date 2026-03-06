@@ -6,9 +6,23 @@
 #include <RP2040_PWM.h>
 
 //Must call runSpeed() frequently when moving motors
-#define PWM_FREQUENCY 30000 // Hz, adjust as needed
+#define PWM_FREQUENCY 50000 // Hz, adjust as needed
 
-Axis::Axis() : _mux(nullptr){}
+double float_map(double x, double in_min, double in_max, double out_min, double out_max) {
+    x = constrain(x, in_min, in_max);
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+Axis::Axis() :
+    _mux(nullptr),
+    _pin_a(0),
+    _pin_b(0),
+    _pin_c(0),
+    _pin_d(0),
+    _4_pin(false),
+    _pid(nullptr),
+    _allowed_to_move(true)
+{}
 
 void Axis::link(uint8_t pin_a, uint8_t pin_b, uint8_t encoder_ch, Mux& mux_ref) {
     _pin_a = pin_a;
@@ -109,7 +123,7 @@ void Axis::trackMotion() {
         double distance_traversed = getCurrentPos() - _last_position;
         distance_traversed += (distance_traversed > M_PI) ? -2 * M_PI : (distance_traversed < -M_PI) ? 2 * M_PI : 0; // Assume shortest path
         _current_velocity = distance_traversed / (static_cast<double>(delta_time) / 1000.0); //rad/s
-
+        _current_velocity = (0.8 * _current_velocity) + (0.2 * _last_velocity); // low-pass filter to reduce noise
         _current_acceleration = (getCurrentVelocity() - _last_velocity) / (static_cast<double>(delta_time) / 1000.0); //rad/s^2
         _last_position = getCurrentPos();
         _last_vel_update_time = millis();
@@ -161,23 +175,30 @@ void Axis::updatePos() {
 }
 
 uint8_t Axis::setDutyCycle(bool dir, float duty_cycle) {
+    float max_duty_cycle = 100.0;
+    // TODO: figure wtf is going on with this breaking unless it is EXACTLY like this
     duty_cycle = constrain(duty_cycle, 0.0, 100.0);
-    if (_reverse_axis) {
-        dir = !dir;
+    _duty_cycle = duty_cycle * 0.5 + _duty_cycle * 0.5; //low-pass filter to reduce noise
+    _dir = dir;
+    if (_duty_cycle >= max_duty_cycle) {
+        _duty_cycle = max_duty_cycle - 0.1; //DO NOT CHANGE, no one 
     }
-    if (dir) {
+    if (_reverse_axis) {
+        _dir = !_dir;
+    }
+    if (_dir) {
         _pwm_instances[0]->setPWM(_pin_a, PWM_FREQUENCY, 0.0);
-        _pwm_instances[1]->setPWM(_pin_b, PWM_FREQUENCY, duty_cycle);
+        _pwm_instances[1]->setPWM(_pin_b, PWM_FREQUENCY, _duty_cycle);
         if (_4_pin) {
             _pwm_instances[2]->setPWM(_pin_c, PWM_FREQUENCY, 0.0);
-            _pwm_instances[3]->setPWM(_pin_d, PWM_FREQUENCY, duty_cycle);
+            _pwm_instances[3]->setPWM(_pin_d, PWM_FREQUENCY, _duty_cycle);
         }
     } 
     else {
-        _pwm_instances[0]->setPWM(_pin_a, PWM_FREQUENCY, duty_cycle);
+        _pwm_instances[0]->setPWM(_pin_a, PWM_FREQUENCY, _duty_cycle);
         _pwm_instances[1]->setPWM(_pin_b, PWM_FREQUENCY, 0.0);
         if (_4_pin) {
-            _pwm_instances[2]->setPWM(_pin_c, PWM_FREQUENCY, duty_cycle);
+            _pwm_instances[2]->setPWM(_pin_c, PWM_FREQUENCY, _duty_cycle);
             _pwm_instances[3]->setPWM(_pin_d, PWM_FREQUENCY, 0.0);
         }
     }
@@ -195,7 +216,7 @@ void Axis::setControlConstants(double Kp, double Ki, double Kd, double Kv_ff, do
     }
     _pid = new PID(&_current_pos, &_control, &_target_pos, _Kp, _Ki, _Kd, DIRECT);
     _pid->SetOutputLimits(-100, 100); 
-    _pid->SetSampleTime(3);
+    _pid->SetSampleTime(1);
     Serial.printf("Axis PID set: Kp=%f, Ki=%f, Kd=%f, Kv_ff=%f, Ka_ff=%f\n", Kp, Ki, Kd, Kv_ff, Ka_ff);
     _pid->SetMode(AUTOMATIC);
 }
@@ -227,15 +248,21 @@ uint8_t Axis::moveToPos() {
         return 0;
     }
     _pid->Compute();
-    double control = _control + (_Kv_ff * _target_velocity) + (_Ka_ff * _target_acceleration);
+    double control = _control;
+    if (fabs(_target_velocity) > 0.001) {
+        control += (_Kv_ff * _target_velocity);
+    }
+    if (fabs(_target_acceleration) > 0.001) {
+        control += (_Ka_ff * _target_acceleration);
+    }
     float scaled_duty_cycle = constrain(control, -100, 100.0);
     float min_duty = 52.5; //minimum duty cycle to overcome motor deadzone from standstill
     
     if (scaled_duty_cycle > 0.0) {
-        scaled_duty_cycle = map(scaled_duty_cycle, 0.0, 100.0, min_duty, 100.0);
+        scaled_duty_cycle = float_map(scaled_duty_cycle, 0.0, 100.0, min_duty, 100.0);
     }
-    else if (scaled_duty_cycle < 0.0) {
-        scaled_duty_cycle = map(scaled_duty_cycle, -100.0, 0.0, -100.0, -min_duty);
+    else {
+        scaled_duty_cycle = float_map(scaled_duty_cycle, -100.0, 0.0, -100.0, -min_duty);
     }
     setDutyCycle(scaled_duty_cycle >= 0.0, fabs(scaled_duty_cycle));
     return 0;
@@ -320,6 +347,10 @@ _Bool Axis::setMaxSpeed(double max_speed) {
     _max_speed = max_speed;
     return true;
 };
+
+float Axis::getDutyCycle() {
+    return _dir ? _duty_cycle : -_duty_cycle;
+}
 
 double Axis::getMaxSpeed() {
     return _max_speed;
