@@ -3,8 +3,8 @@
 #include <stdbool.h>
 #include <ArduinoJson.h>
 
-#define VSENSE_PIN 38 
-#define VSENSE_FACTOR 0.01612903225 // 5.0 * (3.3 / 1023.0)
+#define VSENSE_PIN D1 
+#define VSENSE_FACTOR ((3.3 / 1023) / .138)
 
 #ifndef VOLT_SENSE
 #define VOLT_SENSE

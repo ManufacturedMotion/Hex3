@@ -63,6 +63,6 @@ double Mux::readEncoder(uint8_t channel) {
         double radians = (rawAngle * M_PI * 2.0) / 4096.0 - M_PI; // Map to -pi to pi
         return radians;
     }
-    Serial.println("Failed to read encoder");
+    // Serial.printf("Failed to read encoder %d\n", channel                                            );
     return NAN;
 }

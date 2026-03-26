@@ -22,7 +22,7 @@ enum Dimension { X = 0, Y = 1, Z = 2};
 Leg::Leg() {
     _leg_number = 0;
 }
-
+// 2B, 2A, 4B, 6A, 5A, 2B, 6A, 7B
 void Leg::begin(){
     mux.begin();
     axes[0].link(D11, D12, 5, mux);
@@ -39,21 +39,51 @@ void Leg::initializeAxes(uint8_t leg_number) {
     }
 }
 
+void Leg::_trackMotion() {
+    for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
+        axes[j].trackMotion();
+    }
+    if (millis() - _last_pos_update_time > LEG_POSITION_TRACK_INTERVAL_MS) {
+        _last_pos_update_time = millis();
+        _forwardKinematics(axes[0].getCurrentPos(), axes[1].getCurrentPos(), axes[2].getCurrentPos(), _current_pos[X], _current_pos[Y], _current_pos[Z]);
+    }
+        if (millis() - _last_velocity_update_time > LEG_VELOCITY_TRACK_INTERVAL_MS) {
+            uint32_t delta_time = millis() - _last_velocity_update_time;
+            _last_velocity_update_time = millis();
+            for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
+                _last_velocity[j] = _current_velocity[j];
+                double distance_traversed = _current_pos[j] - _last_pos[j];
+                _current_velocity[j] = distance_traversed / (static_cast<double>(delta_time) / 1000.0); //units/s
+                _current_acceleration[j] = (_current_velocity[j] - _last_velocity[j]) / (static_cast<double>(delta_time) / 1000.0); //units/s^
+                _last_pos[j] = _current_pos[j];
+            }
+        }
+}
+
 void Leg::runSpeed() {
     // for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
     //     axes[j].runSpeed();
     // }
     static uint32_t last_print_time = 0;
-    if (millis() - last_print_time > 1000) {
+    if (millis() - last_print_time > 10) {
         last_print_time = millis();
-        Serial.printf("Leg %d positions: Axis0: %f; Axis1: %f; Axis2: %f\n", _leg_number, axes[0].getCurrentPos(), axes[1].getCurrentPos(), axes[2].getCurrentPos());
-        Serial.printf("Leg %d velocities: Axis0: %f; Axis1: %f; Axis2: %f\n", _leg_number, axes[0].getCurrentVelocity(), axes[1].getCurrentVelocity(), axes[2].getCurrentVelocity());
-        Serial.printf("Leg %d accelerations: Axis0: %f; Axis1: %f; Axis2: %f\n", _leg_number, axes[0].getCurrentAcceleration(), axes[1].getCurrentAcceleration(), axes[2].getCurrentAcceleration());
+        // Serial.printf("{\"Axis0\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f, \"torque\": %f}, \"Axis1\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f, \"torque\": %f}, \"Axis2\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f, \"torque\": %f}, \"voltage\": %f}\n", 
+        //     _current_pos[X], _current_velocity[X], _current_acceleration[X], axes[0].getDutyCycle(), axes[0].getEstimatedTorque(),
+        //     _current_pos[Y], _current_velocity[Y], _current_acceleration[Y], axes[1].getDutyCycle(), axes[1].getEstimatedTorque(),
+        //     _current_pos[Z], _current_velocity[Z], _current_acceleration[Z], axes[2].getDutyCycle(), axes[2].getEstimatedTorque(),
+        //     voltage_sensor.filteredRead());    
+        Serial.printf("{\"Axis0\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f, \"torque\": %f}, \"Axis1\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f, \"torque\": %f}, \"Axis2\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f, \"torque\": %f}, \"voltage\": %f}\n", 
+        axes[0].getCurrentPos(), axes[0].getCurrentVelocity(), axes[0].getCurrentAcceleration(), axes[0].getDutyCycle(), axes[1].getEstimatedTorque(),
+            axes[1].getCurrentPos(), axes[1].getCurrentVelocity(), axes[1].getCurrentAcceleration(), axes[1].getDutyCycle(), axes[1].getMOBDisturbanceTorque(),
+            axes[2].getCurrentPos(), axes[2].getCurrentVelocity(), axes[2].getCurrentAcceleration(), axes[2].getDutyCycle(), axes[1].getEstimatedTorque(), 
+            voltage_sensor.filteredRead());    
     }
     for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
-        axes[j].trackMotion();
         axes[j].moveToPos();
+        // axes[j].moveAtVelocity();
+        axes[j].setInputVoltage(voltage_sensor.filteredRead());
     }
+    _trackMotion();
 }
 
 void Leg::stopAxis(uint8_t axis_number) {
@@ -65,8 +95,8 @@ void Leg::setAxisTargetPos(uint8_t axis_number, double pos) {
     axes[axis_number].setTargetPos(pos);
 }
 
-void Leg::setAxisPIDConstants(uint8_t axis_number, double Kp, double Ki, double Kd) {
-    axes[axis_number].setPIDConstants(Kp, Ki, Kd);
+void Leg::setAxisControlConstants(uint8_t axis_number, double tuning_voltage, double Kp_pos, double Kd_pos, double Kp_vel, double Ki_vel, double Kv_ff) {
+    axes[axis_number].setControlConstants(tuning_voltage, Kp_pos, Kd_pos, Kp_vel, Ki_vel, Kv_ff);
 }
 
 void Leg::setAxisDutyCycle(uint8_t axis_number, bool dir, float duty_cycle) {
@@ -78,6 +108,14 @@ _Bool Leg::toePressed(){
     if (analogRead(TOE_PIN) < toe_threshold)
         is_pressed = true;
     return is_pressed;
+}
+
+_Bool Leg::_forwardKinematics(double theta0, double theta1, double theta2, double& x, double& y, double& z) {
+    double planar_distance = _length1 * cos(theta1) + _length2 * cos(theta1 + theta2) + _length0;
+    x = planar_distance * sin(theta0);
+    y = planar_distance * cos(theta0);
+    z = -_length1 * sin(theta1) - _length2 * sin(theta1 + theta2);
+    return true;
 }
 
 _Bool Leg::_inverseKinematics(double x, double y, double z) {
@@ -108,24 +146,49 @@ _Bool Leg::_inverseKinematics(double x, double y, double z) {
 
     potential_results[2] = atan2(sqrt(1 - (theta2_tool*theta2_tool)), theta2_tool);
     
-    double theta1_tool0 = atan2(z, y_virtual_planar);
-    double theta1_tool1 = atan2(_length2 * sin(potential_results[2]), _length1 + _length2 * cos(potential_results[2]));
-    potential_results[1] = theta1_tool0 - theta1_tool1;
-
+    // if (z < 0) {
+    //     potential_results[2] = -potential_results[2];
+    //     double theta1_tool1 = atan2(_length2 * sin(potential_results[2]), _length1 + _length2 * cos(potential_results[2]));
+    //     double theta1_tool0 = atan2(z, y_virtual_planar);
+    //     potential_results[1] = theta1_tool0 + theta1_tool1;
+    // }
+    // else {
+        double theta1_tool0 = atan2(z, y_virtual_planar);
+        double theta1_tool1 = atan2(_length2 * sin(potential_results[2]), _length1 + _length2 * cos(potential_results[2]));
+        potential_results[1] = theta1_tool0 - theta1_tool1;
+    // }
+    if (z < 0) {
+        potential_results[2] = -potential_results[2];
+        potential_results[1] = theta1_tool0 + theta1_tool1;
+    }
+    
     for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
         if (potential_results[i] != potential_results[i]) { //Check for NaN
             // Serial.println(i);
             // Serial.println(potential_results[i]);
             return false;
-        }
-    }
+        }   
+        #ifdef LEG_DEBUG
 
+            
+            if (potential_results[i] < min_pos[_leg_number][i] || potential_results[i] > max_pos[_leg_number][i]) {
+                #ifdef LEG_DEBUG
+                    Serial.printf("Potential result %d: %f is ", i, potential_results[i]);
+                    Serial.println("OUT OF BOUNDS");
+                #endif
+            }
+            else {
+                _next_angles[i] = potential_results[i];
+            }
+        #endif
+    }
+    
     // ThreeByOne resulting_pos = forwardKinematics(potential_results[0], potential_results[1], potential_results[2]);
     // Serial.printf("Result\n  x: %f; y: %f; z: %f\n", resulting_pos.values[0], resulting_pos.values[1], resulting_pos.values[2]);
 
     // Serial.printf("Result\n  angle0: %f; angle1: %f; angle2: %f\n", potential_results[0], potential_results[1], potential_results[2]);
     for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
-        _next_angles[i] = potential_results[i];
+        
     }
     return true;
 }
@@ -135,6 +198,10 @@ _Bool Leg::_checkSafeCoords(double x, double y, double z) {
     //  return false;
     
     return true;
+}
+
+_Bool Leg::rapidMove(ThreeByOne target_pos) {
+    return rapidMove(target_pos.values[0], target_pos.values[1], target_pos.values[2]);
 }
 
 _Bool Leg::rapidMove(double x,  double y, double z) {
@@ -149,19 +216,87 @@ _Bool Leg::rapidMove(double x,  double y, double z) {
 }
 
 uint8_t Leg::linearMovePerform() {
-    double move_progress = (float)(millis() - _move_start_time) / ((float) _move_time);
-    if (move_progress <= 1.0) {
-        // Serial.printf("Move start time: %d, _move_time %d\n", millis() - _move_start_time, _move_time);
-        double next_x = move_progress * (_end_cartesian[0] - _start_cartesian[0]) + _start_cartesian[0];
-        double next_y = move_progress * (_end_cartesian[1] - _start_cartesian[1]) + _start_cartesian[1];
-        double next_z = move_progress * (_end_cartesian[2] - _start_cartesian[2]) + _start_cartesian[2];
-        _moving_flag = true;
-        return rapidMove(next_x, next_y, next_z);
-    }
-    else {
-        _moving_flag = false;
+    uint32_t delta = millis() - _last_linear_move_time;
+    if (delta >= LINEAR_MOVE_INTERVAL_MS) {
+        _last_linear_move_time = millis();
+        if (_move_stage == move_stage::ACCELERATING || _move_stage == move_stage::CRUISING || _move_stage == move_stage::DECELERATING) {
+            double move_progress;
+            switch(_move_stage) {
+                case ACCELERATING:
+                    move_progress = (float)(millis() - _move_start_time) / ((float) _accel_time);
+                    break;
+                case CRUISING:
+                    move_progress = (float)(millis() - _move_start_time - _accel_time) / ((float) (_move_time - 2 * _accel_time));
+                    break;
+                case DECELERATING:
+                    move_progress = (float)(millis() - _move_start_time - _move_time + _accel_time) / ((float) _accel_time);
+                    break;
+                default:
+                    move_progress = 0.0;
+                    break;
+            }
+            if (move_progress <= 1.0) {
+                // Serial.printf("Move start time: %d, _move_time %d\n", millis() - _move_start_time, _move_time);
+                switch(_move_stage) {
+                    case ACCELERATING:
+                        _last_speed = move_progress * _target_speed;
+                        break;
+                    case CRUISING:
+                        _last_speed = _target_speed;
+                        break;
+                    case DECELERATING:
+                        _last_speed = (1.0 - move_progress) * _target_speed;
+                        break;
+                    default:
+                        _last_speed = 0.0;
+                        break;
+                }
+                ThreeByOne next_pos = _direction_vector * _last_speed * (static_cast<double>(delta) / 1000.0) + ThreeByOne(_current_cartesian); 
+                // Serial.printf("Moving to %f, %f, %f; delta: %d; current_speed: %f\n", next_pos.values[0], next_pos.values[1], next_pos.values[2], delta, _last_speed);
+                _moving_flag = true;
+                for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
+                    _current_angles[i] = axes[i].getCurrentPos();
+                    _current_velocities[i] = axes[i].getCurrentVelocity(); 
+                }
+                rapidMove(next_pos); //updates _next_angles
+                for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
+                    double next_velocity = (_next_angles[i] - _current_angles[i]) / (static_cast<double>(delta) / 1000.0);
+                    double next_acceleration = (next_velocity - _current_velocities[i]) / (static_cast<double>(delta) / 1000.0);
+                    axes[i].setFeedforwardVelocity(next_velocity); //rad/s
+                }
+            }
+            else {
+                
+                switch(_move_stage) {
+                    case ACCELERATING:
+                        _move_stage = CRUISING;
+                        break;
+                    case CRUISING:
+                        _move_stage = DECELERATING;
+                        break;
+                    case DECELERATING:
+                        for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
+                            axes[i].setFeedforwardVelocity(0.0);
+                        }
+                        
+                        _move_stage = STOPPED;
+                        break;
+                    default:
+                        break;
+                }
+                if (_moving_flag && _move_stage == STOPPED) {
+                    rapidMove(_end_cartesian[0], _end_cartesian[1], _end_cartesian[2]);
+                }
+            }
+            return 1;
+        }
     }
     return 0;
+}
+
+void Leg::setAxisTargetVelocity(uint8_t axis_number, double target_velocity) {
+    axes[axis_number].setTargetVelocity(target_velocity);
+    Serial.println("Set target velocity for axis " + String(axis_number) + ": " + String(target_velocity));
 }
 
 void Leg::wait(uint32_t time_ms) {
@@ -219,8 +354,30 @@ _Bool Leg::linearMoveSetup(double x,  double y, double z, double target_speed, _
     double x_dist = _start_cartesian[0] - _end_cartesian[0];
     double y_dist = _start_cartesian[1] - _end_cartesian[1];
     double z_dist = _start_cartesian[2] - _end_cartesian[2];
-    _move_time = (sqrt(x_dist*x_dist + y_dist*y_dist + z_dist*z_dist) / speed) * 1000; 
-    // Serial.printf("_end_cartesian: x:%f, y:%f, z:%f\n", _end_cartesian[0], _end_cartesian[1], _end_cartesian[2]);
+    double total_dist = sqrt(x_dist*x_dist + y_dist*y_dist + z_dist*z_dist);
+    double accel_time_s = speed / MAX_LINEAR_ACCELERATION;
+    double accel_distance = 0.5 * MAX_LINEAR_ACCELERATION * accel_time_s * accel_time_s;
+    double move_time_s;
+    if (total_dist < 2.0 * accel_distance) {
+        accel_distance = total_dist / 2.0;
+        accel_time_s = sqrt(2.0 * accel_distance / MAX_LINEAR_ACCELERATION);
+        move_time_s = 2 * accel_time_s;
+        _target_speed = accel_time_s * MAX_LINEAR_ACCELERATION; //mm/s
+    }
+    else {
+        move_time_s = 
+            ((total_dist - (2 * accel_distance)) / speed // Constant speed time
+            + (2 * speed) / MAX_LINEAR_ACCELERATION); // Accel/decel time
+        _target_speed = speed;
+    }
+    _last_speed = 0.0;
+    _move_stage = move_stage::ACCELERATING;
+    _accel_time = static_cast<uint32_t>(accel_time_s * 1000.0);
+    _move_time = static_cast<uint32_t>(move_time_s * 1000.0);
+
+    _direction_vector = ThreeByOne(_end_cartesian[0] - _start_cartesian[0], _end_cartesian[1] - _start_cartesian[1], _end_cartesian[2] - _start_cartesian[2]).unit_vector();
+    Serial.printf("Linear move setup: distance: %f, target speed: %f, accel time: %d ms, total move time: %d ms; accel distance: %f\n", total_dist, _target_speed, _accel_time, _move_time, accel_distance);
+     
     return retval;
 }
 
