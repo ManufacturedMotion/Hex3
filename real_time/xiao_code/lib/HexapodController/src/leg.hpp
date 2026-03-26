@@ -41,9 +41,10 @@
 			void setAxisDutyCycle(uint8_t axis_number, bool dir, float duty_cycle);
 			void setAxisTargetPos(uint8_t axis_number, double pos);
 			void stopAxis(uint8_t axis_number);
-			void setAxisControlConstants(uint8_t axis_number, double Kp, double Ki, double Kd, double Kv_ff, double Ka_ff);
+			void setAxisControlConstants(uint8_t axis_number, double tuning_voltage, double Kp_pos, double Kd_pos, double Kp_vel, double Ki_vel, double Kv_ff);
 			_Bool rapidMove(ThreeByOne target_pos);
-			VoltageSensor voltage_sensor;
+			VoltageSensor voltage_sensor = VoltageSensor();
+			void setAxisTargetVelocity(uint8_t axis_number, double target_velocity);
 
 		private:
 			uint8_t _leg_number;

@@ -4,7 +4,7 @@
 #include <ArduinoJson.h>
 
 #define VSENSE_PIN D1 
-#define VSENSE_FACTOR (.138 * (3.3 / 1023))
+#define VSENSE_FACTOR ((3.3 / 1023) / .138)
 
 #ifndef VOLT_SENSE
 #define VOLT_SENSE

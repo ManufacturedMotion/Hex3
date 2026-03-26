@@ -38,9 +38,9 @@ void setup() {
   leg.begin();
 
   leg.initializeAxes(LEG_NUMBER);
-  leg.setAxisControlConstants(0, 100.0, 00.0, 0.0, 0.5, .01);
-  leg.setAxisControlConstants(1, 100.0, 00.0, 0.0, 0.5, .01);
-  leg.setAxisControlConstants(2, 100.0, 00.0, 0.0, 0.5, .01);
+  leg.setAxisControlConstants(0, 16.9, 20.0, 0.02, 3.0, 2.500, 1.0);
+  leg.setAxisControlConstants(1, 16.9, 20.0, 0.02, 3.0, 2.500, 1.0);
+  leg.setAxisControlConstants(2, 16.9, 20.0, 0.02, 3.0, 2.500, 1.0);
   leg.rapidMove(150.0, 150.0, -200.0);
 
   Wire1.begin(INPUT_I2C_ADDRESS);
@@ -109,9 +109,10 @@ void loop() {
           leg.rapidMove(x, y, z);
           break;
         case 2: // set positions directly
-          leg.setAxisTargetPos(0, x);
-          leg.setAxisTargetPos(1, y);
-          leg.setAxisTargetPos(2, z);
+          Serial.println("Setting positions directly (no PID control)");
+          leg.setAxisTargetVelocity(0, x);
+          leg.setAxisTargetVelocity(1, y);
+          leg.setAxisTargetVelocity(2, z);
           break;
       }
     }

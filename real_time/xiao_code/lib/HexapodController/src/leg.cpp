@@ -22,7 +22,7 @@ enum Dimension { X = 0, Y = 1, Z = 2};
 Leg::Leg() {
     _leg_number = 0;
 }
-
+// 2B, 2A, 4B, 6A, 5A, 2B, 6A, 7B
 void Leg::begin(){
     mux.begin();
     axes[0].link(D11, D12, 5, mux);
@@ -67,14 +67,21 @@ void Leg::runSpeed() {
     static uint32_t last_print_time = 0;
     if (millis() - last_print_time > 10) {
         last_print_time = millis();
-        Serial.printf("{\"Axis0\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f}, \"Axis1\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f}, \"Axis2\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f}, \"voltage\": %f}\n", 
-            _current_pos[X], _current_velocity[X], _current_acceleration[X], axes[0].getDutyCycle(),
-            _current_pos[Y], _current_velocity[Y], _current_acceleration[Y], axes[1].getDutyCycle(),
-            _current_pos[Z], _current_velocity[Z], _current_acceleration[Z], axes[2].getDutyCycle(),
-            voltage_sensor.filteredRead());        
+        // Serial.printf("{\"Axis0\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f, \"torque\": %f}, \"Axis1\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f, \"torque\": %f}, \"Axis2\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f, \"torque\": %f}, \"voltage\": %f}\n", 
+        //     _current_pos[X], _current_velocity[X], _current_acceleration[X], axes[0].getDutyCycle(), axes[0].getEstimatedTorque(),
+        //     _current_pos[Y], _current_velocity[Y], _current_acceleration[Y], axes[1].getDutyCycle(), axes[1].getEstimatedTorque(),
+        //     _current_pos[Z], _current_velocity[Z], _current_acceleration[Z], axes[2].getDutyCycle(), axes[2].getEstimatedTorque(),
+        //     voltage_sensor.filteredRead());    
+        Serial.printf("{\"Axis0\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f, \"torque\": %f}, \"Axis1\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f, \"torque\": %f}, \"Axis2\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f, \"torque\": %f}, \"voltage\": %f}\n", 
+        axes[0].getCurrentPos(), axes[0].getCurrentVelocity(), axes[0].getCurrentAcceleration(), axes[0].getDutyCycle(), axes[1].getEstimatedTorque(),
+            axes[1].getCurrentPos(), axes[1].getCurrentVelocity(), axes[1].getCurrentAcceleration(), axes[1].getDutyCycle(), axes[1].getMOBDisturbanceTorque(),
+            axes[2].getCurrentPos(), axes[2].getCurrentVelocity(), axes[2].getCurrentAcceleration(), axes[2].getDutyCycle(), axes[1].getEstimatedTorque(), 
+            voltage_sensor.filteredRead());    
     }
     for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
         axes[j].moveToPos();
+        // axes[j].moveAtVelocity();
+        axes[j].setInputVoltage(voltage_sensor.filteredRead());
     }
     _trackMotion();
 }
@@ -88,8 +95,8 @@ void Leg::setAxisTargetPos(uint8_t axis_number, double pos) {
     axes[axis_number].setTargetPos(pos);
 }
 
-void Leg::setAxisControlConstants(uint8_t axis_number, double Kp, double Ki, double Kd, double Kv_ff, double Ka_ff) {
-    axes[axis_number].setControlConstants(Kp, Ki, Kd, Kv_ff, Ka_ff);
+void Leg::setAxisControlConstants(uint8_t axis_number, double tuning_voltage, double Kp_pos, double Kd_pos, double Kp_vel, double Ki_vel, double Kv_ff) {
+    axes[axis_number].setControlConstants(tuning_voltage, Kp_pos, Kd_pos, Kp_vel, Ki_vel, Kv_ff);
 }
 
 void Leg::setAxisDutyCycle(uint8_t axis_number, bool dir, float duty_cycle) {
@@ -255,16 +262,11 @@ uint8_t Leg::linearMovePerform() {
                 for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
                     double next_velocity = (_next_angles[i] - _current_angles[i]) / (static_cast<double>(delta) / 1000.0);
                     double next_acceleration = (next_velocity - _current_velocities[i]) / (static_cast<double>(delta) / 1000.0);
-                    axes[i].setTargetVelocity(next_velocity); //rad/s
-                    axes[i].setTargetAcceleration(next_acceleration); //rad/s^2
+                    axes[i].setFeedforwardVelocity(next_velocity); //rad/s
                 }
             }
             else {
-                for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
-                    axes[i].setTargetVelocity(0.0); //rad/s
-                    axes[i].setTargetAcceleration(0.0); //rad/s^2
-                    // axes[i].setTargetAcceleration((_current_velocities[i] - ))
-                }
+                
                 switch(_move_stage) {
                     case ACCELERATING:
                         _move_stage = CRUISING;
@@ -273,6 +275,10 @@ uint8_t Leg::linearMovePerform() {
                         _move_stage = DECELERATING;
                         break;
                     case DECELERATING:
+                        for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
+                            axes[i].setFeedforwardVelocity(0.0);
+                        }
+                        
                         _move_stage = STOPPED;
                         break;
                     default:
@@ -286,6 +292,11 @@ uint8_t Leg::linearMovePerform() {
         }
     }
     return 0;
+}
+
+void Leg::setAxisTargetVelocity(uint8_t axis_number, double target_velocity) {
+    axes[axis_number].setTargetVelocity(target_velocity);
+    Serial.println("Set target velocity for axis " + String(axis_number) + ": " + String(target_velocity));
 }
 
 void Leg::wait(uint32_t time_ms) {

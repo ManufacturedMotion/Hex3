@@ -18,7 +18,7 @@ double VoltageSensor::directRead() {
 }
 
 double VoltageSensor::filteredRead() {
-    if (millis() - _last_read_time < 1000) {
+    if (millis() - _last_read_time < 10) {
         return _voltage; // Return last value if less than 1s since last read
     }
     _last_read_time = millis();
