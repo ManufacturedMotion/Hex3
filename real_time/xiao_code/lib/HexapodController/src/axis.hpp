@@ -6,9 +6,9 @@
 
 #ifndef HEX3_AXIS
 #define HEX3_AXIS
-    #define AXIS_POSITION_TRACK_INTERVAL_MS 1
+    #define AXIS_POSITION_TRACK_INTERVAL_MS 3
     #define AXIS_POSITION_TOLERANCE 0.001 //rads
-    #define AXIS_VELOCITY_TRACK_INTERVAL_MS 1
+    #define AXIS_VELOCITY_TRACK_INTERVAL_MS 3
     #define MOMENTUM_MONITOR_INTERVAL_MS 5
     #define DISTURBANCE_MONITOR_INTERVAL_MS 10
 
@@ -17,8 +17,6 @@
     //S2A: 18 2; S2B: 17 3; ch 6 (?)
     //S3: 16 15;            ch 7 (?)
 
-    //TODO - pwm tuning
-    //I am treating motor as 'joint'. so S2 has both motors, hence 4 pins. figure it is better because S2 only has one encoder
     class Axis {
         public:
             Axis();
@@ -27,45 +25,42 @@
             void stopAxis();
             void initializePositionLimits(float min_pos, float max_pos);
             uint8_t moveToPos();
-            uint8_t moveToPos(float pos);
-            uint8_t moveToPosAtSpeed(float pos, float target_speed);
+            uint8_t moveToPos(float pos); // rewrite
+            uint8_t moveToPosAtSpeed(float pos, float target_speed); // rewrite
 			_Bool setMaxPos(float max_pos);
 			_Bool setMinPos(float min_pos);
 			float getCurrentPos();
 			_Bool setMapping(float offset, float map_mult, _Bool reverse_axis);
 			_Bool setMaxSpeed(float max_speed);
 			float getMaxSpeed();
-            float runSpeed();
 			float getMaxPos();
 			float getMinPos();
-			void detach();
-            void updatePos();
-            void setSpeed(float speed);
-            uint8_t setDutyCycle(bool dir, float duty_cycle);
             uint8_t setTargetPos(float pos);
-            uint8_t setTargetVelocity(float velocity);
-            uint8_t setTargetAcceleration(float acceleration);
             void trackMotion();
             float getCurrentVelocity();
             float getCurrentAcceleration();
             void allowMotion(bool allowed);
-            void setControlConstants(float tuning_voltage, float Kp_pos, float Kd_pos, float Kp_vel, float Ki_vel, float Kv_ff);
+            void setControlConstants(float Kp_pos, float Kd_pos, float Kp_vel, float Ki_vel, float Kv_ff);
             bool targetPosReached();
             float getDutyCycle();
             float getCorrectedDutyCycle();
             float getEstimatedTorque();
-            uint8_t moveAtVelocity();
             uint8_t setFeedforwardVelocity(float velocity);
+
+            // Experimental features for disturbance monitoring and compensation, not fully implemented yet
             void momentumMonitor();
             void disturanceMonitor();
             void setInputVoltage(float voltage);
             float getInputVoltage();
-            
             float getMOBDisturbanceTorque();
 
         private:
             void _updateMotorCurrentEstimate();
             float _torqueToDutyCycle(float torque);
+            uint8_t _setDutyCycle(bool dir, float duty_cycle);
+            uint8_t _setTargetVelocity(float velocity);
+            uint8_t _moveAtVelocity();
+            float _getEstimatedFriction();
 
             bool _allowed_to_move = true;
             uint8_t _pin_a = 0;
@@ -73,7 +68,6 @@
             uint8_t _pin_c = 0;
             uint8_t _pin_d = 0;
             uint8_t _encoder_ch = 0;
-            float _tuning_voltage;
             float _input_voltage = -1.0; //default to impossible number to indicate not set
             double _Kp_pos;
             double _Ki_pos;
@@ -82,15 +76,12 @@
             double _Ki_vel;
             double _Kd_vel;
             double _Kv_ff = 0.0; //0.0 unless otherwise specified
-            // float _Ka_ff = 0.0; //0.0 unless otherwise specified
             _Bool _4_pin = false;
-            //_Bool _need_to_move = false;
             double _target_pos = NAN;
             double _target_velocity = 0.0;
             double _target_acceleration = 0.0;
             void _initializeAxis(); 
             Mux* _mux;
-            const float POS_TOLERANCE = .1; //rad //TODO - lower me once encoder mounted
             float _max_speed = 10000;      //rad/s
             float _speed = 0.0;    //rad/s //TODO - fixme
 			float _max_pos;        //rad
@@ -120,8 +111,8 @@
             double _vel_control = 0.0;
             float _duty_cycle = 0;
             bool _dir = false;
-            float _back_EMF_constant = 5.0; // rad /V //1.0 / 17.66819; // 3978.876 RPM / V / 56.3 * 4.0, Rough estimate based on motor specs and gear ratio
-            float _torque_constant = _back_EMF_constant;//8.27 / ((1.0 / _back_EMF_constant) * (.10472)); // Nm/A, derived from stall torque and stall current, adjusted for gear ratio
+            float _back_EMF_constant = 5.0; //V/(rad/s), rough estimate based on motor specs and gear ratio
+            float _torque_constant = _back_EMF_constant; 
             float _resistance = 7.5; // Ohms, rough estimate based on motor specs
             float _estimated_current = 0.0; // Amps
             float _estimated_torque = 0.0; //Nm
@@ -139,6 +130,8 @@
             float _momentum_monitor_gain = 20.0; //tuning parameter for momentum observer, higher means more aggressive disturbance compensation but also more noise sensitivity
             float _disturbance_monitor_gain = 0.001; //tuning parameter for disturbance observer, higher means more aggressive disturbance compensation but also more noise sensitivity
             float _momentum_hat = 0.0; //internal variable for momentum observer
+
+            float _friction_constant = 1.2; // Nm assuming constant friction for now
         };
 
 #endif
