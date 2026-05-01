@@ -9,7 +9,7 @@
 #ifdef ZACK
 	#define STEP_THRESHOLD 40 
 	#define FIFO_IDLE_THRESHOLD 100
-    #define ZERO_POINTS {{-0.378893, -1.432738, -2.259554}, {0.55292, 2.408350, -1.262466}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}}
+    #define ZERO_POINTS {{-0.378893, -1.432738, -2.259554}, {-2.6953, 2.388350, -1.262466}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}}
     #define MIN_POS {{-M_PI / 3.0, -M_PI / 2.0, -M_PI / 2.0}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}}
     #define MAX_POS {{M_PI / 3.0, M_PI / 2.0, M_PI / 2.0}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}}
     #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
