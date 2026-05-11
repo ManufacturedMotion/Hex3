@@ -383,8 +383,7 @@ void Axis::momentumMonitor() {
 /**
  * @brief Get disturbance torque estimate from momentum observer
  *
- * Returns the current estimate of external disturbance torque. Only valid for
- * encoder channel 6 (momentum monitor is disabled for other channels).
+ * Returns the current estimate of external disturbance torque. 
  * Useful for detecting collisions or external forces applied to the joint.
  *
  * @return Disturbance torque estimate in Nm
@@ -567,7 +566,7 @@ uint8_t Axis::_moveAtVelocity() {
     }
     _pid_vel->Compute();
 
-    float control = _torqueToDutyCycle(_vel_control + _getEstimatedFriction());
+    float control = _torqueToDutyCycle(_vel_control + _getEstimatedFriction() * (_vel_control >= 0 ? 1.0 : -1.0));
                     
     float duty_cycle = constrain(control, -100.0, 100.0);
     _setDutyCycle(duty_cycle >= 0.0, fabs(duty_cycle));

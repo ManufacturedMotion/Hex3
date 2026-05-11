@@ -51,7 +51,6 @@ void Leg::begin(){
     axes[1].link(D11, D12, D15, D16, 6, mux);
     axes[2].link(D17, D18, 7, mux);
     pinMode(TOE_PIN, INPUT); 
-    Serial.print("6");
 }
 
 /**

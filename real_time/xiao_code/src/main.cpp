@@ -17,10 +17,13 @@ void setup() {
   leg.begin();
 
   leg.initializeAxes(LEG_NUMBER);
-  leg.setAxisControlConstants(0, 20.0, 0.02, 3.0, 2.500, 1.0);
-  leg.setAxisControlConstants(1, 20.0, 0.02, 3.0, 2.500, 1.0);
-  leg.setAxisControlConstants(2, 20.0, 0.02, 3.0, 2.500, 1.0);
-  leg.rapidMove(150.0, 150.0, -200.0);
+  leg.setAxisControlConstants(0, 20.0, 0.015, 3.0, 2.500, 0.4);
+  leg.setAxisControlConstants(1, 20.0, 0.015, 3.0, 2.500, 0.4);
+  leg.setAxisControlConstants(2, 20.0, 0.015, 3.0, 2.500, 0.4);
+  leg.setAxisTargetPos(0, 0.00);
+  leg.setAxisTargetPos(1, 0.00);
+  leg.setAxisTargetPos(2, 0.00);
+  // leg.rapidMove(150.0, 150.0, -200.0);
 }
 
 void loop() {
@@ -48,7 +51,7 @@ void loop() {
       Serial.println(receivedCommand);
     } else {
       double x = 0.0, y = 0.0, z = 0.0, speed = 0.0;
-      uint8_t move_type = 0;
+      uint8_t move_type = 4; // default to invalid move type to trigger error if not set
       if (doc.containsKey("T")) move_type = doc["T"].as<int>();
       else if (doc.containsKey("t")) move_type = doc["t"].as<int>();
       if (doc.containsKey("X")) x = doc["X"].as<double>();
@@ -72,10 +75,12 @@ void loop() {
           leg.rapidMove(x, y, z);
           break;
         case 2: // set positions directly
-          Serial.println("Setting positions directly (no PID control)");
           leg.setAxisTargetPos(0, x);
           leg.setAxisTargetPos(1, y);
           leg.setAxisTargetPos(2, z);
+          break;
+        default:
+          Serial.println("Invalid move type");
           break;
       }
     }
