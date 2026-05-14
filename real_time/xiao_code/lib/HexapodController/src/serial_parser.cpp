@@ -172,11 +172,11 @@ void SerialParser::performMovement(String movement) {
             valid_MTPS = false;
         }
     }
-    else if (movement == "TUNE") {
+    else if (movement == "SAM") { //single axis move
         _msg = "";
         if ((_tune_leg >= 0 && _tune_leg < NUM_LEGS) && (_tune_axis >= 0 && _tune_axis < NUM_AXES_PER_LEG)) {
             #if LOG_LEVEL >= BASIC_DEBUG
-                Serial.println("TUNE move parsing success; moving Leg: " + String (_tune_leg) + ", Axis: " + String (_tune_axis) + "to position " + String (_tune_pos) + "\n");
+                Serial.println("SAM move parsing success; moving Leg: " + String (_tune_leg) + ", Axis: " + String (_tune_axis) + "to position " + String (_tune_pos) + "\n");
             #endif
             _Hexapod.moveLegAxisToPos(_tune_leg, _tune_axis, _tune_pos);
         }
@@ -247,9 +247,9 @@ void SerialParser::updateVariables(const String &command_str) {
             _movement_time = kv.value().as<uint16_t>(); 
         }
         else if ((key.indexOf('S') != -1) && (key.indexOf('L') != -1)) {
-            if (movement_sel == "TUNE") {
+            if (movement_sel == "SAM") {
                 if (json_command.size() != 2) {
-                    Serial.println("ERROR: TUNE command only allows one position specification.\n");
+                    Serial.println("ERROR: SAM command only allows one position specification.\n");
                     return;
                 }
                 auto [tune_leg, tune_axis, tune_pos] = parseJsonJoint(key, kv);

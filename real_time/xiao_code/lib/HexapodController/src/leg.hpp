@@ -11,6 +11,8 @@
 #ifndef HEXA_LEG
 #define HEXA_LEG
 
+	class Can;
+
 	#define NUM_AXES_PER_LEG 3
 	#define LINEAR_MOVE_INTERVAL_MS 6
 	#define LEG_POSITION_TRACK_INTERVAL_MS 6
@@ -23,6 +25,7 @@
 	class Leg {
 		public:
 			Leg();
+			Can* can;
 			void initializeAxes(uint8_t leg_number);
 			double current_angles[NUM_AXES_PER_LEG];
 			_Bool rapidMove(double x,  double y, double z);
