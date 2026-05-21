@@ -45,7 +45,6 @@ Leg::Leg() {
  * Also enables analog input for toe pressure sensor
  */
 void Leg::begin(){
-    Serial.print("1");
     mux.begin();
     axes[0].link(D8, D10, 5, mux);
     axes[1].link(D11, D12, D15, D16, 6, mux);
@@ -125,11 +124,23 @@ void Leg::runSpeed() {
     // Log telemetry every 10ms
     if (millis() - last_print_time > 10) {
         last_print_time = millis();
-        Serial.printf("{\"Axis0\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f, \"torque\": %f}, \"Axis1\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f, \"torque\": %f}, \"Axis2\": {\"pos\": %f, \"vel\": %f, \"acc\": %f, \"duty\": %f, \"torque\": %f}, \"voltage\": %f}\n", 
-        axes[0].getCurrentPos(), axes[0].getCurrentVelocity(), axes[0].getCurrentAcceleration(), axes[0].getDutyCycle(), axes[1].getEstimatedTorque(),
-            axes[1].getCurrentPos(), axes[1].getCurrentVelocity(), axes[1].getCurrentAcceleration(), axes[1].getDutyCycle(), axes[1].getMOBDisturbanceTorque(),
-            axes[2].getCurrentPos(), axes[2].getCurrentVelocity(), axes[2].getCurrentAcceleration(), axes[2].getDutyCycle(), axes[1].getEstimatedTorque(), 
-            voltage_sensor.filteredRead());    
+#if TELEMETRY_LOGGING_SPACE == TELEMETRY_LOGGING_SPACE_CARTESIAN
+        Serial.printf("{\"Cartesian\": {\"pos\": [%f, %f, %f], \"vel\": [%f, %f, %f], \"acc\": [%f, %f, %f], \"duty\": [%f, %f, %f]}, \"voltage\": %f}\n",
+            _current_pos[X], _current_pos[Y], _current_pos[Z],
+            _current_velocity[X], _current_velocity[Y], _current_velocity[Z],
+            _current_acceleration[X], _current_acceleration[Y], _current_acceleration[Z],
+            axes[0].getDutyCycle(), axes[1].getDutyCycle(), axes[2].getDutyCycle(),
+            voltage_sensor.filteredRead());
+#elif TELEMETRY_LOGGING_SPACE == TELEMETRY_LOGGING_SPACE_JOINT
+        Serial.printf("{\"Joint\": {\"pos\": [%f, %f, %f], \"vel\": [%f, %f, %f], \"acc\": [%f, %f, %f], \"duty\": [%f, %f, %f]}, \"voltage\": %f}\n",
+            axes[0].getCurrentPos(), axes[1].getCurrentPos(), axes[2].getCurrentPos(),
+            axes[0].getCurrentVelocity(), axes[1].getCurrentVelocity(), axes[2].getCurrentVelocity(),
+            axes[0].getCurrentAcceleration(), axes[1].getCurrentAcceleration(), axes[2].getCurrentAcceleration(),
+            axes[0].getDutyCycle(), axes[1].getDutyCycle(), axes[2].getDutyCycle(),
+            voltage_sensor.filteredRead());
+#else
+        Serial.printf("{\"Error\": \"Invalid TELEMETRY_LOGGING_SPACE value\"}\n");
+#endif
     }
     
     // Execute PID control and motor commands for all axes

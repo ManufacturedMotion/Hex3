@@ -17,16 +17,19 @@ void setup() {
   leg.begin();
 
   leg.initializeAxes(LEG_NUMBER);
-  leg.setAxisControlConstants(0, 20.0, 0.015, 3.0, 2.500, 0.4);
-  leg.setAxisControlConstants(1, 20.0, 0.015, 3.0, 2.500, 0.4);
-  leg.setAxisControlConstants(2, 20.0, 0.015, 3.0, 2.500, 0.4);
-  leg.setAxisTargetPos(0, 0.00);
-  leg.setAxisTargetPos(1, 0.00);
-  leg.setAxisTargetPos(2, 0.00);
-  // leg.rapidMove(150.0, 150.0, -200.0);
+  leg.setAxisControlConstants(0, 20.0, 0.015, 3.0, 4.500, 0.0);
+  leg.setAxisControlConstants(1, 20.0, 0.015, 3.0, 4.500, 0.0);
+  leg.setAxisControlConstants(2, 20.0, 0.015, 3.0, 4.500, 0.0);
+  // leg.setAxisTargetPos(0, 0.00);
+  // leg.setAxisTargetPos(1, 0.00);
+  // leg.setAxisTargetPos(2, 0.00);
+  leg.rapidMove(0, 100.0, -240.0);
 }
 
 void loop() {
+
+  static float dir = 1.0;
+
   static double speed = 0.0; //rads per second
   static bool stop = true;
   bool newCommand = false;
@@ -85,7 +88,11 @@ void loop() {
       }
     }
   }
-  leg.linearMovePerform();
+  if (leg.linearMovePerform() == 0) {
+    // leg.linearMoveSetup(150.0 * dir, 112.0, -220.0, 200.0, false);
+    // dir = -dir;
+  }
+  
   leg.runSpeed();
 }
 
