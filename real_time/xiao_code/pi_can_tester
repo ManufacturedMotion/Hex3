@@ -1,0 +1,110 @@
+import can
+import struct
+import random
+import time
+
+# -------------------------
+# CONFIG
+# -------------------------
+NODE_ID = 0x100  # change if needed
+
+CMD_MOVE_MTPS = 0x13
+CMD_MOVE_TUNE = 0x14
+
+bus = can.interface.Bus(channel='can0', bustype='socketcan')
+
+
+# -------------------------
+# HELPERS
+# -------------------------
+def send_frame(arbitration_id, data, label):
+    msg = can.Message(arbitration_id=arbitration_id, data=data, is_extended_id=False)
+
+    print("\n==============================")
+    print(label)
+    print(f"ID: 0x{arbitration_id:X}")
+    print(f"RAW DATA: {[hex(b) for b in data]}")
+
+    bus.send(msg)
+    print("Sent successfully")
+
+
+def make_float_bytes(value):
+    return list(struct.pack('<f', value))
+
+
+# -------------------------
+# MESSAGE GENERATORS
+# -------------------------
+def send_mtips():
+    axis = random.randint(0, 5)
+    pos = random.uniform(-1.5, 1.5)
+
+    data = [
+        CMD_MOVE_MTPS,
+        axis,
+        *make_float_bytes(pos)
+    ]
+
+    send_frame(
+        NODE_ID,
+        data,
+        f"MTPS | axis={axis} | pos={pos:.3f}"
+    )
+
+
+def send_tune():
+    axis = random.randint(0, 5)
+    pos = random.uniform(-2.0, 2.0)
+
+    data = [
+        CMD_MOVE_TUNE,
+        axis,
+        *make_float_bytes(pos)
+    ]
+
+    send_frame(
+        NODE_ID,
+        data,
+        f"TUNE | axis={axis} | pos={pos:.3f}"
+    )
+
+
+def send_invalid():
+    axis = random.randint(0, 5)
+    pos = random.uniform(-1.0, 1.0)
+
+    data = [
+        0x17,  # unsupported command
+        axis,
+        *make_float_bytes(pos)
+    ]
+
+    send_frame(
+        NODE_ID,
+        data,
+        f"INVALID CMD 0x17 | axis={axis} | pos={pos:.3f}"
+    )
+
+
+# -------------------------
+# MAIN TEST LOOP
+# -------------------------
+def main():
+    print("Starting CAN test...")
+
+    for i in range(6):
+        if i % 2 == 0:
+            send_mtips()
+        else:
+            send_tune()
+
+        time.sleep(5)
+
+    send_invalid()
+
+    print("\nTest complete")
+
+
+if __name__ == "__main__":
+    main()
