@@ -311,6 +311,7 @@ void Can::sendLegTelemetry()
     //TODO
     float torques[3] =
     {
+        //TODO either make _estimates_torque public or add a getter in Axis class
         0, //_leg->axes[0].current_torque,
         0, //_leg->axes[1].current_torque,
         0, //_leg->axes[2].current_torque
@@ -414,7 +415,7 @@ void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
 
             queueCommand([this, axis, pos]()
             {
-                _leg->axes[axis].moveToPos(pos);
+                _leg->axes[axis].setTargetPos(pos);
             });
 
             return;

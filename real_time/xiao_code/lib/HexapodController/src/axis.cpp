@@ -560,7 +560,7 @@ uint8_t Axis::_moveAtVelocity() {
     if (isnan(_target_velocity)) {
         return 254; // no target velocity set
     }
-    if (_pid_pos == nullptr) {
+    if (_pid_vel == nullptr) {
         Serial.println("Error: PID not initialized for Axis");
         return 254; // PID not initialized
     }
