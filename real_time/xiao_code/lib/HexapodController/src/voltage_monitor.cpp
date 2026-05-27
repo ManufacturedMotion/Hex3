@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <cmath>
 #include "config.hpp"
-#include <ArduinoJson.h>
 #include "log_levels.hpp"
 
 VoltageSensor::VoltageSensor(uint8_t sense_pin, double voltage_divider_factor) {
