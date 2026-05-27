@@ -6,31 +6,10 @@
 #include "leg.hpp"
 #include <RP2040_PWM.h>
 
-#define INPUT_I2C_ADDRESS 13
 
 
 Leg leg;
 
-// I2C receive buffer and flag. The onReceive callback stores raw bytes here
-// and sets i2cReceived = true. The main loop will copy and parse the buffer.
-static volatile bool i2cReceived = false;
-static volatile size_t i2cLen = 0;
-static char i2cBuf[256];
-
-void receiveI2C(int howMany) {
-  size_t i = 0;
-  // read as many bytes as available up to the buffer size - 1 (for null)
-  while (Wire1.available() && i < (sizeof(i2cBuf) - 1)) {
-    i2cBuf[i++] = (char)Wire1.read();
-    Serial.println(i2cBuf[i-1]);
-    Serial.flush();
-  }
-  i2cBuf[i] = '\0';
-  // if extra bytes remain, consume them (avoid leaving them on the bus)
-  while (Wire1.available()) Wire1.read();
-  i2cLen = i;
-  i2cReceived = true;
-}
 void setup() {
   Serial.begin(115200);
   delay(3000);
@@ -38,33 +17,23 @@ void setup() {
   leg.begin();
 
   leg.initializeAxes(LEG_NUMBER);
-  leg.setAxisControlConstants(0, 16.9, 20.0, 0.02, 3.0, 2.500, 1.0);
-  leg.setAxisControlConstants(1, 16.9, 20.0, 0.02, 3.0, 2.500, 1.0);
-  leg.setAxisControlConstants(2, 16.9, 20.0, 0.02, 3.0, 2.500, 1.0);
-  leg.rapidMove(150.0, 150.0, -200.0);
-
-  Wire1.begin(INPUT_I2C_ADDRESS);
-  Wire1.onReceive(receiveI2C);
-  Serial.print("I2C slave ready at address 0x"); Serial.println(INPUT_I2C_ADDRESS, HEX);
+  leg.setAxisControlConstants(0, 20.0, 0.015, 3.0, 4.500, 0.0);
+  leg.setAxisControlConstants(1, 20.0, 0.015, 3.0, 4.500, 0.0);
+  leg.setAxisControlConstants(2, 20.0, 0.015, 3.0, 4.500, 0.0);
+  // leg.setAxisTargetPos(0, 0.00);
+  // leg.setAxisTargetPos(1, 0.00);
+  // leg.setAxisTargetPos(2, 0.00);
+  leg.rapidMove(0, 100.0, -240.0);
 }
 
 void loop() {
+
+  static float dir = 1.0;
+
   static double speed = 0.0; //rads per second
   static bool stop = true;
   bool newCommand = false;
   String receivedCommand = "";
-  if (i2cReceived) {
-    noInterrupts();
-    size_t len = i2cLen;
-    i2cLen = 0;
-    i2cReceived = false;
-    char localBuf[sizeof(i2cBuf)];
-    memcpy(localBuf, (const void*)i2cBuf, len + 1);
-    interrupts();
-    receivedCommand = String(localBuf);
-    receivedCommand.trim();
-    newCommand = true;
-  }
 
   if (Serial.available()) {
     receivedCommand = Serial.readStringUntil('\n');
@@ -85,7 +54,7 @@ void loop() {
       Serial.println(receivedCommand);
     } else {
       double x = 0.0, y = 0.0, z = 0.0, speed = 0.0;
-      uint8_t move_type = 0;
+      uint8_t move_type = 4; // default to invalid move type to trigger error if not set
       if (doc.containsKey("T")) move_type = doc["T"].as<int>();
       else if (doc.containsKey("t")) move_type = doc["t"].as<int>();
       if (doc.containsKey("X")) x = doc["X"].as<double>();
@@ -109,20 +78,21 @@ void loop() {
           leg.rapidMove(x, y, z);
           break;
         case 2: // set positions directly
-          Serial.println("Setting positions directly (no PID control)");
-          leg.setAxisTargetVelocity(0, x);
-          leg.setAxisTargetVelocity(1, y);
-          leg.setAxisTargetVelocity(2, z);
+          leg.setAxisTargetPos(0, x);
+          leg.setAxisTargetPos(1, y);
+          leg.setAxisTargetPos(2, z);
+          break;
+        default:
+          Serial.println("Invalid move type");
           break;
       }
     }
   }
-  // static uint32_t last_move_time = 0;
-  // if (millis() - last_move_time > 5000) {
-  //   last_move_time = millis();
-  //   leg.rapidMove(0.0, 112.5, -230.0);
-  // } 
-  leg.linearMovePerform();
+  if (leg.linearMovePerform() == 0) {
+    // leg.linearMoveSetup(150.0 * dir, 112.0, -220.0, 200.0, false);
+    // dir = -dir;
+  }
+  
   leg.runSpeed();
 }
 
