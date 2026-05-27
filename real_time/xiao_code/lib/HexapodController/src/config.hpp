@@ -41,7 +41,7 @@
         1.137225 + CALIBRATION_OFFSET_A2                 \
     },                                                  \
     {                                                    \
-        -1.168383 + CALIBRATION_OFFSET_A0,                \
+        -0.396790 + CALIBRATION_OFFSET_A0,                \
         1.323328 + CALIBRATION_OFFSET_A1,                \
         -0.502601 + CALIBRATION_OFFSET_A2                 \
     },                                         \
