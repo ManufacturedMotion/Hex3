@@ -8,8 +8,8 @@
 // Telemetry logging mode: choose Cartesian or joint-space values in serial telemetry output
 #define TELEMETRY_LOGGING_SPACE_CARTESIAN 1
 #define TELEMETRY_LOGGING_SPACE_JOINT     2
-#define TELEMETRY_LOGGING_SPACE           TELEMETRY_LOGGING_SPACE_CARTESIAN
+#define TELEMETRY_LOGGING_SPACE           2
 
-#define ZACK
+#define USER
 
 #endif
