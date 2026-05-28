@@ -1,110 +1,501 @@
-import can
+#!/usr/bin/env python3
+
 import struct
-import random
 import time
+import select
+import sys
+import termios
+import tty
+import can
 
-# -------------------------
+# ============================================
 # CONFIG
-# -------------------------
-NODE_ID = 0x100  # change if needed
+# ============================================
 
-CMD_MOVE_MTPS = 0x13
-CMD_MOVE_TUNE = 0x14
+CAN_INTERFACE = "can0"
+CAN_BITRATE = 500000
 
-bus = can.interface.Bus(channel='can0', bustype='socketcan')
+# ============================================
+# COMMAND IDS
+# ============================================
 
+CMD_LINEAR_MOVE      = 0x10
+CMD_AUTO_TUNE        = 0x11
+CMD_QUADRATIC_MOVE   = 0x12
+CMD_SINGLE_AXIS_MOVE = 0x13
+CMD_RAPID_MOVE       = 0x14
 
-# -------------------------
-# HELPERS
-# -------------------------
-def send_frame(arbitration_id, data, label):
-    msg = can.Message(arbitration_id=arbitration_id, data=data, is_extended_id=False)
+CMD_LEG_STATE        = 0x20
 
-    print("\n==============================")
-    print(label)
-    print(f"ID: 0x{arbitration_id:X}")
-    print(f"RAW DATA: {[hex(b) for b in data]}")
+# ============================================
+# ISO-TP TYPES
+# ============================================
+
+ISO_TP_SINGLE_FRAME      = 0x0
+ISO_TP_FIRST_FRAME       = 0x1
+ISO_TP_CONSECUTIVE_FRAME = 0x2
+ISO_TP_FLOW_CONTROL      = 0x3
+
+# ============================================
+# CAN SETUP
+# ============================================
+
+bus = can.interface.Bus(
+    channel=CAN_INTERFACE,
+    bustype="socketcan"
+)
+
+# ============================================
+# ISO-TP RX STATE
+# ============================================
+
+rx_buffer = bytearray()
+expected_size = 0
+rx_active = False
+expected_seq = 1
+
+# ============================================
+# NONBLOCKING KEY PRESS
+# ============================================
+
+def key_pressed():
+
+    dr, _, _ = select.select([sys.stdin], [], [], 0)
+
+    return dr != []
+
+# ============================================
+# ISO-TP SEND
+# ============================================
+
+def send_isotp(node_id: int, payload: bytes):
+
+    payload_len = len(payload)
+
+    if payload_len > 256:
+        raise ValueError("Payload too large")
+
+    # ----------------------------------------
+    # SINGLE FRAME
+    # ----------------------------------------
+
+    if payload_len <= 7:
+
+        data = bytearray(8)
+
+        data[0] = (
+            (ISO_TP_SINGLE_FRAME << 4) |
+            (payload_len & 0x0F)
+        )
+
+        data[1:1 + payload_len] = payload
+
+        msg = can.Message(
+            arbitration_id=node_id,
+            data=data[:payload_len + 1],
+            is_extended_id=False
+        )
+
+        bus.send(msg)
+
+        print("\nTX SINGLE FRAME")
+        print(f"CAN ID : 0x{node_id:X}")
+        print(f"DATA   : {[hex(x) for x in msg.data]}")
+
+        return
+
+    # ----------------------------------------
+    # FIRST FRAME
+    # ----------------------------------------
+
+    first = bytearray(8)
+
+    first[0] = (
+        (ISO_TP_FIRST_FRAME << 4) |
+        ((payload_len >> 8) & 0x0F)
+    )
+
+    first[1] = payload_len & 0xFF
+
+    first[2:8] = payload[:6]
+
+    msg = can.Message(
+        arbitration_id=node_id,
+        data=first,
+        is_extended_id=False
+    )
 
     bus.send(msg)
-    print("Sent successfully")
 
+    print("\nTX FIRST FRAME")
+    print(f"CAN ID : 0x{node_id:X}")
+    print(f"DATA   : {[hex(x) for x in msg.data]}")
 
-def make_float_bytes(value):
-    return list(struct.pack('<f', value))
+    # ----------------------------------------
+    # CONSECUTIVE FRAMES
+    # ----------------------------------------
 
+    offset = 6
+    seq = 1
 
-# -------------------------
-# MESSAGE GENERATORS
-# -------------------------
-def send_mtips():
-    axis = random.randint(0, 5)
-    pos = random.uniform(-1.5, 1.5)
+    while offset < payload_len:
 
-    data = [
-        CMD_MOVE_MTPS,
-        axis,
-        *make_float_bytes(pos)
-    ]
+        frame = bytearray(8)
 
-    send_frame(
-        NODE_ID,
-        data,
-        f"MTPS | axis={axis} | pos={pos:.3f}"
+        frame[0] = (
+            (ISO_TP_CONSECUTIVE_FRAME << 4) |
+            (seq & 0x0F)
+        )
+
+        remaining = payload_len - offset
+
+        copy_len = min(7, remaining)
+
+        frame[1:1 + copy_len] = payload[offset:offset + copy_len]
+
+        msg = can.Message(
+            arbitration_id=node_id,
+            data=frame[:copy_len + 1],
+            is_extended_id=False
+        )
+
+        bus.send(msg)
+
+        print("\nTX CONSECUTIVE FRAME")
+        print(f"SEQ    : {seq}")
+        print(f"CAN ID : 0x{node_id:X}")
+        print(f"DATA   : {[hex(x) for x in msg.data]}")
+
+        offset += copy_len
+
+        seq += 1
+
+        #
+        # Small pacing delay
+        #
+        time.sleep(0.001)
+
+# ============================================
+# ISO-TP RX
+# ============================================
+
+def process_rx_message(msg):
+
+    global rx_buffer
+    global expected_size
+    global rx_active
+    global expected_seq
+
+    d = msg.data
+
+    if len(d) == 0:
+        return
+
+    pci = (d[0] >> 4) & 0x0F
+
+    # ----------------------------------------
+    # SINGLE FRAME
+    # ----------------------------------------
+
+    if pci == ISO_TP_SINGLE_FRAME:
+
+        payload_len = d[0] & 0x0F
+
+        payload = d[1:1 + payload_len]
+
+        handle_payload(msg.arbitration_id, payload)
+
+    # ----------------------------------------
+    # FIRST FRAME
+    # ----------------------------------------
+
+    elif pci == ISO_TP_FIRST_FRAME:
+
+        expected_size = (
+            ((d[0] & 0x0F) << 8) |
+            d[1]
+        )
+
+        rx_buffer = bytearray(d[2:8])
+
+        rx_active = True
+
+        expected_seq = 1
+
+    # ----------------------------------------
+    # CONSECUTIVE FRAME
+    # ----------------------------------------
+
+    elif pci == ISO_TP_CONSECUTIVE_FRAME:
+
+        if not rx_active:
+            return
+
+        seq = d[0] & 0x0F
+
+        if seq != (expected_seq & 0x0F):
+
+            print("ISO-TP SEQUENCE ERROR")
+
+            rx_active = False
+
+            return
+
+        rx_buffer.extend(d[1:])
+
+        expected_seq += 1
+
+        if len(rx_buffer) >= expected_size:
+
+            payload = rx_buffer[:expected_size]
+
+            handle_payload(
+                msg.arbitration_id,
+                payload
+            )
+
+            rx_active = False
+
+# ============================================
+# PAYLOAD HANDLER
+# ============================================
+
+def handle_payload(arbitration_id, payload):
+
+    if len(payload) == 0:
+        return
+
+    cmd = payload[0]
+
+    # ----------------------------------------
+    # LEG TELEMETRY
+    # ----------------------------------------
+
+    if cmd == CMD_LEG_STATE:
+
+        if len(payload) < 25:
+
+            print("Invalid telemetry payload")
+
+            return
+
+        positions = struct.unpack(
+            "<fff",
+            payload[1:13]
+        )
+
+        torques = struct.unpack(
+            "<fff",
+            payload[13:25]
+        )
+
+        leg_number = arbitration_id - 0x100
+
+        print(
+            f"\nLEG {leg_number} TELEMETRY"
+        )
+
+        print(
+            f"Positions : "
+            f"{positions[0]:8.3f} "
+            f"{positions[1]:8.3f} "
+            f"{positions[2]:8.3f}"
+        )
+
+        print(
+            f"Torques   : "
+            f"{torques[0]:8.3f} "
+            f"{torques[1]:8.3f} "
+            f"{torques[2]:8.3f}"
+        )
+
+# ============================================
+# MONITOR MODE
+# ============================================
+
+def monitor_mode():
+
+    print("\n===================================")
+    print(" MONITOR MODE")
+    print(" Press any key to exit")
+    print("===================================\n")
+
+    #
+    # Put terminal in raw mode
+    #
+    fd = sys.stdin.fileno()
+
+    old_settings = termios.tcgetattr(fd)
+
+    tty.setcbreak(fd)
+
+    try:
+
+        while True:
+
+            #
+            # Exit on key press
+            #
+            if key_pressed():
+
+                sys.stdin.read(1)
+
+                print("\nExiting monitor mode\n")
+
+                break
+
+            #
+            # Receive CAN frames
+            #
+            msg = bus.recv(timeout=0.01)
+
+            if msg is not None:
+
+                process_rx_message(msg)
+
+    finally:
+
+        termios.tcsetattr(
+            fd,
+            termios.TCSADRAIN,
+            old_settings
+        )
+
+# ============================================
+# COMMAND BUILDERS
+# ============================================
+
+def build_single_axis_move():
+
+    axis = int(input("Axis index (0-2): "))
+
+    position = float(
+        input("Target position: ")
     )
 
+    payload = bytearray()
 
-def send_tune():
-    axis = random.randint(0, 5)
-    pos = random.uniform(-2.0, 2.0)
+    payload.append(CMD_SINGLE_AXIS_MOVE)
 
-    data = [
-        CMD_MOVE_TUNE,
-        axis,
-        *make_float_bytes(pos)
-    ]
+    payload.append(axis)
 
-    send_frame(
-        NODE_ID,
-        data,
-        f"TUNE | axis={axis} | pos={pos:.3f}"
+    payload.extend(
+        struct.pack("<f", position)
     )
 
-
-def send_invalid():
-    axis = random.randint(0, 5)
-    pos = random.uniform(-1.0, 1.0)
-
-    data = [
-        0x17,  # unsupported command
-        axis,
-        *make_float_bytes(pos)
-    ]
-
-    send_frame(
-        NODE_ID,
-        data,
-        f"INVALID CMD 0x17 | axis={axis} | pos={pos:.3f}"
+    print("\nCOMMAND:")
+    print(
+        f"CMD_SINGLE_AXIS_MOVE "
+        f"(0x{CMD_SINGLE_AXIS_MOVE:X})"
     )
 
+    print(f"Axis     : {axis}")
 
-# -------------------------
-# MAIN TEST LOOP
-# -------------------------
+    print(f"Position : {position}")
+
+    return payload
+
+# ============================================
+# MAIN MENU
+# ============================================
+
 def main():
-    print("Starting CAN test...")
 
-    for i in range(6):
-        if i % 2 == 0:
-            send_mtips()
-        else:
-            send_tune()
+    print("===================================")
+    print(" HEXAPOD CAN COMMAND TOOL")
+    print("===================================")
 
-        time.sleep(5)
+    leg_input = input(
+        "Select leg/node number "
+        "(or m for monitor): "
+    ).strip().lower()
 
-    send_invalid()
+    # ----------------------------------------
+    # MONITOR MODE
+    # ----------------------------------------
 
-    print("\nTest complete")
+    if leg_input == "m":
 
+        monitor_mode()
+
+        return
+
+    # ----------------------------------------
+    # LEG SELECTION
+    # ----------------------------------------
+
+    leg_number = int(leg_input)
+
+    node_id = 0x100 + leg_number
+
+    print("\nAvailable Commands:")
+
+    print("1 -> Single Axis Move")
+    print("2 -> Linear Move")
+    print("3 -> Auto Tune")
+    print("4 -> Quadratic Move")
+    print("5 -> Rapid Move")
+
+    choice = input("\nSelect command: ")
+
+    payload = None
+
+    # ----------------------------------------
+    # SINGLE AXIS MOVE
+    # ----------------------------------------
+
+    if choice == "1":
+
+        payload = build_single_axis_move()
+
+    # ----------------------------------------
+    # TODO COMMANDS
+    # ----------------------------------------
+
+    elif choice == "2":
+
+        print("TODO: Linear move not implemented")
+
+        return
+
+    elif choice == "3":
+
+        print("TODO: Auto tune not implemented")
+
+        return
+
+    elif choice == "4":
+
+        print("TODO: Quadratic move not implemented")
+
+        return
+
+    elif choice == "5":
+
+        print("TODO: Rapid move not implemented")
+
+        return
+
+    else:
+
+        print("Invalid selection")
+
+        return
+
+    # ----------------------------------------
+    # SEND
+    # ----------------------------------------
+
+    print("\nSending CAN command...")
+
+    send_isotp(node_id, payload)
+
+    print("\nDone")
+
+# ============================================
+# ENTRY
+# ============================================
 
 if __name__ == "__main__":
+
     main()
