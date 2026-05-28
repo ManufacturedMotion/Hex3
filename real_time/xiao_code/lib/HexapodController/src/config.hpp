@@ -26,14 +26,14 @@
 	#define FIFO_IDLE_THRESHOLD 100
     #define ZERO_POINTS {                                    \
     {                                                    \
-        0.428711 + CALIBRATION_OFFSET_A0,                \
+        0.281229 + CALIBRATION_OFFSET_A0,                \
         -2.711151 + CALIBRATION_OFFSET_A1,                \
         -0.037259 + CALIBRATION_OFFSET_A2                 \
     },                                                  \
     {                                                    \
-        0 + CALIBRATION_OFFSET_A0,                \
-        0 + CALIBRATION_OFFSET_A1,                \
-        0 + CALIBRATION_OFFSET_A2                 \
+        0 + CALIBRATION_OFFSET_A0,                       \
+        -2.878246 + CALIBRATION_OFFSET_A1,                \
+        2.622118 + CALIBRATION_OFFSET_A2                 \
     },                                                  \
     {                                                    \
         0.278161 + CALIBRATION_OFFSET_A0,                \
@@ -41,7 +41,7 @@
         1.137225 + CALIBRATION_OFFSET_A2                 \
     },                                                  \
     {                                                    \
-        -0.396790 + CALIBRATION_OFFSET_A0,                \
+        0.089482 + CALIBRATION_OFFSET_A0,                \
         1.323328 + CALIBRATION_OFFSET_A1,                \
         -0.502601 + CALIBRATION_OFFSET_A2                 \
     },                                         \
