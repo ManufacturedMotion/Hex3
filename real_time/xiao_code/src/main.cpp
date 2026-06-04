@@ -3,19 +3,21 @@
 #include <Arduino.h>
 #include <string.h>
 #include "leg.hpp"
+#include "can.hpp"
 #include <RP2040_PWM.h>
 
-
-
 Leg leg;
+void handleCAN();
 
 void setup() {
   Serial.begin(115200);
-  delay(3000);
+  delay(7000);
   Serial.println("Starting...");
   leg.begin();
+  delay(500);
 
   leg.initializeAxes(LEG_NUMBER);
+  leg.can->begin();
   leg.setAxisControlConstants(0, 20.0, 0.015, 3.0, 4.500, 0.0);
   leg.setAxisControlConstants(1, 20.0, 0.015, 3.0, 4.500, 0.0);
   leg.setAxisControlConstants(2, 20.0, 0.015, 3.0, 4.500, 0.0);
@@ -28,63 +30,33 @@ void setup() {
 void loop() {
 
   static float dir = 1.0;
-
-  static double speed = 0.0; //rads per second
-  static bool stop = true;
-  
+  handleCAN();
   if (leg.linearMovePerform() == 0) {
     // leg.linearMoveSetup(150.0 * dir, 112.0, -220.0, 200.0, false);
     // dir = -dir;
   }
-  
   leg.runSpeed();
 }
 
+void handleCAN()
+{
+    if (CAN.available())
+    {
+        CanMsg msg = CAN.read();
 
-// #include <Wire.h>
+        if (leg.can)
+        {
+            leg.can->handleCanMessage(msg);
+        }
+    }
 
-// void receiveI2C() {
-//   char buf[32];
-//   size_t i = 0;
-//   while (Wire1.available() && i < (sizeof(buf) - 1)) {
-//     buf[i++] = (char)Wire1.read();
-//   }
-//   buf[i] = '\0';
-//   Serial.print("Received I2C data: ");
-//   Serial.println(buf);
-//   Wire1.write("Hello from I2C slave!"); // Optionally send a response back
-// }
-
-// void receiveI2C1() {
-//   char buf[32];
-//   size_t i = 0;
-//   while (Wire1.available() && i < (sizeof(buf) - 1)) {
-//     buf[i++] = (char)Wire1.read();
-//   }
-//   buf[i] = '\0';
-//   Serial.print("Received I2C data on Wire: ");
-//   Serial.println(buf);
-//   Wire.write("Hello from I2C slave!"); // Optionally send a response back
-// }
-
-// void receiveI2C(int howMany) {
-//     receiveI2C();
-// }
-
-// void setup() {
-//     Serial.begin(115200);
-//     pinMode(INPUT_PULLUP, 6);
-//     pinMode(INPUT_PULLUP, 7);
-//     Wire1.begin(13);
-//     Wire.begin(14);
-//     Serial.println("I2C Scanner Ready");
-//     Wire1.onRequest(receiveI2C);
-//     Wire.onRequest(receiveI2C1);
-//     Wire.onReceive(receiveI2C);
-//     Wire1.onReceive(receiveI2C);
-// }
-
-// void loop() {
-//     // Nothing to do in the main loop for this simple I2C slave example
-//   delay(500);
-// }
+    if (leg.can)
+    {
+        leg.can->poll();
+        auto fn = leg.can->popPendingCommand();
+        if (fn)
+        {
+            fn();
+        }
+    }
+}

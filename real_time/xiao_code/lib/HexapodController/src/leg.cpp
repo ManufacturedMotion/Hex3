@@ -12,6 +12,7 @@
 #include "leg.hpp"
 #include "axis.hpp"
 #include "config.hpp"
+#include "can.hpp"
 #include <stdint.h>
 #include <stdbool.h>
 #include <math.h>
@@ -35,6 +36,7 @@ enum Dimension { X = 0, Y = 1, Z = 2};
  */
 Leg::Leg() {
     _leg_number = 0;
+    can = nullptr;
 }
 /**
  * @brief Initialize hardware - GPIO, multiplexer, and axis links
@@ -50,6 +52,9 @@ void Leg::begin(){
     axes[1].link(D11, D12, D15, D16, 6, mux);
     axes[2].link(D17, D18, 7, mux);
     pinMode(TOE_PIN, INPUT); 
+    //if (can){
+    //    can->begin();
+    //}
 }
 
 /**
@@ -61,6 +66,9 @@ void Leg::begin(){
  */
 void Leg::initializeAxes(uint8_t leg_number) {
     _leg_number = leg_number;
+    if (can == nullptr) {
+        can = new Can(1, 0, CanBitRate::BR_500k, leg_number, this);
+    }
     for (uint8_t i = 0; i < NUM_AXES_PER_LEG; i++) {
         axes[i].initializePositionLimits(min_pos[_leg_number][i], max_pos[_leg_number][i]);
         axes[i].setMapping(zero_points[_leg_number][i], scale_fact[_leg_number][i], reverse_axis[_leg_number][i]);

@@ -26,7 +26,7 @@
 	#define LEG_VELOCITY_TRACK_INTERVAL_MS 30      ///< Velocity/acceleration tracking interval (ms)
 	#define MAX_LINEAR_ACCELERATION 500.0          ///< Maximum linear acceleration (mm/s^2)
 
-	/// Movement stage enumeration for linear moves with acceleration profiles
+	class Can;
 	enum move_stage {ACCELERATING, CRUISING, DECELERATING, STOPPED, UNINITIALIZED};
 
 	#define TOE_PIN D0  ///< Pin for toe/ground contact sensor
@@ -42,8 +42,7 @@
 		public:
 			/// Constructor - initializes leg number to invalid state
 			Leg();
-			
-			/// Initialize all axes with calibration data for the specified leg
+			Can* can;
 			void initializeAxes(uint8_t leg_number);
 			
 			/// Array storing current target angles for all three axes (radians)
