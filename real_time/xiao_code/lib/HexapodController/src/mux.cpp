@@ -60,9 +60,13 @@ double Mux::readEncoder(uint8_t channel) {
         uint8_t highByte = Wire.read();
         uint8_t lowByte  = Wire.read();
         uint16_t rawAngle = ((highByte & 0x0F) << 8) | lowByte; 
+        if (rawAngle > 4096) {
+            // Serial.printf("Invalid raw angle read: %d\n", rawAngle);
+            return NAN;
+        }
         double radians = (rawAngle * M_PI * 2.0) / 4096.0 - M_PI; // Map to -pi to pi
         return radians;
     }
-    // Serial.printf("Failed to read encoder %d\n", channel                                            );
+    Serial.printf("Failed to read encoder %d\n", channel                                            );
     return NAN;
 }

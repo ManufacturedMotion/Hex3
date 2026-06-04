@@ -1,8 +1,6 @@
 #include <Arduino.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <ArduinoJson.h>
-
 #define VSENSE_PIN D1 
 #define VSENSE_FACTOR ((3.3 / 1023) / .138)
 
