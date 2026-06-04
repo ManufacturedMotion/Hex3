@@ -193,6 +193,9 @@ float Axis::_getCurrentPos() {
         return NAN;
     }  
     float encoder_reading = _mux->readEncoder(_encoder_ch);
+    if (isnan(encoder_reading)) {
+        return NAN;
+    }
     encoder_reading -= _zero_pos;
     if (encoder_reading > M_PI) {
         encoder_reading -= 2.0 * M_PI;

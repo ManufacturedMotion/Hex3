@@ -14,7 +14,32 @@
 	#define STEP_THRESHOLD 40 
 	#define FIFO_IDLE_THRESHOLD 100
     #define REFERENCE_POINTS
-    #define ZERO_POINTS {{.441786 + CALIBRATION_OFFSET_A0, -2.419088 + CALIBRATION_OFFSET_A1, 1.362175 + CALIBRATION_OFFSET_A2}, {-2.239612 + CALIBRATION_OFFSET_A0,-2.822525 + CALIBRATION_OFFSET_A1,0.161068 + CALIBRATION_OFFSET_A2}, {2.534136 + CALIBRATION_OFFSET_A0,-0.633534 + CALIBRATION_OFFSET_A1,2.142971 + CALIBRATION_OFFSET_A2}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}}
+    #define ZERO_POINTS { \
+         {\
+            0.437185 + CALIBRATION_OFFSET_A0,  \
+            -2.419088 + CALIBRATION_OFFSET_A1, \
+            1.362175 + CALIBRATION_OFFSET_A2}, \
+         {\
+            -2.218136 + CALIBRATION_OFFSET_A0, \
+            -2.822525 + CALIBRATION_OFFSET_A1, \
+            0.161068 + CALIBRATION_OFFSET_A2}, \
+         {\
+            -0.932660 + CALIBRATION_OFFSET_A0, \
+            0.365087 + CALIBRATION_OFFSET_A1,  \
+            -2.994330 + CALIBRATION_OFFSET_A2},\
+         {\
+            2.451301 + CALIBRATION_OFFSET_A0,  \
+            0.897379 + CALIBRATION_OFFSET_A1,  \
+            2.142971 + CALIBRATION_OFFSET_A2}, \
+         {\
+            1.911340 + CALIBRATION_OFFSET_A0,  \
+            0.579845 + CALIBRATION_OFFSET_A1,  \
+            0.069029 + CALIBRATION_OFFSET_A2}, \
+         {\
+            0.822214 + CALIBRATION_OFFSET_A0,  \
+            -0.039884 + CALIBRATION_OFFSET_A1, \
+            3.072563 + CALIBRATION_OFFSET_A2}  \
+    }
     #define MIN_POS {{-M_PI / 3.0, -M_PI / 2.0, -M_PI / 2.0}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}}
     #define MAX_POS {{M_PI / 3.0, M_PI / 2.0, M_PI / 2.0}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}}
     #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
