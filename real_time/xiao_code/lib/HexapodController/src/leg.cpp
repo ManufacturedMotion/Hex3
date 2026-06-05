@@ -20,6 +20,7 @@
 #include <Arduino.h>
 #include "log_levels.hpp"
 #include "mux.hpp"
+#include "command_queue.hpp"
 
 // Configuration tables loaded from config.hpp
 double zero_points[NUM_LEGS][NUM_AXES_PER_LEG] = ZERO_POINTS;
@@ -52,9 +53,6 @@ void Leg::begin(){
     axes[1].link(D11, D12, D15, D16, 6, mux);
     axes[2].link(D17, D18, 7, mux);
     pinMode(TOE_PIN, INPUT); 
-    //if (can){
-    //    can->begin();
-    //}
 }
 
 /**
@@ -541,4 +539,53 @@ void Leg::setAxisTargetPos(uint8_t axis_number, double pos) {
 
 void Leg::stopAxis(uint8_t axis_number) {
     axes[axis_number].allowMotion(false);
+}
+
+void Leg::processCommandQueue()
+{
+    /*
+    if (!isReadyForNextCommand()) //TODO - talk to Zack
+    {
+        return;
+    }
+    */
+
+    Command cmd;
+    if (!command_queue.dequeue(cmd))
+    {
+        return;
+    }
+
+    switch (cmd.type)
+    {
+        case CommandType::SingleAxisMove:
+        {
+            axes[cmd.single_axis.axis].setTargetPos(cmd.single_axis.position);
+            break;
+        }
+
+        case CommandType::LinearMove:
+        {
+            // TODO
+            break;
+        }
+
+        case CommandType::QuadraticMove:
+        {
+            // TODO
+            break;
+        }
+
+        case CommandType::RapidMove:
+        {
+            // TODO
+            break;
+        }
+
+        case CommandType::AutoTune:
+        {
+            // TODO
+            break;
+        }
+    }
 }

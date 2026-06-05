@@ -345,43 +345,27 @@ void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
         {
             Serial.println("CAN: Unsupported command received");
             Serial.println(cmd, HEX);
-
             return;
         }
 
         case CMD_LINEAR_MOVE:
         {
             Serial.println("CAN: Linear move command received");
-
-            queueCommand([this]()
-            {
-                //TODO - execute linear move
-            });
-
+            //TODO
             return;
         }
 
         case CMD_AUTO_TUNE:
         {
             Serial.println("CAN: Auto tune command received");
-
-            queueCommand([this]()
-            {
-                //TODO - execute auto tune
-            });
-
+            //TODO
             return;
         }
 
         case CMD_QUADRATIC_MOVE:
         {
             Serial.println("CAN: Quadratic move command received");
-
-            queueCommand([this]()
-            {
-                //TODO - execute quadratic move
-            });
-
+            //TODO
             return;
         }
 
@@ -394,7 +378,6 @@ void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
             }
 
             uint8_t axis = d[1];
-
             if (axis >= NUM_AXES_PER_LEG)
             {
                 Serial.println("CAN: Invalid axis index");
@@ -413,23 +396,18 @@ void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
                 );
             }
 
-            queueCommand([this, axis, pos]()
-            {
-                _leg->axes[axis].setTargetPos(pos);
-            });
-
+            Command command{};
+            command.type = CommandType::SingleAxisMove;
+            command.single_axis.axis = axis;
+            command.single_axis.position = pos;
+            _leg->command_queue.enqueue(command);
             return;
         }
 
         case CMD_RAPID_MOVE:
         {
             Serial.println("CAN: Rapid move command received");
-
-            queueCommand([this]()
-            {
-                //TODO - execute rapid move
-            });
-
+            //TODO
             return;
         }
     }
@@ -457,7 +435,6 @@ void Can::handleCanMessage(const CanMsg& msg)
             if (payload_len > 7)
             {
                 Serial.println("CAN: Invalid single frame length");
-
                 return;
             }
 
@@ -469,26 +446,18 @@ void Can::handleCanMessage(const CanMsg& msg)
         case ISO_TP_FIRST_FRAME:
         {
             resetIsoTp();
-
             _isotp_rx.active = true;
-
             _isotp_rx.last_update = now;
-
             _isotp_rx.expected_size =
                 ((d[0] & 0x0F) << 8) |
                 d[1];
-
             memcpy(_isotp_rx.data, &d[2], 6);
-
             _isotp_rx.current_size = 6;
-
             _isotp_rx.sequence_number = 1;
-
             Serial.printf(
                 "CAN: ISO-TP first frame | expected %d bytes\n",
                 _isotp_rx.expected_size
             );
-
             return;
         }
 
@@ -497,7 +466,6 @@ void Can::handleCanMessage(const CanMsg& msg)
             if (!_isotp_rx.active)
             {
                 Serial.println("CAN: Unexpected consecutive frame");
-
                 return;
             }
 
@@ -506,9 +474,7 @@ void Can::handleCanMessage(const CanMsg& msg)
             if (seq != (_isotp_rx.sequence_number & 0x0F))
             {
                 Serial.println("CAN: ISO-TP sequence mismatch");
-
                 resetIsoTp();
-
                 return;
             }
 
@@ -528,9 +494,7 @@ void Can::handleCanMessage(const CanMsg& msg)
             );
 
             _isotp_rx.current_size += copy_len;
-
             _isotp_rx.sequence_number++;
-
             if (_isotp_rx.current_size >= _isotp_rx.expected_size)
             {
                 Serial.printf(
@@ -542,7 +506,6 @@ void Can::handleCanMessage(const CanMsg& msg)
                     _isotp_rx.data,
                     _isotp_rx.expected_size
                 );
-
                 resetIsoTp();
             }
 
@@ -552,16 +515,13 @@ void Can::handleCanMessage(const CanMsg& msg)
         case ISO_TP_FLOW_CONTROL:
         {
             //TODO - transmit-side flow control support
-
             Serial.println("CAN: Flow control frame received");
-
             return;
         }
 
         default:
         {
             Serial.println("CAN: Unknown ISO-TP frame");
-
             return;
         }
     }

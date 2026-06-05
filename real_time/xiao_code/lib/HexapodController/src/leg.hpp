@@ -12,6 +12,7 @@
 #include "three_by_matrices.hpp"
 #include "mux.hpp"
 #include "voltage_monitor.hpp"
+#include "command_queue.hpp"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -40,32 +41,17 @@
 	 */
 	class Leg {
 		public:
-			/// Constructor - initializes leg number to invalid state
 			Leg();
 			Can* can;
 			void initializeAxes(uint8_t leg_number);
-			
-			/// Array storing current target angles for all three axes (radians)
 			double current_angles[NUM_AXES_PER_LEG];
-			
-			/// Move leg to Cartesian position using inverse kinematics
 			_Bool rapidMove(double x, double y, double z);
-			
-			/// Array of axis controllers (motors) for this leg
 			Axis axes[NUM_AXES_PER_LEG];
-			
-			/// Setup a linear move to a target position with velocity profile
 			_Bool linearMoveSetup(double x, double y, double z, double target_speed, _Bool relative = false);
-			
-			/// Execute one iteration of active linear movement
 			uint8_t linearMovePerform();
-			
-			/// Initialize hardware - pins, multiplexer, and axes
 			void begin();
-			
-			/// Multiplexer for managing multiple servo signals
 			Mux mux;
-			
+			CommandQueue command_queue;
 			/// Main control loop - runs PID, logs telemetry, updates kinematics
 			void runSpeed();
 			void setAxisTargetPos(uint8_t axis_number, double pos);
@@ -73,7 +59,7 @@
 			void setAxisControlConstants(uint8_t axis_number, double Kp_pos, double Kd_pos, double Kp_vel, double Ki_vel, double Kv_ff);
 			_Bool rapidMove(ThreeByOne target_pos);
 			VoltageSensor voltage_sensor = VoltageSensor();
-
+			void processCommandQueue();
 		private:
 			// Physical properties and calibration
 			uint8_t _leg_number;                         ///< Identifier for this leg (0-5)
