@@ -202,7 +202,7 @@ private:
   int sockfd_;
   std::string can_interface_;
   uint32_t node_id_;
-  rclcpp::Subscription<std_msgs::msg::UInt8MultiArray>::SharedPtr command_sub_;
+  rclcpp::Subscription<can::msg::LegCommand>::SharedPtr command_sub_;
 };
 
 int main(int argc, char** argv)
