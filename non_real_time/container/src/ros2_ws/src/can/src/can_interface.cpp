@@ -248,9 +248,10 @@ private:
 
       json config = json::parse(file);
       
-      if (config.contains("leg_groups") && config["leg_groups"].is_object()) {
-        for (auto& [group_key, node_ids] : config["leg_groups"].items()) {
-          int group_id = std::stoi(group_key);
+      if (config.contains("leg_groups") && config["leg_groups"].is_array()) {
+        // Each index in the array maps to a group ID: index 0 -> -1, index 1 -> -2, etc.
+        for (size_t i = 0; i < config["leg_groups"].size(); ++i) {
+          auto& node_ids = config["leg_groups"][i];
           if (node_ids.is_array()) {
             std::vector<uint32_t> nodes;
             for (auto& node_val : node_ids) {
@@ -258,12 +259,13 @@ private:
                 nodes.push_back(static_cast<uint32_t>(node_val));
               }
             }
+            int group_id = -(static_cast<int>(i) + 1); // Group IDs are negative, starting from -1
             leg_groups_[group_id] = nodes;
             RCLCPP_INFO(this->get_logger(), "Loaded leg group %d with %zu node(s)", group_id, nodes.size());
           }
         }
       } else {
-        RCLCPP_WARN(this->get_logger(), "Config file does not contain 'leg_groups' object");
+        RCLCPP_WARN(this->get_logger(), "Config file does not contain 'leg_groups' array");
       }
     } catch (const json::exception& e) {
       RCLCPP_ERROR(this->get_logger(), "JSON parsing error: %s", e.what());
