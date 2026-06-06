@@ -1,14 +1,11 @@
 # LegCommand message for hexapod leg commands
 # Command type constants
-uint8 LINEAR=2
-uint8 RAPID=5
-uint8 SINGLE_AXIS=1
+uint8 LINEAR=16
+uint8 RAPID=20
+uint8 SINGLE_AXIS=19
 
 # Which command this message contains
 uint8 command_type
-
-# Target leg number (0..255)
-uint8 leg_number
 
 # For SINGLE_AXIS: axis index (0..255). For others, ignored.
 uint8 axis
