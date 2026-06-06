@@ -36,7 +36,7 @@ public:
       throw std::runtime_error("CAN initialization failed");
     }
 
-    command_sub_ = this->create_subscription<std_msgs::msg::UInt8MultiArray>(
+    command_sub_ = this->create_subscription<can::msg::LegCommand>(
       "leg_command",
       rclcpp::SensorDataQoS(),
       std::bind(&CanInterface::on_command_received, this, std::placeholders::_1));
