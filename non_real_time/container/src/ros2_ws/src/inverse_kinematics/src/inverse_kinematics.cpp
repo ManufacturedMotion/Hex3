@@ -122,13 +122,6 @@ void InverseKinematicsNode::bodyPoseCallback(
     pose_received_ = true;
 }
 
-void InverseKinematicsNode::bodyPoseCallback(
-    const hexapod_msgs::msg::BodyPose::SharedPtr msg)
-{
-    latest_body_pose_ = *msg;
-    pose_received_ = true;
-}
-
 void InverseKinematicsNode::process()
 {
     if(!feet_received_)
@@ -158,7 +151,6 @@ void InverseKinematicsNode::process()
 
     ThreeByOne body_offsets[NUM_LEGS];
 
-    uint8_t result =
         _inverseKinematics(
             body,
             active_legs,
