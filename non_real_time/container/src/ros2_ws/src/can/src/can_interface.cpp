@@ -12,7 +12,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/u_int8_multi_array.hpp>
-#include "can/msg/leg_command.hpp"
+#include "hexapod_msgs/msg/leg_command.hpp"
 #include <vector>
 #include <algorithm>
 #include <map>
