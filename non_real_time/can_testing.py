@@ -480,8 +480,14 @@ def build_payload(choice, params=None):
         return build_single_axis_move()
 
     elif choice == "2":
-        print("TODO: Linear move not implemented")
-        return None
+        if params and len(params) >= 4:
+            x = float(params[0])
+            y = float(params[1])
+            z = float(params[2])
+            speed = float(params[3])
+            return build_linear_move(x, y, z, speed)
+
+        return build_linear_move()
 
     elif choice == "3":
         print("TODO: Auto tune not implemented")
@@ -492,8 +498,13 @@ def build_payload(choice, params=None):
         return None
 
     elif choice == "5":
-        print("TODO: Rapid move not implemented")
-        return None
+        if params and len(params) >= 3:
+            x = float(params[0])
+            y = float(params[1])
+            z = float(params[2])
+            return build_rapid_move(x, y, z)
+
+        return build_rapid_move()
 
     print(f"Invalid command choice: {choice}")
 
@@ -623,6 +634,58 @@ def build_single_axis_move(axis=None, position=None):
 
     return payload
 
+
+def build_linear_move(x=None, y=None, z=None, speed=None):
+
+    if x is None:
+        x = float(input("Target X: "))
+    if y is None:
+        y = float(input("Target Y: "))
+    if z is None:
+        z = float(input("Target Z: "))
+    if speed is None:
+        speed = float(input("Speed: "))
+
+    payload = bytearray()
+    payload.append(CMD_LINEAR_MOVE)
+    payload.extend(struct.pack("<f", x))
+    payload.extend(struct.pack("<f", y))
+    payload.extend(struct.pack("<f", z))
+    payload.extend(struct.pack("<f", speed))
+
+    print("\nCOMMAND:")
+    print(f"CMD_LINEAR_MOVE (0x{CMD_LINEAR_MOVE:X})")
+    print(f"X        : {x}")
+    print(f"Y        : {y}")
+    print(f"Z        : {z}")
+    print(f"Speed    : {speed}")
+
+    return payload
+
+
+def build_rapid_move(x=None, y=None, z=None):
+
+    if x is None:
+        x = float(input("Target X: "))
+    if y is None:
+        y = float(input("Target Y: "))
+    if z is None:
+        z = float(input("Target Z: "))
+
+    payload = bytearray()
+    payload.append(CMD_RAPID_MOVE)
+    payload.extend(struct.pack("<f", x))
+    payload.extend(struct.pack("<f", y))
+    payload.extend(struct.pack("<f", z))
+
+    print("\nCOMMAND:")
+    print(f"CMD_RAPID_MOVE (0x{CMD_RAPID_MOVE:X})")
+    print(f"X        : {x}")
+    print(f"Y        : {y}")
+    print(f"Z        : {z}")
+
+    return payload
+
 # ============================================
 # MAIN MENU
 # ============================================
@@ -707,14 +770,12 @@ def main():
         payload = build_single_axis_move()
 
     # ----------------------------------------
-    # TODO COMMANDS
+    # LINEAR MOVE
     # ----------------------------------------
 
     elif choice == "2":
 
-        print("TODO: Linear move not implemented")
-
-        return
+        payload = build_linear_move()
 
     elif choice == "3":
 
@@ -730,9 +791,7 @@ def main():
 
     elif choice == "5":
 
-        print("TODO: Rapid move not implemented")
-
-        return
+        payload = build_rapid_move()
 
     else:
 

@@ -146,8 +146,6 @@ void Leg::runSpeed() {
             axes[0].getCurrentAcceleration(), axes[1].getCurrentAcceleration(), axes[2].getCurrentAcceleration(),
             axes[0].getDutyCycle(), axes[1].getDutyCycle(), axes[2].getDutyCycle(),
             voltage_sensor.filteredRead());
-#else
-        Serial.printf("{\"Error\": \"Invalid TELEMETRY_LOGGING_SPACE value\"}\n");
 #endif
     }
     

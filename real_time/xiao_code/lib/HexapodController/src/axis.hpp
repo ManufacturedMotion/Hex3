@@ -131,7 +131,7 @@
             float _disturbance_monitor_gain = 0.001; //tuning parameter for disturbance observer, higher means more aggressive disturbance compensation but also more noise sensitivity
             float _momentum_hat = 0.0; //internal variable for momentum observer
 
-            float _friction_constant = 6.0; // Nm assuming constant friction for now
+            float _friction_constant = 5.5; // Nm assuming constant friction for now
         };
 
 #endif

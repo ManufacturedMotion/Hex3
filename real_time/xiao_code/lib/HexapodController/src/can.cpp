@@ -126,7 +126,7 @@ bool Can::begin()
     CAN.setRX(_rx_pin);
     CAN.setTX(_tx_pin);
 
-    if (!CAN.begin(_bitrate))
+    if (!CAN.begin(_bitrate, 64))
     {
         #if LOG_LEVEL >= BASIC_DEBUG
             Serial.println("CAN init failed");
@@ -327,7 +327,6 @@ void Can::sendLegTelemetry()
 
     sendIsoTp(payload, payload_len);
 
-    Serial.println("CAN: Leg telemetry sent");
 }
 
 void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
@@ -351,11 +350,15 @@ void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
 
         case CMD_LINEAR_MOVE:
         {
-            Serial.println("CAN: Linear move command received");
+            float x, y, z, target_speed;
+            memcpy(&x, &d[1], sizeof(float));
+            memcpy(&y, &d[1+sizeof(float)], sizeof(float));
+            memcpy(&z, &d[1+2*sizeof(float)], sizeof(float));
+            memcpy(&target_speed, &d[1+3*sizeof(float)], sizeof(float));
 
-            queueCommand([this]()
+            queueCommand([this, x, y, z, target_speed]()
             {
-                //TODO - execute linear move
+                _leg->linearMoveSetup(x, y, z, target_speed);
             });
 
             return;
@@ -423,11 +426,14 @@ void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
 
         case CMD_RAPID_MOVE:
         {
-            Serial.println("CAN: Rapid move command received");
+            float x, y, z;
+            memcpy(&x, &d[1], sizeof(float));
+            memcpy(&y, &d[1+sizeof(float)], sizeof(float));
+            memcpy(&z, &d[1+2*sizeof(float)], sizeof(float));
 
-            queueCommand([this]()
+            queueCommand([this, x, y, z]()
             {
-                //TODO - execute rapid move
+                _leg->rapidMove(x, y, z);
             });
 
             return;
@@ -435,11 +441,11 @@ void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
     }
 }
 
-void Can::handleCanMessage(const CanMsg& msg)
+uint8_t Can::handleCanMessage(const CanMsg& msg)
 {
     if (msg.id != _node_id)
     {
-        return;
+        return 0;
     }
 
     const uint8_t* d = msg.data;
@@ -458,12 +464,12 @@ void Can::handleCanMessage(const CanMsg& msg)
             {
                 Serial.println("CAN: Invalid single frame length");
 
-                return;
+                return 0;
             }
 
             handleCommandPayload(&d[1], payload_len);
 
-            return;
+            return 1;
         }
 
         case ISO_TP_FIRST_FRAME:
@@ -489,7 +495,7 @@ void Can::handleCanMessage(const CanMsg& msg)
                 _isotp_rx.expected_size
             );
 
-            return;
+            return 1;
         }
 
         case ISO_TP_CONSECUTIVE_FRAME:
@@ -498,7 +504,7 @@ void Can::handleCanMessage(const CanMsg& msg)
             {
                 Serial.println("CAN: Unexpected consecutive frame");
 
-                return;
+                return 1;
             }
 
             uint8_t seq = d[0] & 0x0F;
@@ -509,7 +515,7 @@ void Can::handleCanMessage(const CanMsg& msg)
 
                 resetIsoTp();
 
-                return;
+                return 1;
             }
 
             _isotp_rx.last_update = now;
@@ -546,7 +552,7 @@ void Can::handleCanMessage(const CanMsg& msg)
                 resetIsoTp();
             }
 
-            return;
+            return 1;
         }
 
         case ISO_TP_FLOW_CONTROL:
@@ -555,14 +561,14 @@ void Can::handleCanMessage(const CanMsg& msg)
 
             Serial.println("CAN: Flow control frame received");
 
-            return;
+            return 1;
         }
 
         default:
         {
             Serial.println("CAN: Unknown ISO-TP frame");
 
-            return;
+            return 1;
         }
     }
 }
