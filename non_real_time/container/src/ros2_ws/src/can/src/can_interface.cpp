@@ -22,10 +22,10 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-class CanNode : public rclcpp::Node
+class CanInterface : public rclcpp::Node
 {
 public:
-  CanNode()
+  CanInterface()
   : Node("can_node"), sockfd_(-1)
   {
     can_interface_ = this->declare_parameter<std::string>("can_interface", "can0");
@@ -39,12 +39,12 @@ public:
     command_sub_ = this->create_subscription<std_msgs::msg::UInt8MultiArray>(
       "leg_command",
       rclcpp::SensorDataQoS(),
-      std::bind(&CanNode::on_command_received, this, std::placeholders::_1));
+      std::bind(&CanInterface::on_command_received, this, std::placeholders::_1));
 
     RCLCPP_INFO(this->get_logger(), "can_node ready on interface '%s' target node ID 0x%X", can_interface_.c_str(), node_id_);
   }
 
-  ~CanNode() override
+  ~CanInterface() override
   {
     if (sockfd_ >= 0) {
       close(sockfd_);
@@ -181,7 +181,7 @@ int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
   try {
-    auto node = std::make_shared<CanNode>();
+    auto node = std::make_shared<CanInterface>();
     rclcpp::spin(node);
   } catch (const std::exception& ex) {
     RCLCPP_FATAL(rclcpp::get_logger("rclcpp"), "Exception: %s", ex.what());
