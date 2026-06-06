@@ -31,11 +31,11 @@ private:
         msg.command_type = can::msg::LegCommand::LINEAR;
         msg.leg_number = 0;
         msg.axis = 0;
-        msg.x = 100f;
-        msg.y = 0f;
-        msg.z = -200f;
-        msg.speed = 150f;
-        msg.position = 0.15f;
+        msg.x = 100;
+        msg.y = 0;
+        msg.z = -200;
+        msg.speed = 150;
+        msg.position = 0.15;
         break;
       }
       case 1: {
@@ -44,11 +44,11 @@ private:
         msg.command_type = can::msg::LegCommand::RAPID;
         msg.leg_number = 1;
         msg.axis = 0;
-        msg.x = 100f;
-        msg.y = 0f;
-        msg.z = -200f;
-        msg.speed = 0.0f;
-        msg.position = 0.0f;
+        msg.x = 100;
+        msg.y = 0;
+        msg.z = -200;
+        msg.speed = 0.0;
+        msg.position = 0.0;
         break;
       }
       case 2: {
@@ -57,11 +57,11 @@ private:
         msg.command_type = can::msg::LegCommand::SINGLE_AXIS;
         msg.leg_number = 2;
         msg.axis = 1;
-        msg.x = 0.0f;
-        msg.y = 0.0f;
+        msg.x = 0.0;
+        msg.y = 0.0;
         msg.z = 0.0f;
-        msg.speed = 0.0f;
-        msg.position = 0.15f;
+        msg.speed = 0.0;
+        msg.position = 0.15;
         break;
       }
     }
