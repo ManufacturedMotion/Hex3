@@ -54,7 +54,7 @@ public:
 private:
   bool init_can_socket()
   {
-    sockfd_ = socket(PF_CAN, SOCK_RAW, CAN_RAW, CAN_RAW);
+    sockfd_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
     if (sockfd_ < 0) {
       RCLCPP_ERROR(this->get_logger(), "socket() failed: %s", std::strerror(errno));
       return false;
