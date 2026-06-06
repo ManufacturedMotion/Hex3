@@ -100,7 +100,7 @@ private:
       payload.insert(payload.end(), p, p + len);
     };
 
-    uint8_t node_id = static_cast<uint8_t>(node_id_ & 0xFF) + msg->leg_number;  // Use only the lower 8 bits for node ID in payload
+    uint32_t node_id = node_id_ + msg->leg_number;  // Use only the lower 8 bits for node ID in payload
 
     // Basic header: command_type, leg_number, axis
     payload.push_back(static_cast<uint8_t>(msg->command_type));
@@ -137,7 +137,7 @@ private:
       RCLCPP_ERROR(this->get_logger(), "Failed to send ISO-TP command");
     }
     else {
-      RCLCPP_INFO(this->get_logger(), "Sent ISO-TP command with payload size %zu bytes", payload.size());
+      RCLCPP_INFO(this->get_logger(), "Sent ISO-TP command with payload size %zu bytesto node %u", payload.size(), node_id);
     }
   }
 
