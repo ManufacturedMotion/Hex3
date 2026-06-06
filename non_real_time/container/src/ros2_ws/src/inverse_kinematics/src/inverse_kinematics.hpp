@@ -8,6 +8,8 @@
 #include "hexapod_msgs/msg/body_pose.hpp"
 #include "hexapod_msgs/msg/leg_command.hpp"
 
+#define NUM_LEGS 6
+
 struct IKPose {
     double x;
     double y;
