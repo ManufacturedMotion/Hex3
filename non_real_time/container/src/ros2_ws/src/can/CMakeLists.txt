@@ -10,7 +10,6 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(nlohmann_json REQUIRED)
-
 find_package(hexapod_msgs REQUIRED)
 
 add_executable(can_interface src/can_interface.cpp)
