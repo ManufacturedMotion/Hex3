@@ -28,3 +28,4 @@ xwayland
 qtwayland5
 libxcb-xinerama0
 x11-apps
+nlohmann-json3-dev
