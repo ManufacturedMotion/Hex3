@@ -256,7 +256,7 @@ private:
             std::vector<uint32_t> nodes;
             for (auto& node_val : node_ids) {
               if (node_val.is_number()) {
-                nodes.push_back(static_cast<uint32_t>(node_val));
+                nodes.push_back(node_id_ + static_cast<uint32_t>(node_val));
               }
             }
             int group_id = -(static_cast<int>(i) + 1); // Group IDs are negative, starting from -1
