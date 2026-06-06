@@ -12,5 +12,5 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 )
 
 ament_export_dependencies(rosidl_default_runtime)
-rosidl_export_typesupport_interfaces(${PROJECT_NAME})
+# rosidl_export_typesupport_interfaces(${PROJECT_NAME})
 ament_package()
