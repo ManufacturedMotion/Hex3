@@ -106,12 +106,12 @@ private:
 
     // Pack floats according to command type. Unused fields are still present
     // so message layout is fixed and predictable.
-    if (msg->command_type == can::msg::LegCommand::LINEAR_MOVE) {
+    if (msg->command_type == can::msg::LegCommand::LINEAR) {
       append_bytes(&msg->x, sizeof(msg->x));
       append_bytes(&msg->y, sizeof(msg->y));
       append_bytes(&msg->z, sizeof(msg->z));
       append_bytes(&msg->speed, sizeof(msg->speed));
-    } else if (msg->command_type == can::msg::LegCommand::RAPID_MOVE) {
+    } else if (msg->command_type == can::msg::LegCommand::RAPID) {
       append_bytes(&msg->x, sizeof(msg->x));
       append_bytes(&msg->y, sizeof(msg->y));
       append_bytes(&msg->z, sizeof(msg->z));
