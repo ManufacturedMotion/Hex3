@@ -1,0 +1,1 @@
+FootTarget[6] legs
