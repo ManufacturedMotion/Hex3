@@ -45,5 +45,3 @@ if(BUILD_TESTING)
 endif()
 
 ament_package()
-
-ament_package()
