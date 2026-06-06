@@ -100,9 +100,10 @@ private:
       payload.insert(payload.end(), p, p + len);
     };
 
+    uint8_t node_id = static_cast<uint8_t>(node_id_ & 0xFF) + msg->leg_number;  // Use only the lower 8 bits for node ID in payload
+
     // Basic header: command_type, leg_number, axis
     payload.push_back(static_cast<uint8_t>(msg->command_type));
-    
 
     // Pack floats according to command type. Unused fields are still present
     // so message layout is fixed and predictable.
@@ -132,7 +133,7 @@ private:
       return;
     }
 
-    if (!send_isotp(node_id_, payload)) {
+    if (!send_isotp(node_id, payload)) {
       RCLCPP_ERROR(this->get_logger(), "Failed to send ISO-TP command");
     }
     else {
