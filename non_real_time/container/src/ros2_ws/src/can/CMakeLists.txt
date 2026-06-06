@@ -19,6 +19,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 add_executable(can_interface src/can_interface.cpp)
 target_include_directories(can_interface PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp>
   $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
 target_compile_features(can_interface PUBLIC c_std_99 cxx_std_17)  # Require C99 and C++17
 ament_target_dependencies(
