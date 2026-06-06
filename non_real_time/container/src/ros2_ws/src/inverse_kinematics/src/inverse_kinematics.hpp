@@ -26,7 +26,7 @@ struct IKPose {
 class InverseKinematicsNode : public rclcpp::Node
 {
 public:
-    InverseKinematicsNode() : Node("inverse_kinematics");
+    InverseKinematicsNode();
 
 private:
     void footTargetCallback(
