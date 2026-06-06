@@ -8,6 +8,19 @@
 #include "hexapod_msgs/msg/body_pose.hpp"
 #include "hexapod_msgs/msg/leg_command.hpp"
 
+struct IKPose {
+    double x;
+    double y;
+    double z;
+
+    double sin_roll;
+    double sin_pitch;
+
+    double cos_yaw;
+    double sin_yaw;
+};
+
+
 class InverseKinematicsNode : public rclcpp::Node
 {
 public:
@@ -23,8 +36,8 @@ private:
     void process();
 
     void _inverseKinematics(
-        Position pos,
-        _Bool active_legs[NUM_LEGS],
+        IKPose pose,
+        bool active_legs[NUM_LEGS],
         std::array<double, 3> * results);
 
     rclcpp::Subscription<

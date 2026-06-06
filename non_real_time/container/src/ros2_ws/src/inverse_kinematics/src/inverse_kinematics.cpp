@@ -31,87 +31,76 @@ InverseKinematicsNode::InverseKinematicsNode()
 }
 
 uint8_t InverseKinematicsNode::_inverseKinematics(
-    Position pos,
-    _Bool active_legs[NUM_LEGS],
-    std::array<double, 3> * results
+    const IKPose& pose,
+    const bool active_legs[NUM_LEGS],
+    std::array<double, 3>* results
 ) {
-    if (!_preCheckSafePos(pos))
-        return 254; // Pre-check fail
+    if (!_preCheckSafePos({pose.x, pose.y, pose.z}))
+        return 254;
 
-    // Divide rotations by 100 to get radians
-    pos.roll  *= 0.01;
-    pos.pitch *= 0.01;
-    pos.yaw   *= 0.01;
+    // --- SoA buffers (SIMD-friendly) ---
+    alignas(32) double px[NUM_LEGS];
+    alignas(32) double py[NUM_LEGS];
+    alignas(32) double pz[NUM_LEGS];
 
-    double potential_results[NUM_LEGS][3];
-
+    // --- base stage ---
     for (uint8_t i = 0; i < NUM_LEGS; i++) {
-        potential_results[i][0] = pos.x;
-        potential_results[i][1] = pos.y;
-        potential_results[i][2] =
-            pos.z
-            + sin(pos.pitch) * (_leg_X_offset[i] + pos.x)
-            + sin(pos.roll)  * (_leg_Y_offset[i] + pos.y);
+        px[i] = pose.x;
+        py[i] = pose.y;
+
+        pz[i] =
+            pose.z
+            + pose.sin_pitch * (_leg_X_offset[i] + pose.x)
+            + pose.sin_roll  * (_leg_Y_offset[i] + pose.y);
     }
 
-    // Apply rotations using temporary std::array
+    // --- transform stage ---
     for (uint8_t i = 0; i < NUM_LEGS; i++) {
 
-        std::array<double, 3> temp = {
-            potential_results[i][0],
-            potential_results[i][1],
-            potential_results[i][2]
-        };
+        double cy = cos(_home_yaws[i]);
+        double sy = sin(_home_yaws[i]);
 
-        // NOTE: assuming your old ThreeByOne used values[3]
-        auto rotateYaw = [&](double yaw) {
-            double c = cos(yaw);
-            double s = sin(yaw);
+        double x = px[i];
+        double y = py[i];
 
-            double x = temp[0];
-            double y = temp[1];
+        // home yaw
+        double hx = x * cy - y * sy;
+        double hy = x * sy + y * cy;
 
-            temp[0] = x * c - y * s;
-            temp[1] = x * s + y * c;
-        };
+        // stance offset
+        hx += _stance_offset[0];
+        hy += _stance_offset[1];
+        pz[i] += _stance_offset[2];
 
-        rotateYaw(_home_yaws[i]);
+        // global yaw (precomputed)
+        double nx = hx * pose.cos_yaw - hy * pose.sin_yaw;
+        double ny = hx * pose.sin_yaw + hy * pose.cos_yaw;
 
-        temp[0] += _stance_offset[0];
-        temp[1] += _stance_offset[1];
-        temp[2] += _stance_offset[2];
-
-        rotateYaw(pos.yaw);
-
-        potential_results[i][0] = temp[0];
-        potential_results[i][1] = temp[1];
-        potential_results[i][2] = temp[2];
+        px[i] = nx;
+        py[i] = ny;
     }
 
-    // post-check
+    // --- validation ---
     for (uint8_t i = 0; i < NUM_LEGS; i++) {
-        if (!_postCheckSafeCoords(
-                potential_results[i][0],
-                potential_results[i][1],
-                potential_results[i][2]))
-        {
+        if (!_postCheckSafeCoords(px[i], py[i], pz[i]))
             return 255;
-        }
     }
 
-    uint8_t results_index = 0;
-
+    // --- pack output ---
+    uint8_t k = 0;
     for (uint8_t i = 0; i < NUM_LEGS; i++) {
         if (active_legs[i]) {
-
-            results[results_index] = {
-                potential_results[i][0],
-                potential_results[i][1],
-                potential_results[i][2]
-            };
-
-            results_index++;
+            results[k++] = { px[i], py[i], pz[i] };
         }
+
+        #if LOG_LEVEL >= CALCULATION_LOGGING
+                Serial.println(
+                    "IK leg " + String(i) +
+                    " x:" + String(px[i]) +
+                    " y:" + String(py[i]) +
+                    " z:" + String(pz[i])
+                );
+        #endif
     }
 
     return 0;
