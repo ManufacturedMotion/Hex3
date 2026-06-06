@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
 
 add_executable(can_interface src/can_interface.cpp)
 target_include_directories(can_interface PUBLIC
@@ -20,9 +21,14 @@ ament_target_dependencies(
   "rclcpp"
   "std_msgs"
 )
+add_dependencies(can_interface ${${PROJECT_NAME}_EXPORTED_TARGETS} ${rosidl_generate_interfaces_EXPORTED_TARGETS})
 
 install(TARGETS can_interface
   DESTINATION lib/${PROJECT_NAME})
+
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/LegCommand.msg"
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
