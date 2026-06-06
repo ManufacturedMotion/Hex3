@@ -34,8 +34,7 @@ uint8_t InverseKinematicsNode::_inverseKinematics(
     const bool active_legs[NUM_LEGS],
     std::array<double, 3>* results
 ) {
-    if (!_preCheckSafePos({pose.x, pose.y, pose.z}))
-        return 254;
+
 
     // --- SoA buffers (SIMD-friendly) ---
     alignas(32) double px[NUM_LEGS];
@@ -102,7 +101,6 @@ uint8_t InverseKinematicsNode::_inverseKinematics(
         #endif
     }
 
-    return 0;
 }
 
 void InverseKinematicsNode::footTargetCallback(

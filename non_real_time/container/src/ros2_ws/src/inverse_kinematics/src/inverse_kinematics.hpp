@@ -37,7 +37,7 @@ private:
 
     void process();
 
-    void _inverseKinematics(
+    uint8_t _inverseKinematics(
         IKPose pose,
         bool active_legs[NUM_LEGS],
         std::array<double, 3> * results);
