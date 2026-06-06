@@ -31,7 +31,22 @@ ament_target_dependencies(
 rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 target_link_libraries(can_interface "${cpp_typesupport_target}")
 
-install(TARGETS can_interface
+add_executable(leg_command_publisher src/leg_command_publisher.cpp)
+target_include_directories(leg_command_publisher PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_cpp>
+  $<INSTALL_INTERFACE:include/${PROJECT_NAME}>)
+target_compile_features(leg_command_publisher PUBLIC c_std_99 cxx_std_17)
+ament_target_dependencies(
+  leg_command_publisher
+  "rclcpp"
+  "std_msgs"
+  "rosidl_default_runtime"
+)
+rosidl_get_typesupport_target(cpp_typesupport_target_pub "${PROJECT_NAME}" "rosidl_typesupport_cpp")
+target_link_libraries(leg_command_publisher "${cpp_typesupport_target_pub}")
+
+install(TARGETS can_interface leg_command_publisher
   DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
