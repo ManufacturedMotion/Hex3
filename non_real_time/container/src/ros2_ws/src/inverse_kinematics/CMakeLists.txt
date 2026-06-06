@@ -16,6 +16,13 @@ find_package(rosidl_default_runtime REQUIRED)
 # find_package(<dependency> REQUIRED)
 add_executable(inverse_kinematics src/main)
 
+ament_target_dependencies(
+  inverse_kinematics
+  "rclcpp"
+  "std_msgs"
+  "rosidl_default_runtime"
+)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
