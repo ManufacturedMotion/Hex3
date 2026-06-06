@@ -13,10 +13,6 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(rosidl_default_runtime REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/LegCommand.msg"
-)
-
 add_executable(can_interface src/can_interface.cpp)
 target_include_directories(can_interface PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
