@@ -5,7 +5,7 @@ uint8 RAPID=20
 uint8 SINGLE_AXIS=19
 
 # Which command this message contains
-uint8_t leg_number
+uint8 leg_number
 uint8 command_type
 
 # For SINGLE_AXIS: axis index (0..255). For others, ignored.
