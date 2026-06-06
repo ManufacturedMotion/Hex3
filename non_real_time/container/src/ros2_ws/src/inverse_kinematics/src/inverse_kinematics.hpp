@@ -25,7 +25,7 @@ private:
     void _inverseKinematics(
         Position pos,
         _Bool active_legs[NUM_LEGS],
-        ThreeByOne * results);
+        std::array<double, 3> * results);
 
     rclcpp::Subscription<
         hexapod_msgs::msg::FootTargetArray>::SharedPtr
