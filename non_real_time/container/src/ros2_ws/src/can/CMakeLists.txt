@@ -11,6 +11,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(rosidl_default_runtime REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/LegCommand.msg"
@@ -27,6 +28,7 @@ ament_target_dependencies(
   "rclcpp"
   "std_msgs"
   "rosidl_default_runtime"
+  "nlohmann_json"
 )
 rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 target_link_libraries(can_interface "${cpp_typesupport_target}")

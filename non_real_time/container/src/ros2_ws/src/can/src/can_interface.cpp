@@ -15,6 +15,9 @@
 #include "can/msg/leg_command.hpp"
 #include <vector>
 #include <algorithm>
+#include <map>
+#include <fstream>
+#include <nlohmann/json.hpp>
 
 #include <arpa/inet.h>
 #include <cstring>
@@ -25,6 +28,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+using json = nlohmann::json;
+
 class CanInterface : public rclcpp::Node
 {
 public:
@@ -33,10 +38,16 @@ public:
   {
     can_interface_ = this->declare_parameter<std::string>("can_interface", "can0");
     node_id_ = static_cast<uint32_t>(this->declare_parameter<int>("node_id", 0x100));
+    std::string config_file = this->declare_parameter<std::string>("leg_groups_config", "");
 
     if (!init_can_socket()) {
       RCLCPP_FATAL(this->get_logger(), "Failed to initialize CAN socket on '%s'", can_interface_.c_str());
       throw std::runtime_error("CAN initialization failed");
+    }
+
+    // Load leg groups configuration if provided
+    if (!config_file.empty()) {
+      load_leg_groups(config_file);
     }
 
     command_sub_ = this->create_subscription<can::msg::LegCommand>(
@@ -91,6 +102,24 @@ private:
 
   void on_command_received(const can::msg::LegCommand::SharedPtr msg)
   {
+    // Determine target node IDs based on leg_number
+    std::vector<uint32_t> target_nodes;
+    
+    if (static_cast<int8_t>(msg->leg_number) < 0) {
+      // Negative leg_number references a leg group
+      int group_id = static_cast<int8_t>(msg->leg_number);
+      if (leg_groups_.find(group_id) != leg_groups_.end()) {
+        target_nodes = leg_groups_[group_id];
+        RCLCPP_INFO(this->get_logger(), "Leg group %d contains %zu node(s)", group_id, target_nodes.size());
+      } else {
+        RCLCPP_WARN(this->get_logger(), "Leg group %d not found in configuration", group_id);
+        return;
+      }
+    } else {
+      // Positive leg_number maps to a single node: node_id_ + leg_number
+      target_nodes.push_back(node_id_ + msg->leg_number);
+    }
+
     // Pack the message into a raw byte payload for ISO-TP.
     std::vector<uint8_t> payload;
 
@@ -100,13 +129,10 @@ private:
       payload.insert(payload.end(), p, p + len);
     };
 
-    uint32_t node_id = node_id_ + msg->leg_number;  // Use only the lower 8 bits for node ID in payload
-
     // Basic header: command_type, leg_number, axis
     payload.push_back(static_cast<uint8_t>(msg->command_type));
 
-    // Pack floats according to command type. Unused fields are still present
-    // so message layout is fixed and predictable.
+    // Pack floats according to command type
     if (msg->command_type == can::msg::LegCommand::LINEAR) {
       append_bytes(&msg->x, sizeof(msg->x));
       append_bytes(&msg->y, sizeof(msg->y));
@@ -133,11 +159,13 @@ private:
       return;
     }
 
-    if (!send_isotp(node_id, payload)) {
-      RCLCPP_ERROR(this->get_logger(), "Failed to send ISO-TP command");
-    }
-    else {
-      RCLCPP_INFO(this->get_logger(), "Sent ISO-TP command with payload size %zu bytesto node %u", payload.size(), node_id);
+    // Send to all target nodes
+    for (uint32_t node_id : target_nodes) {
+      if (!send_isotp(node_id, payload)) {
+        RCLCPP_ERROR(this->get_logger(), "Failed to send ISO-TP command to node 0x%X", node_id);
+      } else {
+        RCLCPP_INFO(this->get_logger(), "Sent ISO-TP command with payload size %zu bytes to node 0x%X", payload.size(), node_id);
+      }
     }
   }
 
@@ -209,10 +237,46 @@ private:
     return true;
   }
 
+  void load_leg_groups(const std::string& config_file)
+  {
+    try {
+      std::ifstream file(config_file);
+      if (!file.is_open()) {
+        RCLCPP_WARN(this->get_logger(), "Could not open leg groups config file: %s", config_file.c_str());
+        return;
+      }
+
+      json config = json::parse(file);
+      
+      if (config.contains("leg_groups") && config["leg_groups"].is_object()) {
+        for (auto& [group_key, node_ids] : config["leg_groups"].items()) {
+          int group_id = std::stoi(group_key);
+          if (node_ids.is_array()) {
+            std::vector<uint32_t> nodes;
+            for (auto& node_val : node_ids) {
+              if (node_val.is_number()) {
+                nodes.push_back(static_cast<uint32_t>(node_val));
+              }
+            }
+            leg_groups_[group_id] = nodes;
+            RCLCPP_INFO(this->get_logger(), "Loaded leg group %d with %zu node(s)", group_id, nodes.size());
+          }
+        }
+      } else {
+        RCLCPP_WARN(this->get_logger(), "Config file does not contain 'leg_groups' object");
+      }
+    } catch (const json::exception& e) {
+      RCLCPP_ERROR(this->get_logger(), "JSON parsing error: %s", e.what());
+    } catch (const std::exception& e) {
+      RCLCPP_ERROR(this->get_logger(), "Error loading leg groups config: %s", e.what());
+    }
+  }
+
   int sockfd_;
   std::string can_interface_;
   uint32_t node_id_;
   rclcpp::Subscription<can::msg::LegCommand>::SharedPtr command_sub_;
+  std::map<int, std::vector<uint32_t>> leg_groups_;  // Maps negative group IDs to lists of node IDs
 };
 
 int main(int argc, char** argv)
