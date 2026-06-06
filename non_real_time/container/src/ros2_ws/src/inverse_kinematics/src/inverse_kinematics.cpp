@@ -1,11 +1,12 @@
 #include "inverse_kinematics.hpp"
 
+#include "inverse_kinematics.hpp"
+
 InverseKinematicsNode::InverseKinematicsNode()
-    : Node("inverse_kinematics")
+: Node("inverse_kinematics")
 {
     foot_target_sub_ =
-        create_subscription<
-            hexapod_msgs::msg::FootTargetArray>(
+        create_subscription<hexapod_msgs::msg::FootTargetArray>(
             "/foot_targets",
             10,
             std::bind(
@@ -14,8 +15,7 @@ InverseKinematicsNode::InverseKinematicsNode()
                 std::placeholders::_1));
 
     body_pose_sub_ =
-        create_subscription<
-            hexapod_msgs::msg::BodyPose>(
+        create_subscription<hexapod_msgs::msg::BodyPose>(
             "/body_pose",
             10,
             std::bind(
@@ -24,8 +24,7 @@ InverseKinematicsNode::InverseKinematicsNode()
                 std::placeholders::_1));
 
     leg_command_pub_ =
-        create_publisher<
-            hexapod_msgs::msg::LegCommand>(
+        create_publisher<hexapod_msgs::msg::LegCommand>(
             "/leg_commands",
             100);
 }
@@ -111,7 +110,6 @@ void InverseKinematicsNode::footTargetCallback(
 {
     latest_feet_ = *msg;
     feet_received_ = true;
-
     process();
 }
 
@@ -124,68 +122,51 @@ void InverseKinematicsNode::bodyPoseCallback(
 
 void InverseKinematicsNode::process()
 {
-    if(!feet_received_)
-    {
+    if (!feet_received_ || !pose_received_) {
         return;
     }
 
-    Position body;
+    // --- Build SIMD-friendly pose ---
+    IKPose pose;
 
-    body.x = latest_body_pose_.x;
-    body.y = latest_body_pose_.y;
-    body.z = latest_body_pose_.z;
+    pose.x = latest_body_pose_.x;
+    pose.y = latest_body_pose_.y;
+    pose.z = latest_body_pose_.z;
 
-    body.roll = latest_body_pose_.roll;
-    body.pitch = latest_body_pose_.pitch;
-    body.yaw = latest_body_pose_.yaw;
+    double roll  = latest_body_pose_.roll * 0.01;
+    double pitch = latest_body_pose_.pitch * 0.01;
+    double yaw   = latest_body_pose_.yaw * 0.01;
 
-    bool active_legs[NUM_LEGS] =
-    {
-        true,
-        true,
-        true,
-        true,
-        true,
-        true
-    };
+    pose.sin_roll  = sin(roll);
+    pose.sin_pitch = sin(pitch);
+    pose.sin_yaw   = sin(yaw);
+    pose.cos_yaw   = cos(yaw);
 
-    ThreeByOne body_offsets[NUM_LEGS];
+    bool active_legs[NUM_LEGS] = {true, true, true, true, true, true};
 
+    std::array<double, 3> body_offsets[NUM_LEGS];
+
+    uint8_t result =
         _inverseKinematics(
-            body,
+            pose,
             active_legs,
             body_offsets);
 
-    if(result != 0)
-    {
-        RCLCPP_WARN(
-            get_logger(),
-            "Body IK failed: %u",
-            result);
-
+    if (result != 0) {
+        RCLCPP_WARN(get_logger(), "Body IK failed: %u", result);
         return;
     }
 
-    for(uint8_t i = 0; i < NUM_LEGS; i++)
-    {
+    for (uint8_t i = 0; i < NUM_LEGS; i++) {
+
         hexapod_msgs::msg::LegCommand cmd;
 
         cmd.leg_number = i;
+        cmd.command_type = hexapod_msgs::msg::LegCommand::LINEAR;
 
-        cmd.command_type =
-            hexapod_msgs::msg::LegCommand::LINEAR;
-
-        cmd.x =
-            latest_feet_.legs[i].x +
-            body_offsets[i].values[0];
-
-        cmd.y =
-            latest_feet_.legs[i].y +
-            body_offsets[i].values[1];
-
-        cmd.z =
-            latest_feet_.legs[i].z +
-            body_offsets[i].values[2];
+        cmd.x = latest_feet_.legs[i].x + body_offsets[i][0];
+        cmd.y = latest_feet_.legs[i].y + body_offsets[i][1];
+        cmd.z = latest_feet_.legs[i].z + body_offsets[i][2];
 
         cmd.speed = 100.0f;
 
