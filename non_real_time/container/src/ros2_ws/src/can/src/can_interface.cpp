@@ -102,16 +102,25 @@ private:
 
     // Basic header: command_type, leg_number, axis
     payload.push_back(static_cast<uint8_t>(msg->command_type));
-    payload.push_back(static_cast<uint8_t>(msg->leg_number));
-    payload.push_back(static_cast<uint8_t>(msg->axis));
+    
 
     // Pack floats according to command type. Unused fields are still present
     // so message layout is fixed and predictable.
-    append_bytes(&msg->x, sizeof(msg->x));
-    append_bytes(&msg->y, sizeof(msg->y));
-    append_bytes(&msg->z, sizeof(msg->z));
-    append_bytes(&msg->speed, sizeof(msg->speed));
-    append_bytes(&msg->position, sizeof(msg->position));
+    if (msg->command_type == can::msg::LegCommand::LINEAR_MOVE) {
+      append_bytes(&msg->x, sizeof(msg->x));
+      append_bytes(&msg->y, sizeof(msg->y));
+      append_bytes(&msg->z, sizeof(msg->z));
+      append_bytes(&msg->speed, sizeof(msg->speed));
+    } else if (msg->command_type == can::msg::LegCommand::RAPID_MOVE) {
+      append_bytes(&msg->x, sizeof(msg->x));
+      append_bytes(&msg->y, sizeof(msg->y));
+      append_bytes(&msg->z, sizeof(msg->z));
+    } else if (msg->command_type == can::msg::LegCommand::SINGLE_AXIS) {
+      append_bytes(&msg->axis, sizeof(msg->axis));
+      append_bytes(&msg->position, sizeof(msg->position));
+    } else {
+      RCLCPP_WARN(this->get_logger(), "Received LegCommand with unknown command_type: %d", msg->command_type);
+    }
 
     if (payload.empty()) {
       RCLCPP_WARN(this->get_logger(), "Received empty LegCommand");
