@@ -12,6 +12,9 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <std_msgs/msg/u_int8_multi_array.hpp>
+#include "can/msg/leg_command.hpp"
+#include <vector>
+#include <algorithm>
 
 #include <arpa/inet.h>
 #include <cstring>
@@ -86,23 +89,45 @@ private:
     return true;
   }
 
-  void on_command_received(const std_msgs::msg::UInt8MultiArray::SharedPtr msg)
+  void on_command_received(const can::msg::LegCommand::SharedPtr msg)
   {
-    if (msg->data.empty()) {
-      RCLCPP_WARN(this->get_logger(), "Received empty leg_command payload");
+    // Pack the message into a raw byte payload for ISO-TP.
+    std::vector<uint8_t> payload;
+
+    // Helper to append arbitrary POD bytes
+    auto append_bytes = [&payload](const void* data, size_t len) {
+      const uint8_t* p = reinterpret_cast<const uint8_t*>(data);
+      payload.insert(payload.end(), p, p + len);
+    };
+
+    // Basic header: command_type, leg_number, axis
+    payload.push_back(static_cast<uint8_t>(msg->command_type));
+    payload.push_back(static_cast<uint8_t>(msg->leg_number));
+    payload.push_back(static_cast<uint8_t>(msg->axis));
+
+    // Pack floats according to command type. Unused fields are still present
+    // so message layout is fixed and predictable.
+    append_bytes(&msg->x, sizeof(msg->x));
+    append_bytes(&msg->y, sizeof(msg->y));
+    append_bytes(&msg->z, sizeof(msg->z));
+    append_bytes(&msg->speed, sizeof(msg->speed));
+    append_bytes(&msg->position, sizeof(msg->position));
+
+    if (payload.empty()) {
+      RCLCPP_WARN(this->get_logger(), "Received empty LegCommand");
       return;
     }
 
-    if (msg->data.size() > 256U) {
-      RCLCPP_WARN(this->get_logger(), "Payload too large (%zu bytes); maximum supported is 256 bytes", msg->data.size());
+    if (payload.size() > 256U) {
+      RCLCPP_WARN(this->get_logger(), "Packed payload too large (%zu bytes); maximum supported is 256 bytes", payload.size());
       return;
     }
 
-    if (!send_isotp(node_id_, msg->data)) {
+    if (!send_isotp(node_id_, payload)) {
       RCLCPP_ERROR(this->get_logger(), "Failed to send ISO-TP command");
     }
     else {
-      RCLCPP_INFO(this->get_logger(), "Sent ISO-TP command with payload size %zu bytes", msg->data.size());
+      RCLCPP_INFO(this->get_logger(), "Sent ISO-TP command with payload size %zu bytes", payload.size());
     }
   }
 

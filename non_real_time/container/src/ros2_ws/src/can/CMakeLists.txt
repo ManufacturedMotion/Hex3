@@ -27,7 +27,7 @@ ament_target_dependencies(
   "std_msgs"
   "rosidl_default_runtime"
 )
-# add_dependencies(can_interface ${${PROJECT_NAME}_EXPORTED_TARGETS} ${rosidl_generate_interfaces_EXPORTED_TARGETS})
+add_dependencies(can_interface ${${PROJECT_NAME}_EXPORTED_TARGETS} ${rosidl_generate_interfaces_EXPORTED_TARGETS})
 
 install(TARGETS can_interface
   DESTINATION lib/${PROJECT_NAME})
