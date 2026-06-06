@@ -8,8 +8,6 @@
 #include "hexapod_msgs/msg/body_pose.hpp"
 #include "hexapod_msgs/msg/leg_command.hpp"
 
-#include "kinematics.hpp"
-
 class InverseKinematicsNode : public rclcpp::Node
 {
 public:
