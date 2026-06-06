@@ -28,12 +28,11 @@ ament_target_dependencies(
   hexapod_msgs
 )
 
-# typesupport for messages (important for ROS2 msg linking)
-rosidl_get_typesupport_target(
-  cpp_typesupport_target
-  hexapod_msgs
-  rosidl_typesupport_cpp
-)
+# rosidl_get_typesupport_target(
+#   cpp_typesupport_target
+#   hexapod_msgs
+#   rosidl_typesupport_cpp
+# )
 
 target_link_libraries(can_interface
   "${cpp_typesupport_target}"
