@@ -107,14 +107,8 @@ private:
     
     if (static_cast<int8_t>(msg->leg_number) < 0) {
       // Negative leg_number references a leg group
-      int group_id = static_cast<int8_t>(msg->leg_number);
-      if (leg_groups_.find(group_id) != leg_groups_.end()) {
-        target_nodes = leg_groups_[group_id];
-        RCLCPP_INFO(this->get_logger(), "Leg group %d contains %zu node(s)", group_id, target_nodes.size());
-      } else {
-        RCLCPP_WARN(this->get_logger(), "Leg group %d not found in configuration", group_id);
-        return;
-      }
+      int group_id = -static_cast<int8_t>(msg->leg_number);
+      target_nodes = leg_groups_[group_id];
     } else {
       // Positive leg_number maps to a single node: node_id_ + leg_number
       target_nodes.push_back(node_id_ + msg->leg_number);
