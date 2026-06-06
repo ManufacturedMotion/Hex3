@@ -50,7 +50,7 @@ public:
       load_leg_groups(config_file);
     }
 
-    command_sub_ = this->create_subscription<can::msg::LegCommand>(
+    command_sub_ = this->create_subscription<hexapod_msgs::msg::LegCommand>(
       "leg_command",
       rclcpp::SensorDataQoS(),
       std::bind(&CanInterface::on_command_received, this, std::placeholders::_1));
