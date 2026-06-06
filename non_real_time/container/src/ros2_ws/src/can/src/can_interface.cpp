@@ -101,6 +101,9 @@ private:
     if (!send_isotp(node_id_, msg->data)) {
       RCLCPP_ERROR(this->get_logger(), "Failed to send ISO-TP command");
     }
+    else {
+      RCLCPP_INFO(this->get_logger(), "Sent ISO-TP command with payload size %zu bytes", msg->data.size());
+    }
   }
 
   bool send_can_frame(uint32_t can_id, const uint8_t* data, uint8_t dlc)
