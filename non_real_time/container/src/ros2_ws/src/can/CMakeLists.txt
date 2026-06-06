@@ -54,11 +54,11 @@ ament_target_dependencies(
   hexapod_msgs
 )
 
-rosidl_get_typesupport_target(
-  cpp_typesupport_target_pub
-  hexapod_msgs
-  rosidl_typesupport_cpp
-)
+# rosidl_get_typesupport_target(
+#   cpp_typesupport_target_pub
+#   hexapod_msgs
+#   rosidl_typesupport_cpp
+# )
 
 target_link_libraries(leg_command_publisher
   "${cpp_typesupport_target_pub}"
