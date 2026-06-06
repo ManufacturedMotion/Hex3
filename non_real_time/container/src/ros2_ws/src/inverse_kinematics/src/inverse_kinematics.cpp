@@ -30,48 +30,91 @@ InverseKinematicsNode::InverseKinematicsNode()
             100);
 }
 
-uint8_t InverseKinematicsNode::_inverseKinematics(Position pos, _Bool active_legs[NUM_LEGS], ThreeByOne * results) {
-
-	if (!_preCheckSafePos(pos))
+uint8_t InverseKinematicsNode::_inverseKinematics(
+    Position pos,
+    _Bool active_legs[NUM_LEGS],
+    std::array<double, 3> * results
+) {
+    if (!_preCheckSafePos(pos))
         return 254; // Pre-check fail
-	
-	// Divide rotations by 100 to get radians (stored as hundredths of a radian to put on similar scale as x, y, z)
-	pos.roll *= 0.01;
-	pos.pitch *= 0.01;
-	pos.yaw *= 0.01;
 
-	double potential_results[NUM_LEGS][3];
-	for (uint8_t i = 0; i < NUM_LEGS; i++) {
-		potential_results[i][0] = pos.x;
-		potential_results[i][1] = pos.y;
-		potential_results[i][2] = pos.z + sin(pos.pitch) * (_leg_X_offset[i] + pos.x) + sin(pos.roll) * (_leg_Y_offset[i] + pos.y);
-	}
+    // Divide rotations by 100 to get radians
+    pos.roll  *= 0.01;
+    pos.pitch *= 0.01;
+    pos.yaw   *= 0.01;
 
-	for (uint8_t i = 0; i < NUM_LEGS; i++) {
-		ThreeByOne temp = ThreeByOne(potential_results[i][0], potential_results[i][1], potential_results[i][2]);
-		temp.rotateYaw(_home_yaws[i]);
-		temp += _stance_offset;
-		temp.rotateYaw(pos.yaw);
-		for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
-			potential_results[i][j] = temp.values[j];
-		}
-	}
+    double potential_results[NUM_LEGS][3];
 
-	for (uint8_t i = 0; i < NUM_LEGS; i++) {
-		if (!_postCheckSafeCoords(potential_results[i][0], potential_results[i][1], potential_results[i][2]))
-			return 255; // Post-check fail
-	}
-	uint8_t results_index = 0;
-	for (uint8_t i = 0; i < NUM_LEGS; i++) {
-		if(active_legs[i]) {
-			results[results_index] = ThreeByOne(potential_results[i]);
-			results_index++;
-		}
-		#if LOG_LEVEL >= CALCULATION_LOGGING
-			Serial.println("IK value; leg: " + String(i) + " x:" + String(results[i].values[0]) + " y:" + String(results[i].values[1]) + " z:" + String(results[i].values[2]) + "\n");
-		#endif
-	}
-	return 0;
+    for (uint8_t i = 0; i < NUM_LEGS; i++) {
+        potential_results[i][0] = pos.x;
+        potential_results[i][1] = pos.y;
+        potential_results[i][2] =
+            pos.z
+            + sin(pos.pitch) * (_leg_X_offset[i] + pos.x)
+            + sin(pos.roll)  * (_leg_Y_offset[i] + pos.y);
+    }
+
+    // Apply rotations using temporary std::array
+    for (uint8_t i = 0; i < NUM_LEGS; i++) {
+
+        std::array<double, 3> temp = {
+            potential_results[i][0],
+            potential_results[i][1],
+            potential_results[i][2]
+        };
+
+        // NOTE: assuming your old ThreeByOne used values[3]
+        auto rotateYaw = [&](double yaw) {
+            double c = cos(yaw);
+            double s = sin(yaw);
+
+            double x = temp[0];
+            double y = temp[1];
+
+            temp[0] = x * c - y * s;
+            temp[1] = x * s + y * c;
+        };
+
+        rotateYaw(_home_yaws[i]);
+
+        temp[0] += _stance_offset[0];
+        temp[1] += _stance_offset[1];
+        temp[2] += _stance_offset[2];
+
+        rotateYaw(pos.yaw);
+
+        potential_results[i][0] = temp[0];
+        potential_results[i][1] = temp[1];
+        potential_results[i][2] = temp[2];
+    }
+
+    // post-check
+    for (uint8_t i = 0; i < NUM_LEGS; i++) {
+        if (!_postCheckSafeCoords(
+                potential_results[i][0],
+                potential_results[i][1],
+                potential_results[i][2]))
+        {
+            return 255;
+        }
+    }
+
+    uint8_t results_index = 0;
+
+    for (uint8_t i = 0; i < NUM_LEGS; i++) {
+        if (active_legs[i]) {
+
+            results[results_index] = {
+                potential_results[i][0],
+                potential_results[i][1],
+                potential_results[i][2]
+            };
+
+            results_index++;
+        }
+    }
+
+    return 0;
 }
 
 void InverseKinematicsNode::footTargetCallback(
