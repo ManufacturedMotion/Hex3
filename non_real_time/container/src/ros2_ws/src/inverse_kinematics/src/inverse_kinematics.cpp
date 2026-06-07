@@ -231,7 +231,7 @@ void InverseKinematicsNode::process()
 
         cmd.speed = 100.0f;
 
-        leg_command_pub_->publish(cmd);
+        // leg_command_pub_->publish(cmd);
         RCLCPP_INFO(
             this->get_logger(),
             "Published LegCommand for leg %d: x=%.1f y=%.1f z=%.1f",
