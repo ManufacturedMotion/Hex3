@@ -28,7 +28,7 @@ def generate_launch_description():
     # Inverse kinematics
     inverse_kinematics = Node(
         package='inverse_kinematics',
-        executable='inverse_kinematics',
+        executable='main',
         name='inverse_kinematics',
         output='screen',
         parameters=[
