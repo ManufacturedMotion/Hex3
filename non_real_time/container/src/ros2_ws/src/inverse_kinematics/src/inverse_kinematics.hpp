@@ -22,6 +22,15 @@ struct IKPose {
     double sin_yaw;
 };
 
+struct LegCoordinateTransform {
+    double x;
+    double y;
+    double z;
+    double roll;
+    double pitch;
+    double yaw;
+};
+
 
 class InverseKinematicsNode : public rclcpp::Node
 {
@@ -29,6 +38,9 @@ public:
     InverseKinematicsNode();
 
 private:
+
+    void loadConfig(const std::string& config_path);
+
     void footTargetCallback(
         const hexapod_msgs::msg::FootTargetArray::SharedPtr msg);
 
@@ -37,20 +49,7 @@ private:
 
     void process();
 
-    float _leg_X_offset[NUM_LEGS] = {
-        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
-    };
-    float _leg_Y_offset[NUM_LEGS] = {
-        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
-    };
-
-    float _home_yaws[NUM_LEGS] = {
-        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
-    };
-
-    float _stance_offset[NUM_LEGS] = {
-        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
-    };
+    LegCoordinateTransform _leg_coordinate_transforms[NUM_LEGS];
 
     void _inverseKinematics(
         const IKPose& pose,

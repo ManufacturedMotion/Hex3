@@ -47,15 +47,15 @@ void InverseKinematicsNode::_inverseKinematics(
 
         pz[i] =
             pose.z
-            + pose.sin_pitch * (_leg_X_offset[i] + pose.x)
-            + pose.sin_roll  * (_leg_Y_offset[i] + pose.y);
+            + pose.sin_pitch * (_leg_coordinate_transforms[i].x + pose.x)
+            + pose.sin_roll  * (_leg_coordinate_transforms[i].y + pose.y);
     }
 
     // --- transform stage ---
     for (uint8_t i = 0; i < NUM_LEGS; i++) {
 
-        double cy = cos(_home_yaws[i]);
-        double sy = sin(_home_yaws[i]);
+        double cy = cos(_leg_coordinate_transforms[i].yaw);
+        double sy = sin(_leg_coordinate_transforms[i].yaw);
 
         double x = px[i];
         double y = py[i];
@@ -99,6 +99,88 @@ void InverseKinematicsNode::bodyPoseCallback(
     latest_body_pose_ = *msg;
     pose_received_ = true;
     process();
+}
+
+#include <fstream>
+#include <stdexcept>
+
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
+void InverseKinematics::loadConfiguration(
+    const std::string& filename)
+{
+    std::ifstream file(filename);
+
+    if (!file.is_open())
+    {
+        throw std::runtime_error(
+            "Failed to open IK configuration file: " +
+            filename);
+    }
+
+    json config;
+    file >> config;
+
+    //
+    // Stance offset
+    //
+    const auto& stance =
+        config.at("stance_offset_xyz");
+
+    if (stance.size() != 3)
+    {
+        throw std::runtime_error(
+            "stance_offset_xyz must contain exactly 3 values");
+    }
+
+    _stance_offset = ThreeByOne(
+        stance[0].get<double>(),
+        stance[1].get<double>(),
+        stance[2].get<double>());
+
+    //
+    // Leg coordinate transforms
+    //
+    const auto& transforms =
+        config.at("leg_coordinate_transforms");
+
+    if (transforms.size() != NUM_LEGS)
+    {
+        throw std::runtime_error(
+            "leg_coordinate_transforms size does not match NUM_LEGS");
+    }
+
+    for (const auto& leg : transforms)
+    {
+        const uint8_t id =
+            leg.at("id").get<uint8_t>();
+
+        if (id >= NUM_LEGS)
+        {
+            throw std::runtime_error(
+                "Invalid leg id in configuration");
+        }
+
+        _leg_coordinate_transforms[id].x =
+            leg.at("x").get<double>();
+
+        _leg_coordinate_transforms[id].y =
+            leg.at("y").get<double>();
+
+        _leg_coordinate_transforms[id].z =
+            leg.at("z").get<double>();
+
+        _leg_coordinate_transforms[id].roll =
+            leg.at("roll").get<double>();
+
+        _leg_coordinate_transforms[id].pitch =
+            leg.at("pitch").get<double>();
+
+        _leg_coordinate_transforms[id].yaw =
+            leg.at("yaw").get<double>();
+    }
 }
 
 void InverseKinematicsNode::process()
