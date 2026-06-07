@@ -145,6 +145,9 @@ void InverseKinematicsNode::loadConfig(
     }
 
     _stance_offset = { stance[0].get<double>(), stance[1].get<double>(), stance[2].get<double>() };
+    ROSCPP_INFO(get_logger(),
+        "Loaded stance offset: x=%.1f y=%.1f z=%.1f",
+        _stance_offset[0], _stance_offset[1], _stance_offset[2]);
 
     //
     // Leg coordinate transforms
