@@ -140,15 +140,9 @@ void InverseKinematicsNode::process()
 
     std::array<double, 3> body_offsets[NUM_LEGS];
 
-    uint8_t result =
-        _inverseKinematics(
-            pose,
-            body_offsets);
-
-    if (result != 0) {
-        RCLCPP_WARN(get_logger(), "Body IK failed: %u", result);
-        return;
-    }
+    _inverseKinematics(
+        pose,
+        body_offsets);
 
     for (uint8_t i = 0; i < NUM_LEGS; i++) {
 
