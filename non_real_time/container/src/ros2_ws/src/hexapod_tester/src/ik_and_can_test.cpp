@@ -28,6 +28,9 @@ public:
             std::bind(&TesterNode::update, this));
 
         start_time_ = this->now();
+
+        RCLCPP_INFO(this->get_logger(),
+            "Hexapod tester node started");
     }
 
 private:
@@ -47,18 +50,28 @@ private:
 
         msg.x = 0.0;
         msg.y = 0.0;
-        msg.z = 200.0 + 20.0 * std::sin(t * 0.5);
+        msg.z = 120.0 + 20.0 * std::sin(t * 0.5);
 
         msg.roll  = 0.05 * std::sin(t);
         msg.pitch = 0.05 * std::cos(t * 0.5);
         msg.yaw   = 0.2  * std::sin(t * 0.2);
 
         body_pub_->publish(msg);
+
+        RCLCPP_INFO_THROTTLE(
+            this->get_logger(),
+            *this->get_clock(),
+            1000,   // 1 Hz log rate
+            "Published BodyPose: z=%.2f roll=%.3f pitch=%.3f yaw=%.3f",
+            msg.z, msg.roll, msg.pitch, msg.yaw
+        );
     }
 
     void publishFootTargets(double t)
     {
         hexapod_msgs::msg::FootTargetArray msg;
+
+        msg.foot_targets.resize(6);
 
         for (int i = 0; i < 6; i++)
         {
@@ -66,19 +79,24 @@ private:
 
             hexapod_msgs::msg::FootTarget ft;
 
-            // Simple gait-like motion
             ft.x = 100.0 * std::cos(phase);
             ft.y = 80.0 * std::sin(phase);
-
-            // Lift feet alternately
-            ft.z = (std::sin(phase) > 0.0)
-                ? 40.0
-                : 0.0;
+            ft.z = (std::sin(phase) > 0.0) ? 40.0 : 0.0;
 
             msg.foot_targets[i] = ft;
         }
 
         foot_pub_->publish(msg);
+
+        RCLCPP_INFO_THROTTLE(
+            this->get_logger(),
+            *this->get_clock(),
+            1000,   // 1 Hz log rate
+            "Published FootTargets (6 legs) sample: leg0=(%.1f, %.1f, %.1f)",
+            msg.foot_targets[0].x,
+            msg.foot_targets[0].y,
+            msg.foot_targets[0].z
+        );
     }
 
 private:
