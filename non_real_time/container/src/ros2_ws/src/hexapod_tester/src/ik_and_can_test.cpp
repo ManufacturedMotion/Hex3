@@ -60,8 +60,6 @@ private:
     {
         hexapod_msgs::msg::FootTargetArray msg;
 
-        msg.foot_targets.resize(6);
-
         for (int i = 0; i < 6; i++)
         {
             double phase = t + i * 0.5;
