@@ -1,1 +1,1 @@
-FootTarget[6] legs
+FootTarget[6] foot_targets
