@@ -38,8 +38,8 @@ private:
     void process();
 
     uint8_t _inverseKinematics(
-        IKPose pose&,
-        bool active_legs[NUM_LEGS],
+        const IKPose& pose,
+        const bool active_legs[NUM_LEGS],
         std::array<double, 3> * results);
 
     rclcpp::Subscription<

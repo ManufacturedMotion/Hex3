@@ -116,6 +116,7 @@ void InverseKinematicsNode::bodyPoseCallback(
 {
     latest_body_pose_ = *msg;
     pose_received_ = true;
+    process();
 }
 
 void InverseKinematicsNode::process()
