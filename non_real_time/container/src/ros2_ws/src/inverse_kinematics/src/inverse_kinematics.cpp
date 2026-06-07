@@ -232,5 +232,12 @@ void InverseKinematicsNode::process()
         cmd.speed = 100.0f;
 
         leg_command_pub_->publish(cmd);
+        RCLCPP_INFO_THROTTLE(
+            this->get_logger(),
+            *this->get_clock(),
+            1000,   // 1 Hz log rate
+            "Published LegCommand for leg %d: x=%.1f y=%.1f z=%.1f",
+            i, cmd.x, cmd.y, cmd.z
+        );
     }
 }
