@@ -7,6 +7,8 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(hexapod_msgs REQUIRED)
 
 add_executable(hexapod_tester src/ik_and_can_test.cpp)
 
