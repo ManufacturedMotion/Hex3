@@ -47,7 +47,7 @@ private:
 
         msg.x = 0.0;
         msg.y = 0.0;
-        msg.z = 120.0 + 20.0 * std::sin(t * 0.5);
+        msg.z = 200.0 + 20.0 * std::sin(t * 0.5);
 
         msg.roll  = 0.05 * std::sin(t);
         msg.pitch = 0.05 * std::cos(t * 0.5);
