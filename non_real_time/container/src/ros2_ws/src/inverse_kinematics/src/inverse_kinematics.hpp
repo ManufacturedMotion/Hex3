@@ -44,6 +44,14 @@ private:
         0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
     };
 
+    float _home_yaws[NUM_LEGS] = {
+        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
+    };
+
+    float _stance_offset[NUM_LEGS] = {
+        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
+    };
+
     void _inverseKinematics(
         const IKPose& pose,
         std::array<double, 3> * results);
