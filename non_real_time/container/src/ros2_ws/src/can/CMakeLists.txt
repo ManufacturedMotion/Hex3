@@ -49,7 +49,7 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(FILES resource/leg_groups.json
+install(DIRECTORY config
   DESTINATION share/${PROJECT_NAME}
 )
 
