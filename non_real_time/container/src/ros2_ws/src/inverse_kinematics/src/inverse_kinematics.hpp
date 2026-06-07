@@ -39,6 +39,9 @@ public:
 
 private:
 
+    std::array<LegCoordinateTransform, NUM_LEGS> _leg_coordinate_transforms;
+    std::array<double, 3> _stance_offset;
+
     void loadConfig(const std::string& config_path);
 
     void footTargetCallback(
@@ -48,9 +51,6 @@ private:
         const hexapod_msgs::msg::BodyPose::SharedPtr msg);
 
     void process();
-
-    LegCoordinateTransform _leg_coordinate_transforms[NUM_LEGS];
-    std::array<double, 3> _stance_offset;
 
     void _inverseKinematics(
         const IKPose& pose,
