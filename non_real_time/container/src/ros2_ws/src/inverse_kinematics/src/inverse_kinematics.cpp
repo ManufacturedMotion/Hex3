@@ -29,7 +29,7 @@ InverseKinematicsNode::InverseKinematicsNode()
             100);
 }
 
-uint8_t InverseKinematicsNode::_inverseKinematics(
+void InverseKinematicsNode::_inverseKinematics(
     const IKPose& pose,
     std::array<double, 3>* results
 ) {

@@ -37,7 +37,7 @@ private:
 
     void process();
 
-    uint8_t _inverseKinematics(
+    void _inverseKinematics(
         const IKPose& pose,
         std::array<double, 3> * results);
 
