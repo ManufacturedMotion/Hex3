@@ -30,12 +30,12 @@ def generate_launch_description():
         package='hexapod_control',
         executable='inverse_kinematics',
         name='inverse_kinematics',
-        output='screen'
+        output='screen',
         parameters=[
             {
                 'ik_config' : ik_config_file
             }
-        ]
+        ],
     )
 
     # CAN interface
@@ -43,12 +43,12 @@ def generate_launch_description():
         package='can',
         executable='can_interface',
         name='can_interface',
-        output='screen'
+        output='screen',
         parameters=[
             {
                 'leg_groups_config' : can_config_file
             }
-        ]
+        ],
     )
 
     return LaunchDescription([
