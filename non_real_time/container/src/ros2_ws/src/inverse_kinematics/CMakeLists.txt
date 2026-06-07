@@ -20,6 +20,10 @@ add_executable(inverse_kinematics
   src/inverse_kinematics.cpp
 )
 
+install(TARGETS inverse_kinematics
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 ament_target_dependencies(
   inverse_kinematics
   "rclcpp"
