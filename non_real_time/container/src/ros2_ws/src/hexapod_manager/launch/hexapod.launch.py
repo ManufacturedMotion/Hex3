@@ -27,7 +27,7 @@ def generate_launch_description():
 
     # Inverse kinematics
     inverse_kinematics = Node(
-        package='hexapod_control',
+        package='inverse_kinematics',
         executable='inverse_kinematics',
         name='inverse_kinematics',
         output='screen',
