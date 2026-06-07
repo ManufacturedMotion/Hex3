@@ -159,11 +159,6 @@ void CanInterface::on_command_received(
         "Failed sending ISO-TP to 0x%X",
         node_id);
     }
-    else {
-      RCLCPP_INFO(get_logger(),
-        "Sent command to 0x%X: type=%d payload_size=%zu",
-        node_id, msg->command_type, payload.size());
-    }
   }
 }
 
