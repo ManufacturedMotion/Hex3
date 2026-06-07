@@ -8,6 +8,7 @@ using json = nlohmann::json;
 InverseKinematicsNode::InverseKinematicsNode()
 : Node("inverse_kinematics")
 {
+    loadConfig(this->declare_parameter<std::string>("config_file", "config/ik_config.json"));
     foot_target_sub_ =
         create_subscription<hexapod_msgs::msg::FootTargetArray>(
             "/foot_targets",
