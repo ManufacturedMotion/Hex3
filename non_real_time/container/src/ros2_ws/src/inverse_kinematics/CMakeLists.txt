@@ -16,8 +16,8 @@ find_package(hexapod_msgs REQUIRED)
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 add_executable(inverse_kinematics 
-  src/main
-  src/inverse_kinematics
+  src/main.cpp
+  src/inverse_kinematics.cpp
 )
 
 ament_target_dependencies(
