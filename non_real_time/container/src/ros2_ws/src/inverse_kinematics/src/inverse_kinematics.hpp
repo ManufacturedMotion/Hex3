@@ -50,6 +50,7 @@ private:
     void process();
 
     LegCoordinateTransform _leg_coordinate_transforms[NUM_LEGS];
+    std::array<double, 3> _stance_offset;
 
     void _inverseKinematics(
         const IKPose& pose,
