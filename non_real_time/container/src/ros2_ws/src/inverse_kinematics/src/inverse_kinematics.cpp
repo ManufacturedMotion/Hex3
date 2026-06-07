@@ -135,10 +135,7 @@ void InverseKinematics::loadConfiguration(
             "stance_offset_xyz must contain exactly 3 values");
     }
 
-    _stance_offset = ThreeByOne(
-        stance[0].get<double>(),
-        stance[1].get<double>(),
-        stance[2].get<double>());
+    _stance_offset = { stance[0].get<double>(), stance[1].get<double>(), stance[2].get<double>() };
 
     //
     // Leg coordinate transforms
