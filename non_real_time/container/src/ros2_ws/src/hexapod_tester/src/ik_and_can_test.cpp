@@ -50,8 +50,7 @@ private:
 
         msg.x = 0.0;
         msg.y = 0.0;
-        msg.z = -200.0 - 20.0 * std::sin(t * 0.5);
-
+        msg.z = -200.0 - 20.0;
         msg.roll  = 0.0;
         msg.pitch = 0.0;
         msg.yaw   = 0.0;
@@ -78,9 +77,9 @@ private:
 
             hexapod_msgs::msg::FootTarget ft;
 
-            ft.x = 100.0 * std::cos(phase);
+            ft.x = 0.0; //100.0 * std::cos(phase);
             ft.y = 0.0;
-            ft.z = (std::sin(phase) > 0.0) ? 40.0 : 0.0;
+            ft.z = 0.0; // (std::sin(phase) > 0.0) ? 40.0 : 0.0;
 
             msg.foot_targets[i] = ft;
         }
