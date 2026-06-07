@@ -211,9 +211,9 @@ void InverseKinematicsNode::process()
         cmd.leg_number = i;
         cmd.command_type = hexapod_msgs::msg::LegCommand::LINEAR;
 
-        cmd.x = latest_feet_foot_targets[i].x + body_offsets[i][0];
-        cmd.y = latest_feet_foot_targets[i].y + body_offsets[i][1];
-        cmd.z = latest_feet_foot_targets[i].z + body_offsets[i][2];
+        cmd.x = latest_feet_.foot_targets[i].x + body_offsets[i][0];
+        cmd.y = latest_feet_.foot_targets[i].y + body_offsets[i][1];
+        cmd.z = latest_feet_.foot_targets[i].z + body_offsets[i][2];
 
         cmd.speed = 100.0f;
 
