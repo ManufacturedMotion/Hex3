@@ -81,9 +81,8 @@ void InverseKinematicsNode::_inverseKinematics(
     }
 
     // --- pack output ---
-    uint8_t k = 0;
     for (uint8_t i = 0; i < NUM_LEGS; i++) {
-        results[k++] = { px[i], py[i], pz[i] };
+        results[i] = { px[i], py[i], pz[i] };
     }
 
 }
