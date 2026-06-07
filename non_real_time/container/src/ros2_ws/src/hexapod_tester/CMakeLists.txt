@@ -7,6 +7,17 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+
+add_executable(hexapod_tester src/ik_and_can_test.cpp)
+
+ament_target_dependencies(hexapod_tester
+  rclcpp
+  hexapod_msgs
+)
+
+install(TARGETS hexapod_tester
+  DESTINATION lib/${PROJECT_NAME}
+)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
