@@ -108,7 +108,7 @@ void InverseKinematicsNode::bodyPoseCallback(
 
 using json = nlohmann::json;
 
-void InverseKinematics::loadConfiguration(
+void InverseKinematicsNode::loadConfiguration(
     const std::string& filename)
 {
     std::ifstream file(filename);
