@@ -94,6 +94,13 @@ void InverseKinematicsNode::footTargetCallback(
     latest_feet_ = *msg;
     feet_received_ = true;
     process();
+    RCLCPP_INFO_THROTTLE(
+        this->get_logger(),
+        *this->get_clock(),
+        1000,   // 1 Hz log rate
+        "Received FootTargets: leg0=(%.1f, %.1f, %.1f)",
+        msg.foot_targets[0].x, msg.foot_targets[0].y, msg.foot_targets[0].z
+    );
 }
 
 void InverseKinematicsNode::bodyPoseCallback(
@@ -102,6 +109,13 @@ void InverseKinematicsNode::bodyPoseCallback(
     latest_body_pose_ = *msg;
     pose_received_ = true;
     process();
+    RCLCPP_INFO_THROTTLE(
+        this->get_logger(),
+        *this->get_clock(),
+        1000,   // 1 Hz log rate
+        "Received BodyPose: x=%.2f y=%.2f z=%.2f roll=%.3f pitch=%.3f yaw=%.3f",
+        msg.x, msg.y, msg.z, msg.roll, msg.pitch, msg.yaw
+    );
 }
 
 void InverseKinematicsNode::loadConfig(
