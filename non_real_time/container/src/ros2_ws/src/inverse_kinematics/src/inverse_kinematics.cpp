@@ -1,6 +1,9 @@
 #include "inverse_kinematics.hpp"
+#include <nlohmann/json.hpp>
+#include <fstream>
+#include <stdexcept>
 
-#include "inverse_kinematics.hpp"
+using json = nlohmann::json;
 
 InverseKinematicsNode::InverseKinematicsNode()
 : Node("inverse_kinematics")
@@ -101,14 +104,7 @@ void InverseKinematicsNode::bodyPoseCallback(
     process();
 }
 
-#include <fstream>
-#include <stdexcept>
-
-#include <nlohmann/json.hpp>
-
-using json = nlohmann::json;
-
-void InverseKinematicsNode::loadConfiguration(
+void InverseKinematicsNode::loadConfig(
     const std::string& filename)
 {
     std::ifstream file(filename);
