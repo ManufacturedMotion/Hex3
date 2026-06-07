@@ -1,0 +1,104 @@
+#include <chrono>
+#include <cmath>
+#include <memory>
+
+#include "rclcpp/rclcpp.hpp"
+
+#include "hexapod_msgs/msg/foot_target.hpp"
+#include "hexapod_msgs/msg/foot_target_array.hpp"
+#include "hexapod_msgs/msg/body_pose.hpp"
+
+using namespace std::chrono_literals;
+
+class TesterNode : public rclcpp::Node
+{
+public:
+    TesterNode() : Node("hexapod_tester")
+    {
+        foot_pub_ = this->create_publisher<
+            hexapod_msgs::msg::FootTargetArray>(
+            "/foot_targets", 10);
+
+        body_pub_ = this->create_publisher<
+            hexapod_msgs::msg::BodyPose>(
+            "/body_pose", 10);
+
+        timer_ = this->create_wall_timer(
+            20ms,
+            std::bind(&TesterNode::update, this));
+
+        start_time_ = this->now();
+    }
+
+private:
+
+    void update()
+    {
+        double t =
+            (this->now() - start_time_).seconds();
+
+        publishBodyPose(t);
+        publishFootTargets(t);
+    }
+
+    void publishBodyPose(double t)
+    {
+        hexapod_msgs::msg::BodyPose msg;
+
+        msg.x = 0.0;
+        msg.y = 0.0;
+        msg.z = 120.0 + 20.0 * std::sin(t * 0.5);
+
+        msg.roll  = 0.05 * std::sin(t);
+        msg.pitch = 0.05 * std::cos(t * 0.5);
+        msg.yaw   = 0.2  * std::sin(t * 0.2);
+
+        body_pub_->publish(msg);
+    }
+
+    void publishFootTargets(double t)
+    {
+        hexapod_msgs::msg::FootTargetArray msg;
+
+        msg.foot_targets.resize(6);
+
+        for (int i = 0; i < 6; i++)
+        {
+            double phase = t + i * 0.5;
+
+            hexapod_msgs::msg::FootTarget ft;
+
+            // Simple gait-like motion
+            ft.x = 100.0 * std::cos(phase);
+            ft.y = 80.0 * std::sin(phase);
+
+            // Lift feet alternately
+            ft.z = (std::sin(phase) > 0.0)
+                ? 40.0
+                : 0.0;
+
+            msg.foot_targets[i] = ft;
+        }
+
+        foot_pub_->publish(msg);
+    }
+
+private:
+    rclcpp::Publisher<
+        hexapod_msgs::msg::FootTargetArray>::SharedPtr foot_pub_;
+
+    rclcpp::Publisher<
+        hexapod_msgs::msg::BodyPose>::SharedPtr body_pub_;
+
+    rclcpp::TimerBase::SharedPtr timer_;
+
+    rclcpp::Time start_time_;
+};
+
+int main(int argc, char ** argv)
+{
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<TesterNode>());
+    rclcpp::shutdown();
+    return 0;
+}
