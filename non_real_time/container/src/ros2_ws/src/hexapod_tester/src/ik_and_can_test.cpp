@@ -62,8 +62,8 @@ private:
             this->get_logger(),
             *this->get_clock(),
             1000,   // 1 Hz log rate
-            "Published BodyPose: z=%.2f roll=%.3f pitch=%.3f yaw=%.3f",
-            msg.z, msg.roll, msg.pitch, msg.yaw
+            "Published BodyPose: x=%.2f y=%.2f z=%.2f roll=%.3f pitch=%.3f yaw=%.3f",
+            msg.x, msg.y, msg.z, msg.roll, msg.pitch, msg.yaw
         );
     }
 

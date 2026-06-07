@@ -99,7 +99,7 @@ void InverseKinematicsNode::footTargetCallback(
         *this->get_clock(),
         1000,   // 1 Hz log rate
         "Received FootTargets: leg0=(%.1f, %.1f, %.1f)",
-        msg.foot_targets[0].x, msg.foot_targets[0].y, msg.foot_targets[0].z
+        msg->foot_targets[0].x, msg->foot_targets[1].y, msg->foot_targets[2].z
     );
 }
 
@@ -114,7 +114,7 @@ void InverseKinematicsNode::bodyPoseCallback(
         *this->get_clock(),
         1000,   // 1 Hz log rate
         "Received BodyPose: x=%.2f y=%.2f z=%.2f roll=%.3f pitch=%.3f yaw=%.3f",
-        msg.x, msg.y, msg.z, msg.roll, msg.pitch, msg.yaw
+        msg->x, msg->y, msg->z, msg->roll, msg->pitch, msg->yaw
     );
 }
 
