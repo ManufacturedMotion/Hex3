@@ -87,15 +87,6 @@ void InverseKinematicsNode::_inverseKinematics(
     uint8_t k = 0;
     for (uint8_t i = 0; i < NUM_LEGS; i++) {
         results[k++] = { px[i], py[i], pz[i] };
-
-        #if LOG_LEVEL >= CALCULATION_LOGGING
-                Serial.println(
-                    "IK leg " + String(i) +
-                    " x:" + String(px[i]) +
-                    " y:" + String(py[i]) +
-                    " z:" + String(pz[i])
-                );
-        #endif
     }
 
 }
