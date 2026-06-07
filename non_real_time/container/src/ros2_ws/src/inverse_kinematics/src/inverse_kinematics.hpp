@@ -37,6 +37,13 @@ private:
 
     void process();
 
+    float _leg_X_offset[NUM_LEGS] = {
+        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
+    };
+    float _leg_Y_offset[NUM_LEGS] = {
+        0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f
+    };
+
     void _inverseKinematics(
         const IKPose& pose,
         std::array<double, 3> * results);

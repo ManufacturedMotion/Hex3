@@ -77,12 +77,6 @@ void InverseKinematicsNode::_inverseKinematics(
         py[i] = ny;
     }
 
-    // --- validation ---
-    for (uint8_t i = 0; i < NUM_LEGS; i++) {
-        if (!_postCheckSafeCoords(px[i], py[i], pz[i]))
-            return 255;
-    }
-
     // --- pack output ---
     uint8_t k = 0;
     for (uint8_t i = 0; i < NUM_LEGS; i++) {
