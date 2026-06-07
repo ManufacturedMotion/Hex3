@@ -39,7 +39,6 @@ private:
 
     uint8_t _inverseKinematics(
         const IKPose& pose,
-        const bool active_legs[NUM_LEGS],
         std::array<double, 3> * results);
 
     rclcpp::Subscription<

@@ -31,7 +31,6 @@ InverseKinematicsNode::InverseKinematicsNode()
 
 uint8_t InverseKinematicsNode::_inverseKinematics(
     const IKPose& pose,
-    const bool active_legs[NUM_LEGS],
     std::array<double, 3>* results
 ) {
 
@@ -87,9 +86,7 @@ uint8_t InverseKinematicsNode::_inverseKinematics(
     // --- pack output ---
     uint8_t k = 0;
     for (uint8_t i = 0; i < NUM_LEGS; i++) {
-        if (active_legs[i]) {
-            results[k++] = { px[i], py[i], pz[i] };
-        }
+        results[k++] = { px[i], py[i], pz[i] };
 
         #if LOG_LEVEL >= CALCULATION_LOGGING
                 Serial.println(
@@ -141,14 +138,11 @@ void InverseKinematicsNode::process()
     pose.sin_yaw   = sin(yaw);
     pose.cos_yaw   = cos(yaw);
 
-    bool active_legs[NUM_LEGS] = {true, true, true, true, true, true};
-
     std::array<double, 3> body_offsets[NUM_LEGS];
 
     uint8_t result =
         _inverseKinematics(
             pose,
-            active_legs,
             body_offsets);
 
     if (result != 0) {
