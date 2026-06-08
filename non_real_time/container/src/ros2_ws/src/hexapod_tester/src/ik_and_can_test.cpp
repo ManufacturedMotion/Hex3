@@ -57,10 +57,8 @@ private:
 
         body_pub_->publish(msg);
 
-        RCLCPP_INFO_THROTTLE(
+        RCLCPP_INFO(
             this->get_logger(),
-            *this->get_clock(),
-            1000,   // 1 Hz log rate
             "Published BodyPose: x=%.2f y=%.2f z=%.2f roll=%.3f pitch=%.3f yaw=%.3f",
             msg.x, msg.y, msg.z, msg.roll, msg.pitch, msg.yaw
         );
@@ -86,10 +84,8 @@ private:
 
         foot_pub_->publish(msg);
 
-        RCLCPP_INFO_THROTTLE(
+        RCLCPP_INFO(
             this->get_logger(),
-            *this->get_clock(),
-            1000,   // 1 Hz log rate
             "Published FootTargets (6 legs) sample: leg0=(%.1f, %.1f, %.1f)",
             msg.foot_targets[0].x,
             msg.foot_targets[0].y,
