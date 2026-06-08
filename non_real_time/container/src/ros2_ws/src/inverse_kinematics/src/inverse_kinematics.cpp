@@ -228,13 +228,13 @@ void InverseKinematicsNode::process()
         hexapod_msgs::msg::LegCommand cmd;
 
         cmd.leg_number = i;
-        cmd.command_type = hexapod_msgs::msg::LegCommand::LINEAR;
+        cmd.command_type = hexapod_msgs::msg::LegCommand::RAPID;
 
         cmd.x = latest_feet_.foot_targets[i].x + body_offsets[i][0];
         cmd.y = latest_feet_.foot_targets[i].y + body_offsets[i][1];
         cmd.z = latest_feet_.foot_targets[i].z + body_offsets[i][2];
 
-        cmd.speed = 200.0f;
+        // cmd.speed = 200.0f;
 
         leg_command_pub_->publish(cmd);
         RCLCPP_INFO(
