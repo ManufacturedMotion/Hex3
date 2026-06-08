@@ -173,9 +173,11 @@ bool CanInterface::send_can_frame(
   frame.can_id = can_id & CAN_SFF_MASK;
   frame.can_dlc = dlc;
   std::memcpy(frame.data, data, dlc);
-
-  return write(sockfd_, &frame, sizeof(frame)) ==
+  bool success = write(sockfd_, &frame, sizeof(frame)) ==
          static_cast<ssize_t>(sizeof(frame));
+  std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+  return success;
 }
 
 // ===================== ISO-TP =====================
