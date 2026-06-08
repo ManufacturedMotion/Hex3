@@ -50,7 +50,7 @@ private:
 
         msg.x = 0.0;
         msg.y = 0.0;
-        msg.z = -200.0 - 20.0;
+        msg.z = -200.0 + 40.0 * std::sin(t);
         msg.roll  = 0.0;
         msg.pitch = 0.0;
         msg.yaw   = 0.0;
