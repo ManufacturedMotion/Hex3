@@ -42,6 +42,8 @@ private:
     std::array<LegCoordinateTransform, NUM_LEGS> _leg_coordinate_transforms;
     std::array<double, 3> _stance_offset;
 
+    rclcpp::TimerBase::SharedPtr timer_;
+
     void loadConfig(const std::string& config_path);
 
     void footTargetCallback(

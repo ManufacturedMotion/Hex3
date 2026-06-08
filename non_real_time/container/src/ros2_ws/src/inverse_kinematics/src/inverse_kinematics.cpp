@@ -31,6 +31,10 @@ InverseKinematicsNode::InverseKinematicsNode()
         create_publisher<hexapod_msgs::msg::LegCommand>(
             "/leg_commands",
             100);
+    
+    timer_ = create_wall_timer(
+        std::chrono::milliseconds(20),
+        std::bind(&InverseKinematicsNode::process, this));
 }
 
 void InverseKinematicsNode::_inverseKinematics(
@@ -93,7 +97,6 @@ void InverseKinematicsNode::footTargetCallback(
 {
     latest_feet_ = *msg;
     feet_received_ = true;
-    process();
     RCLCPP_INFO_THROTTLE(
         this->get_logger(),
         *this->get_clock(),
@@ -108,7 +111,6 @@ void InverseKinematicsNode::bodyPoseCallback(
 {
     latest_body_pose_ = *msg;
     pose_received_ = true;
-    process();
     RCLCPP_INFO_THROTTLE(
         this->get_logger(),
         *this->get_clock(),
@@ -232,7 +234,7 @@ void InverseKinematicsNode::process()
         cmd.y = latest_feet_.foot_targets[i].y + body_offsets[i][1];
         cmd.z = latest_feet_.foot_targets[i].z + body_offsets[i][2];
 
-        cmd.speed = 100.0f;
+        cmd.speed = 200.0f;
 
         leg_command_pub_->publish(cmd);
         RCLCPP_INFO(
