@@ -46,9 +46,7 @@ private:
 
   void scheduler_loop();
 
-  class CanInterface : public rclcpp::Node
-
-  boolcreate_isotp_socket(uint32_t node_id)
+  bool create_isotp_socket(uint32_t node_id)
   int sockfd_;
   std::string can_interface_;
   uint32_t node_id_;
@@ -56,4 +54,10 @@ private:
   rclcpp::Subscription<hexapod_msgs::msg::LegCommand>::SharedPtr command_sub_;
 
   std::map<int, std::vector<uint32_t>> leg_groups_;
+
+  void CanInterface::handle_isotp_message(uint32_t node_id,
+    const uint8_t* data,
+    size_t len);
+
+  void can_receive_loop();
 };
