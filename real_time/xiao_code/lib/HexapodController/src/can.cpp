@@ -4,30 +4,6 @@
 #include <functional>
 
 /*
-
-execution of commands;
-  can returns an function object when command is ready
-  main.cpp polls on hexapod.legs.can
-  when can object is returning non-null, main.cpp executes the function object, which will execute the command and reset the can buffer to null
-  when command not ready return null
-
-  how it looks for main
-    leg.can->poll();
-
-    auto fn = leg.can->popPendingCommand();
-
-    if (fn)
-    {
-        fn();
-    }
-
-TODO:
-- currently only one pending command can exist at a time
-- may need to scale to a queue / ring buffer of commands
-- especially important for high frequency motion updates
-*/
-
-/*
 CAN COMMAND FORMAT
 
 All messages:

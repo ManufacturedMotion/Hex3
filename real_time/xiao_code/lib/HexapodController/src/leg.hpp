@@ -67,7 +67,7 @@
 			double _length0 = 112.929;                   ///< Length of base link (mm)
 			double _length1 = 96.00;                     ///< Length of first joint link (mm)
 			double _length2 = 150.5;                     ///< Length of second joint link (mm)
-			uint8_t toe_threshold = 100;                 ///< Analog threshold for toe press detection
+			uint8_t toe_threshold = 100;                 ///< Analog threshold for toe press detection //TODO move to toe file
 			
 			// Kinematics calculation methods
 			/// Move all axes to target angles calculated by inverse kinematics
