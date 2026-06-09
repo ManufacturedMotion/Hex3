@@ -28,6 +28,8 @@ public:
   ~CanInterface() override;
 
 private:
+
+  std::unordered_map<uint32_t, IsoTpSocket> iso_sockets_;
   bool init_can_socket();
 
   void on_command_received(const hexapod_msgs::msg::LegCommand::SharedPtr msg);
