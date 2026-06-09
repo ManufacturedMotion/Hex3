@@ -22,7 +22,7 @@
 
 
 
-#Can testing commands:
+# Can testing commands:
 ## In terminal 1:
 ```
 ./build.sh
