@@ -46,7 +46,7 @@ private:
 
   void scheduler_loop();
 
-  bool create_isotp_socket(uint32_t node_id)
+  bool create_isotp_socket(uint32_t node_id);
   int sockfd_;
   std::string can_interface_;
   uint32_t node_id_;
