@@ -101,7 +101,7 @@ Periodic leg telemetry message
 Payload:
 Byte 0       -> command id
 Byte 1..6    -> 3 int16 positions (scaled by 10)
-Byte 7..12   -> 3 int16 torques (scaled by 10)
+Byte 7..8   -> 3 int16 toe compression (scaled by 10)
 
 Always ISO-TP multi-frame
 
@@ -319,27 +319,22 @@ void Can::sendLegTelemetry()
         encodeScaledInt16(_leg->axes[1].getCurrentPos()),
         encodeScaledInt16(_leg->axes[2].getCurrentPos())
     };
+    int16_t toe_compression = encodeScaledInt16(_leg->readToe());
 
-    //TODO swap with 1 toe sensor reading, also int16
-    int16_t torques[3] =
-    {
-        //TODO either make _estimates_torque public or add a getter in Axis class
-        0,
-        0,
-        0
-    };
 
     memcpy(&payload[1], positions, sizeof(positions));
-    memcpy(&payload[7], torques, sizeof(torques));
+    memcpy(&payload[7], &toe_compression, sizeof(toe_compression));
 
     uint16_t payload_len =
         1 +
         sizeof(positions) +
-        sizeof(torques);
+        sizeof(toe_compression);
 
     sendIsoTp(payload, payload_len);
 
-    //Serial.println("CAN: Leg telemetry sent");
+    #if LOG_LEVEL >= CAN_DEBUG
+        Serial.println("CAN: Leg telemetry sent");
+    #endif
 }
 
 void Can::handleCommandPayload(const uint8_t* d, uint16_t len)

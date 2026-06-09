@@ -36,113 +36,47 @@ ISO_TP_FIRST_FRAME       = 0x1
 ISO_TP_CONSECUTIVE_FRAME = 0x2
 ISO_TP_FLOW_CONTROL      = 0x3
 
-# ============================================
-# CAN SETUP
-# ============================================
-
 bus = can.interface.Bus(
     channel=CAN_INTERFACE,
     bustype="socketcan"
 )
 
-# ============================================
-# ISO-TP RX STATE
-# ============================================
-
 rx_buffer = bytearray()
 expected_size = 0
 rx_active = False
 expected_seq = 1
+latest_leg_telemetry = {}
 
-# ============================================
-# NONBLOCKING KEY PRESS
-# ============================================
+def encode_scaled_int16(value: float) -> bytes:
+    scaled = int(round(value * 10.0))
+    return struct.pack("<h", scaled)
 
-def build_linear_move(
-    x=None,
-    y=None,
-    z=None,
-    speed=None,
-    relative=None
-):
-
-    if x is None:
-        x = float(input("Target X: "))
-
-    if y is None:
-        y = float(input("Target Y: "))
-
-    if z is None:
-        z = float(input("Target Z: "))
-
-    if speed is None:
-        speed = float(input("Speed: "))
-
-    if relative is None:
-        relative = (
-            input("Relative move? (y/n): ")
-            .strip()
-            .lower()
-            .startswith("y")
-        )
-
-    payload = bytearray()
-
-    payload.append(CMD_LINEAR_MOVE)
-
-    payload.extend(struct.pack("<f", x))
-    payload.extend(struct.pack("<f", y))
-    payload.extend(struct.pack("<f", z))
-    payload.extend(struct.pack("<f", speed))
-
-    payload.append(1 if relative else 0)
-
-    print("\nCOMMAND:")
-    print(f"CMD_LINEAR_MOVE (0x{CMD_LINEAR_MOVE:X})")
-    print(f"X        : {x}")
-    print(f"Y        : {y}")
-    print(f"Z        : {z}")
-    print(f"Speed    : {speed}")
-    print(f"Relative : {relative}")
-
-    return payload
-
-def build_rapid_move(
-    x=None,
-    y=None,
-    z=None
-):
-
-    if x is None:
-        x = float(input("Target X: "))
-
-    if y is None:
-        y = float(input("Target Y: "))
-
-    if z is None:
-        z = float(input("Target Z: "))
-
-    payload = bytearray()
-
-    payload.append(CMD_RAPID_MOVE)
-
-    payload.extend(struct.pack("<f", x))
-    payload.extend(struct.pack("<f", y))
-    payload.extend(struct.pack("<f", z))
-
-    print("\nCOMMAND:")
-    print(f"CMD_RAPID_MOVE (0x{CMD_RAPID_MOVE:X})")
-    print(f"X : {x}")
-    print(f"Y : {y}")
-    print(f"Z : {z}")
-
-    return payload
+def decode_scaled_int16(data: bytes) -> float:
+    return struct.unpack("<h", data)[0] / 10.0
 
 def key_pressed():
 
     dr, _, _ = select.select([sys.stdin], [], [], 0)
-
     return dr != []
+
+def display_telemetry_table():
+
+    print("\033[2J\033[H", end="")
+
+    print("LEG | X | Y | Z | TOE")
+    print("----------------------")
+
+    for leg in sorted(latest_leg_telemetry.keys()):
+
+        pos, toe = latest_leg_telemetry[leg]
+
+        print(
+            f"{leg} | "
+            f"{pos[0]:6.1f} "
+            f"{pos[1]:6.1f} "
+            f"{pos[2]:6.1f} "
+            f"{toe:6.1f}"
+        )
 
 # ============================================
 # ISO-TP SEND
@@ -353,41 +287,28 @@ def handle_payload(arbitration_id, payload):
 
     if cmd == CMD_LEG_STATE:
 
-        if len(payload) < 25:
-
+        if len(payload) < 9:
             print("Invalid telemetry payload")
-
             return
 
-        positions = struct.unpack(
-            "<fff",
-            payload[1:13]
+        positions = (
+            decode_scaled_int16(payload[1:3]),
+            decode_scaled_int16(payload[3:5]),
+            decode_scaled_int16(payload[5:7]),
         )
 
-        torques = struct.unpack(
-            "<fff",
-            payload[13:25]
+        toe_compression = decode_scaled_int16(
+            payload[7:9]
         )
 
         leg_number = arbitration_id - 0x100
 
-        print(
-            f"\nLEG {leg_number} TELEMETRY"
+        latest_leg_telemetry[leg_number] = (
+            positions,
+            toe_compression
         )
 
-        print(
-            f"Positions : "
-            f"{positions[0]:8.3f} "
-            f"{positions[1]:8.3f} "
-            f"{positions[2]:8.3f}"
-        )
-
-        print(
-            f"Torques   : "
-            f"{torques[0]:8.3f} "
-            f"{torques[1]:8.3f} "
-            f"{torques[2]:8.3f}"
-        )
+        display_telemetry_table()
 
 # ============================================
 # MONITOR MODE
@@ -445,13 +366,13 @@ def monitor_mode():
 # COMMAND BUILDERS
 # ============================================
 
-def build_single_axis_move():
+def build_single_axis_move(axis=None, position=None):
 
-    axis = int(input("Axis index (0-2): "))
+    if axis is None:
+        axis = int(input("Axis index (0-2): "))
 
-    position = float(
-        input("Target position: ")
-    )
+    if position is None:
+        position = float(input("Target position: "))
 
     payload = bytearray()
 
@@ -460,7 +381,7 @@ def build_single_axis_move():
     payload.append(axis)
 
     payload.extend(
-        struct.pack("<f", position)
+        encode_scaled_int16(position)
     )
 
     print("\nCOMMAND:")
@@ -470,10 +391,90 @@ def build_single_axis_move():
     )
 
     print(f"Axis     : {axis}")
-
     print(f"Position : {position}")
 
     return payload
+
+def build_rapid_move(
+    x=None,
+    y=None,
+    z=None
+):
+
+    if x is None:
+        x = float(input("Target X: "))
+
+    if y is None:
+        y = float(input("Target Y: "))
+
+    if z is None:
+        z = float(input("Target Z: "))
+
+    payload = bytearray()
+
+    payload.append(CMD_RAPID_MOVE)
+
+    payload.extend(encode_scaled_int16(x))
+    payload.extend(encode_scaled_int16(y))
+    payload.extend(encode_scaled_int16(z))
+
+    print("\nCOMMAND:")
+    print(f"CMD_RAPID_MOVE (0x{CMD_RAPID_MOVE:X})")
+    print(f"X : {x}")
+    print(f"Y : {y}")
+    print(f"Z : {z}")
+    return payload
+
+def build_linear_move(
+    x=None,
+    y=None,
+    z=None,
+    speed=None,
+    relative=None
+):
+
+    if x is None:
+        x = float(input("Target X: "))
+
+    if y is None:
+        y = float(input("Target Y: "))
+
+    if z is None:
+        z = float(input("Target Z: "))
+
+    if speed is None:
+        speed = float(input("Speed: "))
+
+    if relative is None:
+        relative = (
+            input("Relative move? (y/n): ")
+            .strip()
+            .lower()
+            .startswith("y")
+        )
+
+    payload = bytearray()
+
+    payload.append(CMD_LINEAR_MOVE)
+
+    payload.extend(encode_scaled_int16(x))
+    payload.extend(encode_scaled_int16(y))
+    payload.extend(encode_scaled_int16(z))
+    payload.extend(encode_scaled_int16(speed))
+
+    payload.append(
+        1 if relative else 0
+    )
+
+    print("\nCOMMAND:")
+    print(f"CMD_LINEAR_MOVE (0x{CMD_LINEAR_MOVE:X})")
+    print(f"X        : {x}")
+    print(f"Y        : {y}")
+    print(f"Z        : {z}")
+    print(f"Speed    : {speed}")
+    print(f"Relative : {relative}")
+    return payload
+
 
 # ============================================
 # MAIN MENU
@@ -485,84 +486,100 @@ def main():
     print(" HEXAPOD CAN COMMAND TOOL")
     print("===================================")
 
-    leg_input = input(
-        "Select leg/node number "
-        "(or m for monitor): "
-    ).strip().lower()
+    while True:
 
-    # ----------------------------------------
-    # MONITOR MODE
-    # ----------------------------------------
+        print("\n-----------------------------------")
+        print("Enter 'm' for monitor")
+        print("Enter 'exit' to quit")
+        print("-----------------------------------")
 
-    if leg_input == "m":
+        leg_input = input(
+            "\nSelect leg/node number: "
+        ).strip().lower()
 
-        monitor_mode()
+        # ----------------------------------------
+        # EXIT
+        # ----------------------------------------
 
-        return
+        if leg_input in ("exit", "quit", "q"):
 
-    # ----------------------------------------
-    # LEG SELECTION
-    # ----------------------------------------
+            print("\nExiting...")
+            break
 
-    leg_number = int(leg_input)
+        # ----------------------------------------
+        # MONITOR MODE
+        # ----------------------------------------
 
-    node_id = 0x100 + leg_number
+        if leg_input == "m":
 
-    print("\nAvailable Commands:")
+            monitor_mode()
+            continue
 
-    print("1 -> Single Axis Move")
-    print("2 -> Linear Move")
-    print("3 -> Auto Tune")
-    print("4 -> Quadratic Move")
-    print("5 -> Rapid Move")
+        # ----------------------------------------
+        # LEG SELECTION
+        # ----------------------------------------
 
-    choice = input("\nSelect command: ")
+        try:
+            leg_number = int(leg_input)
+        except ValueError:
+            print("Invalid leg number")
+            continue
 
-    payload = None
+        node_id = 0x100 + leg_number
 
-    # ----------------------------------------
-    # SINGLE AXIS MOVE
-    # ----------------------------------------
+        print("\nAvailable Commands:")
+        print("1 -> Single Axis Move")
+        print("2 -> Linear Move")
+        print("3 -> Auto Tune")
+        print("4 -> Quadratic Move")
+        print("5 -> Rapid Move")
 
-    if choice == "1":
+        choice = input("\nSelect command: ").strip()
 
-        payload = build_single_axis_move()
+        payload = None
 
-    elif choice == "2":
+        # ----------------------------------------
+        # SINGLE AXIS MOVE
+        # ----------------------------------------
 
-        payload = build_linear_move()
+        if choice == "1":
 
-    elif choice == "3":
+            payload = build_single_axis_move()
 
-        print("TODO: Auto tune not implemented")
+        elif choice == "2":
 
-        return
+            payload = build_linear_move()
 
-    elif choice == "4":
+        elif choice == "3":
 
-        print("TODO: Quadratic move not implemented")
+            print("TODO: Auto tune not implemented")
+            continue
 
-        return
+        elif choice == "4":
 
-    elif choice == "5":
+            print("TODO: Quadratic move not implemented")
+            continue
 
-        payload = build_rapid_move()
+        elif choice == "5":
 
-    else:
+            payload = build_rapid_move()
 
-        print("Invalid selection")
+        else:
 
-        return
+            print("Invalid selection")
+            continue
 
-    # ----------------------------------------
-    # SEND
-    # ----------------------------------------
+        # ----------------------------------------
+        # SEND
+        # ----------------------------------------
 
-    print("\nSending CAN command...")
+        print("\nSending CAN command...")
 
-    send_isotp(node_id, payload)
+        send_isotp(node_id, payload)
 
-    print("\nDone")
+        print("\nDone")
+
+    bus.shutdown()
 
 # ============================================
 # ENTRY

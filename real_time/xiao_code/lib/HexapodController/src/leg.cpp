@@ -38,6 +38,7 @@ enum Dimension { X = 0, Y = 1, Z = 2};
 Leg::Leg() {
     _leg_number = 0;
     can = nullptr;
+    toe = Toe();
 }
 /**
  * @brief Initialize hardware - GPIO, multiplexer, and axis links
@@ -52,7 +53,6 @@ void Leg::begin(){
     axes[0].link(D8, D10, 5, mux);
     axes[1].link(D11, D12, D15, D16, 6, mux);
     axes[2].link(D17, D18, 7, mux);
-    pinMode(TOE_PIN, INPUT); 
 }
 
 /**
@@ -595,4 +595,10 @@ void Leg::processCommandQueue()
             break;
         }
     }
+}
+
+float Leg::readToe() {
+    float toe_value = toe.read();
+    //TODO - update _length2 based on toe reading for compliance control
+    return toe_value;
 }

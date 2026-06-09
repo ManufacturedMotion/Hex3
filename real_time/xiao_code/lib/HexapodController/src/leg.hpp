@@ -13,6 +13,7 @@
 #include "mux.hpp"
 #include "voltage_monitor.hpp"
 #include "command_queue.hpp"
+#include "toe.hpp"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -29,8 +30,6 @@
 
 	class Can;
 	enum move_stage {ACCELERATING, CRUISING, DECELERATING, STOPPED, UNINITIALIZED};
-
-	#define TOE_PIN D0  ///< Pin for toe/ground contact sensor
 
 	/**
 	 * @class Leg
@@ -60,6 +59,8 @@
 			_Bool rapidMove(ThreeByOne target_pos);
 			VoltageSensor voltage_sensor = VoltageSensor();
 			void processCommandQueue();
+			Toe toe;
+			float readToe();
 		private:
 			// Physical properties and calibration
 			uint8_t _leg_number;                         ///< Identifier for this leg (0-5)
