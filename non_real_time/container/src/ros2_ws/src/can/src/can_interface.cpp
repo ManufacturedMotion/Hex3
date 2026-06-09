@@ -42,13 +42,6 @@ CanInterface::CanInterface()
   std::string config_file =
     this->declare_parameter<std::string>("leg_groups_config", "");
 
-  if (!init_can_socket()) {
-    RCLCPP_FATAL(get_logger(),
-      "Failed to initialize CAN socket on '%s'",
-      can_interface_.c_str());
-    throw std::runtime_error("CAN initialization failed");
-  }
-
   for (uint8_t leg_num = 0; leg_num < 6; leg_num++) {
     uint32_t node_id = node_id_ + leg_num;
     if (!create_isotp_socket(node_id)) {
