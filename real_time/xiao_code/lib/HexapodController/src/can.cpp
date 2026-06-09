@@ -308,9 +308,9 @@ void Can::sendLegTelemetry()
 
     sendIsoTp(payload, payload_len);
 
-    #if LOG_LEVEL >= CAN_DEBUG
-        Serial.println("CAN: Leg telemetry sent");
-    #endif
+    //#if LOG_LEVEL >= CAN_DEBUG
+    //    Serial.println("CAN: Leg telemetry sent");
+    //#endif
 }
 
 void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
