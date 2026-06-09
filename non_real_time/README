@@ -1,0 +1,5 @@
+#### TEMPORARY NOTES!!
+CAN.sh has to be run at startup on the pi to enable can. need this to happen automatically
+
+can_testing.py is to testing can <-> xiao cmds. it will be translated to cpp for efficiency and probably moved to a new home
+
