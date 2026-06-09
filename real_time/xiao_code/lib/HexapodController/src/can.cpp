@@ -41,11 +41,11 @@ Multi-axis coordinated move
 
 Payload:
 Byte 0      CMD_LINEAR_MOVE
-Byte 1..4   float x
-Byte 5..8   float y
-Byte 9..12  float z
-Byte 13..16 float speed
-Byte 17     bool relative
+Byte 1..2   int16 x (scaled by 10)
+Byte 3..4   int16 y (scaled by 10)
+Byte 5..6   int16 z (scaled by 10)
+Byte 7..8   int16 speed (scaled by 10)
+Byte 9      bool relative
 
 Typically ISO-TP multi-frame
 
@@ -78,7 +78,7 @@ Move one axis only
 Payload:
 Byte 0      -> command id
 Byte 1      -> axis
-Byte 2..5   -> float position
+Byte 2..3   -> int16 position (scaled by 10)
 
 Single frame
 
@@ -100,8 +100,8 @@ Periodic leg telemetry message
 
 Payload:
 Byte 0       -> command id
-Byte 1..12   -> 3 float positions
-Byte 13..24  -> 3 float torques
+Byte 1..6    -> 3 int16 positions (scaled by 10)
+Byte 7..12   -> 3 int16 torques (scaled by 10)
 
 Always ISO-TP multi-frame
 
@@ -181,9 +181,19 @@ struct IsoTpRxBuffer
 static IsoTpRxBuffer _isotp_rx;
 
 static const uint32_t CMD_TIMEOUT_MS = 250;
-static const uint32_t TELEMETRY_INTERVAL_MS = 100;
+static const uint32_t TELEMETRY_INTERVAL_MS = 10;
 
 static uint32_t _last_telemetry_tx = 0;
+
+static float decodeScaledInt16(int16_t raw)
+{
+    return static_cast<float>(raw) / 10.0f;
+}
+
+static int16_t encodeScaledInt16(float value)
+{
+    return static_cast<int16_t>(value * 10.0f + (value >= 0.0f ? 0.5f : -0.5f));
+}
 
 static std::function<void()> _pending_command = nullptr;
 
@@ -201,7 +211,7 @@ static void resetIsoTp()
 
     _isotp_rx.sequence_number = 1;
 
-    #if LOG_LEVEL >= BASIC_DEBUG
+    #if LOG_LEVEL >= CAN_DEBUG
         Serial.println("CAN: ISO-TP reset");
     #endif
 }
@@ -303,25 +313,24 @@ void Can::sendLegTelemetry()
     payload[0] = CMD_LEG_STATE;
 
     //TODO - replace placeholder values with real axis state
-
-    float positions[3] =
+    int16_t positions[3] =
     {
-        _leg->axes[0].getCurrentPos(),
-        _leg->axes[1].getCurrentPos(),
-        _leg->axes[2].getCurrentPos()
+        encodeScaledInt16(_leg->axes[0].getCurrentPos()),
+        encodeScaledInt16(_leg->axes[1].getCurrentPos()),
+        encodeScaledInt16(_leg->axes[2].getCurrentPos())
     };
 
-    //TODO
-    float torques[3] =
+    //TODO swap with 1 toe sensor reading, also int16
+    int16_t torques[3] =
     {
         //TODO either make _estimates_torque public or add a getter in Axis class
-        0, //_leg->axes[0].current_torque,
-        0, //_leg->axes[1].current_torque,
-        0, //_leg->axes[2].current_torque
+        0,
+        0,
+        0
     };
 
-    memcpy(&payload[1],  positions, sizeof(positions));
-    memcpy(&payload[13], torques, sizeof(torques));
+    memcpy(&payload[1], positions, sizeof(positions));
+    memcpy(&payload[7], torques, sizeof(torques));
 
     uint16_t payload_len =
         1 +
@@ -346,28 +355,42 @@ void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
     {
         default:
         {
-            Serial.println("CAN: Unsupported command received");
-            Serial.println(cmd, HEX);
+            #if LOG_LEVEL >= CAN_DEBUG
+                Serial.println("CAN: Unsupported command received");
+                Serial.println(cmd, HEX);
+            #endif
             return;
         }
 
         case CMD_LINEAR_MOVE:
         {
-            if (len < 18)
+            if (len < 10)
             {
-                Serial.println("CAN: Invalid linear move payload");
+                #if LOG_LEVEL >= CAN_DEBUG
+                    Serial.println("CAN: Invalid linear move payload");
+                #endif
                 return;
             }
 
+            int16_t x_raw = 0;
+            int16_t y_raw = 0;
+            int16_t z_raw = 0;
+            int16_t speed_raw = 0;
+
+            memcpy(&x_raw,     &d[1],  sizeof(int16_t));
+            memcpy(&y_raw,     &d[3],  sizeof(int16_t));
+            memcpy(&z_raw,     &d[5],  sizeof(int16_t));
+            memcpy(&speed_raw, &d[7],  sizeof(int16_t));
+
             Command command{};
             command.type = CommandType::LinearMove;
-            memcpy(&command.linear_move.x,     &d[1],  sizeof(float));
-            memcpy(&command.linear_move.y,     &d[5],  sizeof(float));
-            memcpy(&command.linear_move.z,     &d[9],  sizeof(float));
-            memcpy(&command.linear_move.speed, &d[13], sizeof(float));
-            command.linear_move.relative = d[17] != 0;
+            command.linear_move.x = decodeScaledInt16(x_raw);
+            command.linear_move.y = decodeScaledInt16(y_raw);
+            command.linear_move.z = decodeScaledInt16(z_raw);
+            command.linear_move.speed = decodeScaledInt16(speed_raw);
+            command.linear_move.relative = d[9] != 0;
 
-            if (LOG_LEVEL >= BASIC_DEBUG)
+            if (LOG_LEVEL >= CAN_DEBUG)
             {
                 Serial.printf(
                     "CAN: Linear move | leg %d | "
@@ -386,36 +409,45 @@ void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
 
         case CMD_AUTO_TUNE:
         {
-            Serial.println("CAN: Auto tune command received");
+            #if LOG_LEVEL >= CAN_DEBUG
+                Serial.println("CAN: Auto tune command received");
+            #endif
             //TODO
             return;
         }
 
         case CMD_QUADRATIC_MOVE:
         {
-            Serial.println("CAN: Quadratic move command received");
+            #if LOG_LEVEL >= CAN_DEBUG
+                Serial.println("CAN: Quadratic move command received");
+            #endif
             //TODO
             return;
         }
 
         case CMD_SINGLE_AXIS_MOVE:
         {
-            if (len < 6)
+            if (len < 4)
             {
-                Serial.println("CAN: Invalid single axis move payload");
+                #if LOG_LEVEL >= CAN_DEBUG
+                    Serial.println("CAN: Invalid single axis move payload");
+                #endif
                 return;
             }
 
             uint8_t axis = d[1];
             if (axis >= NUM_AXES_PER_LEG)
             {
-                Serial.println("CAN: Invalid axis index");
+                #if LOG_LEVEL >= CAN_DEBUG
+                    Serial.println("CAN: Invalid axis index");
+                #endif
                 return;
             }
 
-            float pos;
-            memcpy(&pos, &d[2], sizeof(float));
-            if (LOG_LEVEL >= BASIC_DEBUG)
+            int16_t raw_pos = 0;
+            memcpy(&raw_pos, &d[2], sizeof(int16_t));
+            float pos = decodeScaledInt16(raw_pos);
+            if (LOG_LEVEL >= CAN_DEBUG)
             {
                 Serial.printf(
                     "CAN: Single axis move | leg %d | axis %d | pos %.3f\n",
@@ -435,20 +467,27 @@ void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
 
         case CMD_RAPID_MOVE:
         {
-            if (len < 13)
+            if (len < 7)
             {
-                Serial.println("CAN: Invalid rapid move payload");
+                #if LOG_LEVEL >= CAN_DEBUG
+                    Serial.println("CAN: Invalid rapid move payload");
+                #endif
                 return;
             }
 
-            float x;
-            float y;
-            float z;
-            memcpy(&x, &d[1], sizeof(float));
-            memcpy(&y, &d[5], sizeof(float));
-            memcpy(&z, &d[9], sizeof(float));
+            int16_t x_raw = 0;
+            int16_t y_raw = 0;
+            int16_t z_raw = 0;
 
-            if (LOG_LEVEL >= BASIC_DEBUG)
+            memcpy(&x_raw, &d[1], sizeof(int16_t));
+            memcpy(&y_raw, &d[3], sizeof(int16_t));
+            memcpy(&z_raw, &d[5], sizeof(int16_t));
+
+            float x = decodeScaledInt16(x_raw);
+            float y = decodeScaledInt16(y_raw);
+            float z = decodeScaledInt16(z_raw);
+
+            if (LOG_LEVEL >= CAN_DEBUG)
             {
                 Serial.printf(
                     "CAN: Rapid move | leg %d | x %.3f | y %.3f | z %.3f\n",
@@ -480,9 +519,7 @@ void Can::handleCanMessage(const CanMsg& msg)
     }
 
     const uint8_t* d = msg.data;
-
     uint8_t pci = (d[0] >> 4) & 0x0F;
-
     uint32_t now = millis();
 
     switch (pci)
@@ -493,7 +530,9 @@ void Can::handleCanMessage(const CanMsg& msg)
 
             if (payload_len > 7)
             {
-                Serial.println("CAN: Invalid single frame length");
+                #if LOG_LEVEL >= CAN_DEBUG
+                    Serial.println("CAN: Invalid single frame length");
+                #endif
                 return;
             }
 
@@ -513,10 +552,12 @@ void Can::handleCanMessage(const CanMsg& msg)
             memcpy(_isotp_rx.data, &d[2], 6);
             _isotp_rx.current_size = 6;
             _isotp_rx.sequence_number = 1;
-            Serial.printf(
-                "CAN: ISO-TP first frame | expected %d bytes\n",
-                _isotp_rx.expected_size
-            );
+            #if LOG_LEVEL >= CAN_DEBUG
+                Serial.printf(
+                    "CAN: ISO-TP first frame | expected %d bytes\n",
+                    _isotp_rx.expected_size
+                );
+            #endif
             return;
         }
 
@@ -524,7 +565,9 @@ void Can::handleCanMessage(const CanMsg& msg)
         {
             if (!_isotp_rx.active)
             {
-                Serial.println("CAN: Unexpected consecutive frame");
+                #if LOG_LEVEL >= CAN_DEBUG
+                    Serial.println("CAN: Unexpected consecutive frame");
+                #endif
                 return;
             }
 
@@ -532,7 +575,9 @@ void Can::handleCanMessage(const CanMsg& msg)
 
             if (seq != (_isotp_rx.sequence_number & 0x0F))
             {
-                Serial.println("CAN: ISO-TP sequence mismatch");
+                #if LOG_LEVEL >= CAN_DEBUG
+                    Serial.println("CAN: ISO-TP sequence mismatch");
+                #endif
                 resetIsoTp();
                 return;
             }
@@ -556,10 +601,12 @@ void Can::handleCanMessage(const CanMsg& msg)
             _isotp_rx.sequence_number++;
             if (_isotp_rx.current_size >= _isotp_rx.expected_size)
             {
-                Serial.printf(
-                    "CAN: ISO-TP complete | %d bytes\n",
-                    _isotp_rx.current_size
-                );
+                #if LOG_LEVEL >= CAN_DEBUG
+                    Serial.printf(
+                        "CAN: ISO-TP complete | %d bytes\n",
+                        _isotp_rx.current_size
+                    );
+                #endif
 
                 handleCommandPayload(
                     _isotp_rx.data,
@@ -574,13 +621,17 @@ void Can::handleCanMessage(const CanMsg& msg)
         case ISO_TP_FLOW_CONTROL:
         {
             //TODO - transmit-side flow control support
-            Serial.println("CAN: Flow control frame received");
+            #if LOG_LEVEL >= CAN_DEBUG
+                Serial.println("CAN: Flow control frame received");
+            #endif
             return;
         }
 
         default:
         {
-            Serial.println("CAN: Unknown ISO-TP frame");
+            #if LOG_LEVEL >= CAN_DEBUG
+                Serial.println("CAN: Unknown ISO-TP frame");
+            #endif
             return;
         }
     }
@@ -593,7 +644,9 @@ void Can::poll()
     if (_isotp_rx.active &&
         !isFresh(_isotp_rx.last_update))
     {
-        Serial.println("CAN: ISO-TP timeout");
+        #if LOG_LEVEL >= CAN_DEBUG
+            Serial.println("CAN: ISO-TP timeout");
+        #endif
 
         resetIsoTp();
     }
