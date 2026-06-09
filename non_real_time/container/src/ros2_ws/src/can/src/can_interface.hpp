@@ -57,9 +57,7 @@ private:
 
   std::map<int, std::vector<uint32_t>> leg_groups_;
 
-  void CanInterface::handle_isotp_message(uint32_t node_id,
-    const uint8_t* data,
-    size_t len);
+  void handle_isotp_message(uint32_t node_id, const uint8_t* data, size_t len);
 
   void can_receive_loop();
 };
