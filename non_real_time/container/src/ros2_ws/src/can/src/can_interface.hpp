@@ -4,12 +4,24 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <array>
+#include <mutex>
 
 #include <linux/can.h>
 
 #include "hexapod_msgs/msg/leg_command.hpp"
 
-class CanInterface : public rclcpp::Node
+struct IsoTpSocket
+{
+    int sockfd;
+};
+
+struct PendingLegCommand
+{
+    bool valid = false;
+    std::vector<uint8_t> payload;
+};
+
 {
 public:
   CanInterface();
@@ -26,7 +38,17 @@ private:
 
   void load_leg_groups(const std::string& config_file);
 
-private:
+  std::array<PendingLegCommand, 6> pending_commands_;
+  std::mutex command_mutex_;
+
+  std::thread scheduler_thread_;
+  std::atomic<bool> scheduler_running_{false};
+
+  void scheduler_loop();
+
+  class CanInterface : public rclcpp::Node
+
+  boolcreate_isotp_socket(uint32_t node_id)
   int sockfd_;
   std::string can_interface_;
   uint32_t node_id_;

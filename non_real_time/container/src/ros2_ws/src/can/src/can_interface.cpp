@@ -6,11 +6,17 @@
 #include <algorithm>
 
 #include <arpa/inet.h>
-#include <linux/can/raw.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
+#include <linux/can/isotp.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <cstring>
 
 #include <nlohmann/json.hpp>
 
@@ -21,6 +27,14 @@ using json = nlohmann::json;
 CanInterface::CanInterface()
 : Node("can_node"), sockfd_(-1)
 {
+
+  scheduler_running_ = true;
+
+  scheduler_thread_ =
+    std::thread(
+        &CanInterface::scheduler_loop,
+        this);
+
   can_interface_ = this->declare_parameter<std::string>("can_interface", "can0");
   node_id_ = static_cast<uint32_t>(
     this->declare_parameter<int>("node_id", 0x100));
@@ -33,6 +47,15 @@ CanInterface::CanInterface()
       "Failed to initialize CAN socket on '%s'",
       can_interface_.c_str());
     throw std::runtime_error("CAN initialization failed");
+  }
+
+  for (uint8_t leg_num = 0; leg_num < 6; leg_num++) {
+    uint32_t node_id = node_id_ + leg_num;
+    if (!create_isotp_socket(node_id)) {
+      RCLCPP_ERROR(get_logger(),
+        "Failed to create ISO-TP socket for node ID 0x%X",
+        node_id);
+    }
   }
 
   if (!config_file.empty()) {
@@ -61,13 +84,20 @@ CanInterface::~CanInterface()
   if (sockfd_ >= 0) {
     close(sockfd_);
   }
+
+  scheduler_running_ = false;
+
+  if (scheduler_thread_.joinable())
+  {
+      scheduler_thread_.join();
+  }
 }
 
 // ===================== CAN init =====================
 
 bool CanInterface::init_can_socket()
 {
-  sockfd_ = socket(PF_CAN, SOCK_RAW, CAN_RAW);
+  socket(AF_CAN, SOCK_DGRAM, CAN_ISOTP);
   if (sockfd_ < 0) {
     RCLCPP_ERROR(get_logger(), "socket() failed: %s", std::strerror(errno));
     return false;
@@ -95,6 +125,36 @@ bool CanInterface::init_can_socket()
   }
 
   return true;
+}
+
+bool CanInterface::create_isotp_socket(uint32_t node_id)
+{
+    int sock = socket(AF_CAN, SOCK_DGRAM, CAN_ISOTP);
+    if (sock < 0)
+    {
+        RCLCPP_ERROR(get_logger(), "ISO-TP socket failed: %s", strerror(errno));
+        return false;
+    }
+
+    struct sockaddr_can addr{};
+    addr.can_family = AF_CAN;
+    addr.can_ifindex = if_nametoindex(can_interface_.c_str());
+
+    // TX = command to node
+    addr.can_addr.tp.tx_id = node_id;
+
+    // RX = response from node (common +0x80 pattern, adjust if needed)
+    addr.can_addr.tp.rx_id = node_id + 0x80;
+
+    if (bind(sock, (struct sockaddr*)&addr, sizeof(addr)) < 0)
+    {
+        RCLCPP_ERROR(get_logger(), "ISO-TP bind failed: %s", strerror(errno));
+        close(sock);
+        return false;
+    }
+
+    iso_sockets_[node_id] = {sock};
+    return true;
 }
 
 // ===================== ROS callback =====================
@@ -153,13 +213,54 @@ void CanInterface::on_command_received(
     return;
   }
 
-  for (auto node_id : target_nodes) {
-    if (!send_isotp(node_id, payload)) {
-      RCLCPP_ERROR(get_logger(),
-        "Failed sending ISO-TP to 0x%X",
-        node_id);
-    }
+  std::lock_guard<std::mutex> lock(command_mutex_);
+
+  for (auto node_id : target_nodes)
+  {
+      uint32_t leg =
+          node_id - node_id_;
+
+      if (leg < pending_commands_.size())
+      {
+          pending_commands_[leg].payload = payload;
+          pending_commands_[leg].valid = true;
+      }
   }
+}
+
+void CanInterface::scheduler_loop()
+{
+    using clock = std::chrono::steady_clock;
+
+    auto next_tick = clock::now();
+
+    while (scheduler_running_ && rclcpp::ok())
+    {
+        next_tick += std::chrono::milliseconds(20);
+
+        std::array<PendingLegCommand, 6> commands;
+
+        {
+            std::lock_guard<std::mutex> lock(command_mutex_);
+            commands = pending_commands_;
+        }
+
+        for (size_t leg = 0; leg < commands.size(); ++leg)
+        {
+            if (!commands[leg].valid)
+                continue;
+
+            uint32_t node_id =
+                node_id_ +
+                static_cast<uint32_t>(leg);
+
+            send_isotp(
+                node_id,
+                commands[leg].payload);
+        }
+
+        std::this_thread::sleep_until(next_tick);
+    }
 }
 
 // ===================== CAN frame =====================
@@ -181,46 +282,31 @@ bool CanInterface::send_can_frame(
 }
 
 // ===================== ISO-TP =====================
-
 bool CanInterface::send_isotp(
-  uint32_t node_id,
-  const std::vector<uint8_t>& payload)
+    uint32_t node_id,
+    const std::vector<uint8_t>& payload)
 {
-  const size_t len = payload.size();
-  if (len > 256U) return false;
+    auto it = iso_sockets_.find(node_id);
+    if (it == iso_sockets_.end())
+    {
+        if (!create_isotp_socket(node_id))
+            return false;
+        it = iso_sockets_.find(node_id);
+    }
 
-  if (len <= 7U) {
-    uint8_t frame[8]{};
-    frame[0] = (0x0 << 4) | (len & 0x0F);
-    std::memcpy(&frame[1], payload.data(), len);
-    return send_can_frame(node_id, frame, len + 1);
-  }
+    int sock = it->second.sockfd;
 
-  uint8_t ff[8]{};
-  ff[0] = (0x1 << 4) | ((len >> 8) & 0x0F);
-  ff[1] = len & 0xFF;
-  std::memcpy(&ff[2], payload.data(), 6);
+    ssize_t n = write(sock, payload.data(), payload.size());
 
-  if (!send_can_frame(node_id, ff, 8)) return false;
+    if (n < 0)
+    {
+        RCLCPP_ERROR(get_logger(),
+            "ISO-TP write failed to 0x%X: %s",
+            node_id, strerror(errno));
+        return false;
+    }
 
-  size_t offset = 6;
-  uint8_t seq = 1;
-
-  while (offset < len) {
-    uint8_t cf[8]{};
-    cf[0] = (0x2 << 4) | (seq & 0x0F);
-
-    size_t chunk = std::min<size_t>(7, len - offset);
-    std::memcpy(&cf[1], payload.data() + offset, chunk);
-
-    if (!send_can_frame(node_id, cf, chunk + 1)) return false;
-
-    offset += chunk;
-    seq = (seq + 1) & 0x0F;
-    if (seq == 0) seq = 1;
-  }
-
-  return true;
+    return true;
 }
 
 // ===================== JSON config =====================
@@ -249,6 +335,40 @@ void CanInterface::load_leg_groups(const std::string& file)
   } catch (...) {
     RCLCPP_ERROR(get_logger(), "Failed to parse config");
   }
+}
+
+void CanInterface::can_receive_loop()
+{
+    while (rclcpp::ok())
+    {
+        for (auto &kv : iso_sockets_)
+        {
+            int sock = kv.second.sockfd;
+
+            uint8_t buffer[4096];
+
+            ssize_t len = read(sock, buffer, sizeof(buffer));
+
+            if (len > 0)
+            {
+                handle_isotp_message(kv.first, buffer, len);
+            }
+        }
+
+        std::this_thread::sleep_for(std::chrono::microseconds(200));
+    }
+}
+
+void CanInterface::handle_isotp_message(
+    uint32_t node_id,
+    const uint8_t* data,
+    size_t len)
+{
+    RCLCPP_INFO(get_logger(),
+        "ISO-TP RX from 0x%X len=%zu",
+        node_id, len);
+
+    // decode directly into ROS messages
 }
 
 // ===================== main =====================
