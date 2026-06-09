@@ -8,7 +8,6 @@
 #include <mutex>
 
 #include <linux/can.h>
-
 #include "hexapod_msgs/msg/leg_command.hpp"
 
 struct IsoTpSocket
@@ -22,6 +21,7 @@ struct PendingLegCommand
     std::vector<uint8_t> payload;
 };
 
+class CanInterface : public rclcpp::Node
 {
 public:
   CanInterface();
