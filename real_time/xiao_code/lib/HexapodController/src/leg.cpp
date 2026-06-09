@@ -572,7 +572,6 @@ void Leg::processCommandQueue()
 
         case CommandType::LinearMove:
         {
-            //TODO - how to handle speed?
             linearMoveSetup(
                 cmd.linear_move.x,
                 cmd.linear_move.y,

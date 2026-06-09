@@ -96,7 +96,8 @@ Can::Can(
       _tx_pin(tx_pin),
       _bitrate(bitrate),
       _leg_number(leg_number),
-      _node_id(0x100 + leg_number),
+      _tx_node_id(0x180 + leg_number),
+      _rx_node_id(0x100 + leg_number),
       _leg(leg)
 {}
 
@@ -115,7 +116,7 @@ bool Can::begin()
     }
 
     #if LOG_LEVEL >= BASIC_DEBUG
-        Serial.printf("CAN ready | node: 0x%X\n", _node_id);
+        Serial.printf("CAN tx/rx ready: 0x%X\n, 0x%X", _tx_node_id, _rx_node_id);
     #endif
 
     return true;
@@ -212,7 +213,7 @@ void Can::sendIsoTp(const uint8_t* data, uint16_t len)
     {
         CanMsg tx{};
 
-        tx.id = _node_id;
+        tx.id = _tx_node_id;
 
         tx.data[0] =
             (ISO_TP_SINGLE_FRAME << 4) |
@@ -230,7 +231,7 @@ void Can::sendIsoTp(const uint8_t* data, uint16_t len)
     {
         CanMsg tx{};
 
-        tx.id = _node_id;
+        tx.id = _tx_node_id;
 
         tx.data[0] =
             (ISO_TP_FIRST_FRAME << 4) |
@@ -253,7 +254,7 @@ void Can::sendIsoTp(const uint8_t* data, uint16_t len)
     {
         CanMsg tx{};
 
-        tx.id = _node_id;
+        tx.id = _tx_node_id;
 
         tx.data[0] =
             (ISO_TP_CONSECUTIVE_FRAME << 4) |
@@ -484,7 +485,7 @@ void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
             
 void Can::handleCanMessage(const CanMsg& msg)
 {
-    if (msg.id != _node_id)
+    if (msg.id != _rx_node_id)
     {
         return;
     }

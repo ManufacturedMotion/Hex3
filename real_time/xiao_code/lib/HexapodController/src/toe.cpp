@@ -1,7 +1,7 @@
 #include "toe.hpp"
 
 Toe::Toe(bool useGPIO)
-    : gpioEnabled(useGPIO)
+    : _gpio_enabled(useGPIO)
 {}
 
 bool Toe::begin()
@@ -11,7 +11,7 @@ bool Toe::begin()
     }
 
     // Optional GPIO setup
-    if (gpioEnabled) {
+    if (_gpio_enabled) {
         pinMode(TOE_PIN, INPUT_PULLUP);
     }
 
@@ -27,4 +27,16 @@ float Toe::read()
     }
 
     return static_cast<float>(range);
+}
+
+bool Toe::isPressed()
+{
+    if (_gpio_enabled) {
+        return digitalRead(TOE_PIN) == LOW; // Assuming active LOW for pressed
+    }
+    float distance = read();
+    if (distance < 0.0f) {
+        return false; // Sensor error, treat as not pressed
+    }
+    return distance <= toe_threshold;
 }
