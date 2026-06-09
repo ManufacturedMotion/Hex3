@@ -144,7 +144,7 @@ void Leg::runSpeed() {
             axes[0].getCurrentAcceleration(), axes[1].getCurrentAcceleration(), axes[2].getCurrentAcceleration(),
             axes[0].getDutyCycle(), axes[1].getDutyCycle(), axes[2].getDutyCycle(),
             voltage_sensor.filteredRead());
-#else
+#elif TELEMETRY_LOGGING_SPACE != TELEMETRY_LOGGING_SPACE_NONE
         Serial.printf("{\"Error\": \"Invalid TELEMETRY_LOGGING_SPACE value\"}\n");
 #endif
     }
@@ -566,7 +566,14 @@ void Leg::processCommandQueue()
 
         case CommandType::LinearMove:
         {
-            // TODO
+            //TODO - how to handle speed?
+            linearMoveSetup(
+                cmd.linear_move.x,
+                cmd.linear_move.y,
+                cmd.linear_move.z,
+                cmd.linear_move.speed,
+                cmd.linear_move.relative
+            );
             break;
         }
 
@@ -578,7 +585,7 @@ void Leg::processCommandQueue()
 
         case CommandType::RapidMove:
         {
-            // TODO
+            rapidMove(cmd.rapid_move.x, cmd.rapid_move.y, cmd.rapid_move.z);
             break;
         }
 

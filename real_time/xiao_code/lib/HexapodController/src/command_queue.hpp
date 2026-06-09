@@ -5,7 +5,7 @@
 #ifndef FIFO_COMMAND
 #define FIFO_COMMAND
 
-#define COMMAND_QUEUE_SIZE 16
+#define COMMAND_QUEUE_SIZE 1
 
 enum class CommandType : uint8_t
 {
@@ -29,8 +29,18 @@ struct Command
 
         struct
         {
-            float positions[3];
-            uint16_t move_time_ms;
+            float x;
+            float y;
+            float z;
+        } rapid_move;
+
+        struct
+        {
+            float x;
+            float y;
+            float z;
+            float speed;
+            bool relative;
         } linear_move;
     };
 };

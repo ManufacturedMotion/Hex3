@@ -40,9 +40,12 @@ CMD_LINEAR_MOVE (0x10)
 Multi-axis coordinated move
 
 Payload:
-Byte 0      -> command id
-Byte 1      -> move time ms
-Byte 2..n   -> axis float positions
+Byte 0      CMD_LINEAR_MOVE
+Byte 1..4   float x
+Byte 5..8   float y
+Byte 9..12  float z
+Byte 13..16 float speed
+Byte 17     bool relative
 
 Typically ISO-TP multi-frame
 
@@ -327,7 +330,7 @@ void Can::sendLegTelemetry()
 
     sendIsoTp(payload, payload_len);
 
-    Serial.println("CAN: Leg telemetry sent");
+    //Serial.println("CAN: Leg telemetry sent");
 }
 
 void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
@@ -350,8 +353,34 @@ void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
 
         case CMD_LINEAR_MOVE:
         {
-            Serial.println("CAN: Linear move command received");
-            //TODO
+            if (len < 18)
+            {
+                Serial.println("CAN: Invalid linear move payload");
+                return;
+            }
+
+            Command command{};
+            command.type = CommandType::LinearMove;
+            memcpy(&command.linear_move.x,     &d[1],  sizeof(float));
+            memcpy(&command.linear_move.y,     &d[5],  sizeof(float));
+            memcpy(&command.linear_move.z,     &d[9],  sizeof(float));
+            memcpy(&command.linear_move.speed, &d[13], sizeof(float));
+            command.linear_move.relative = d[17] != 0;
+
+            if (LOG_LEVEL >= BASIC_DEBUG)
+            {
+                Serial.printf(
+                    "CAN: Linear move | leg %d | "
+                    "x %.3f y %.3f z %.3f speed %.3f rel %d\n",
+                    _leg_number,
+                    command.linear_move.x,
+                    command.linear_move.y,
+                    command.linear_move.z,
+                    command.linear_move.speed,
+                    command.linear_move.relative
+                );
+            }
+            _leg->command_queue.enqueue(command);
             return;
         }
 
@@ -406,13 +435,43 @@ void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
 
         case CMD_RAPID_MOVE:
         {
-            Serial.println("CAN: Rapid move command received");
-            //TODO
+            if (len < 13)
+            {
+                Serial.println("CAN: Invalid rapid move payload");
+                return;
+            }
+
+            float x;
+            float y;
+            float z;
+            memcpy(&x, &d[1], sizeof(float));
+            memcpy(&y, &d[5], sizeof(float));
+            memcpy(&z, &d[9], sizeof(float));
+
+            if (LOG_LEVEL >= BASIC_DEBUG)
+            {
+                Serial.printf(
+                    "CAN: Rapid move | leg %d | x %.3f | y %.3f | z %.3f\n",
+                    _leg_number,
+                    x,
+                    y,
+                    z
+                );
+            }
+
+            Command command{};
+            command.type = CommandType::RapidMove;
+            command.rapid_move.x = x;
+            command.rapid_move.y = y;
+            command.rapid_move.z = z;
+
+            _leg->command_queue.enqueue(command);
+
             return;
         }
     }
 }
-
+            
 void Can::handleCanMessage(const CanMsg& msg)
 {
     if (msg.id != _node_id)
