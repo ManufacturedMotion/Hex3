@@ -516,20 +516,52 @@ void Can::handleCanMessage(const CanMsg& msg)
         case ISO_TP_FIRST_FRAME:
         {
             resetIsoTp();
+
             _isotp_rx.active = true;
             _isotp_rx.last_update = now;
+
             _isotp_rx.expected_size =
                 ((d[0] & 0x0F) << 8) |
                 d[1];
+
+            if (_isotp_rx.expected_size > sizeof(_isotp_rx.data))
+            {
+                CanMsg fc{};
+
+                fc.id = _tx_node_id;
+
+                fc.data[0] =
+                    (ISO_TP_FLOW_CONTROL << 4) |
+                    0x02; // OVFLW
+
+                fc.data[1] = 0;
+                fc.data[2] = 0;
+
+                fc.data_length = 3;
+
+                CAN.write(fc);
+
+                resetIsoTp();
+                return;
+            }
+
             memcpy(_isotp_rx.data, &d[2], 6);
             _isotp_rx.current_size = 6;
             _isotp_rx.sequence_number = 1;
-            #if LOG_LEVEL >= CAN_DEBUG
-                Serial.printf(
-                    "CAN: ISO-TP first frame | expected %d bytes\n",
-                    _isotp_rx.expected_size
-                );
-            #endif
+            CanMsg fc{};
+            fc.id = _tx_node_id;
+
+            fc.data[0] =
+                (ISO_TP_FLOW_CONTROL << 4) |
+                0x00; // CTS
+
+            fc.data[1] = 0; // block size = unlimited
+            fc.data[2] = 0; // STmin = 0 ms
+
+            fc.data_length = 3;
+
+            CAN.write(fc);
+
             return;
         }
 
@@ -630,3 +662,7 @@ void Can::poll()
         sendLegTelemetry();
     }
 }
+
+//
+//
+//sudo apt install nlohmann-json3-dev
