@@ -51,9 +51,9 @@
 	#define FIFO_IDLE_THRESHOLD 100
     #define ZERO_POINTS {                          \
          {                                         \
-            0.284297 + CALIBRATION_OFFSET_A0,      \
-            -2.611333 + CALIBRATION_OFFSET_A1,     \
-            -0.016329 + CALIBRATION_OFFSET_A2},    \
+            0.210666 + CALIBRATION_OFFSET_A0,      \
+            -2.637411 + CALIBRATION_OFFSET_A1,     \
+            -0.004057 + CALIBRATION_OFFSET_A2},    \
          {                                         \
             0.043462 + CALIBRATION_OFFSET_A0,      \
             -1.766109 + CALIBRATION_OFFSET_A1,     \

@@ -40,7 +40,6 @@ struct Command
             float y;
             float z;
             float speed;
-            bool relative;
         } linear_move;
     };
 };

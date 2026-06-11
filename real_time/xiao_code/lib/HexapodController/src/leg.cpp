@@ -577,7 +577,7 @@ void Leg::processCommandQueue()
                 cmd.linear_move.y,
                 cmd.linear_move.z,
                 cmd.linear_move.speed,
-                cmd.linear_move.relative
+                false
             );
             break;
         }
@@ -603,6 +603,7 @@ void Leg::processCommandQueue()
 }
 
 float Leg::readToe() {
+    //TODO fix if toe is bad
     float toe_value = toe.read();
     float compression_distance = toe.toe_idle - toe_value;
     _length2_dynamic = _length2 + toe.exposed_length - compression_distance;

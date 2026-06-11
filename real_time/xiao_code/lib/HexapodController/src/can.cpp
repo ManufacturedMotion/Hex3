@@ -21,7 +21,6 @@ Byte 1..2   int16 x (scaled by 10)
 Byte 3..4   int16 y (scaled by 10)
 Byte 5..6   int16 z (scaled by 10)
 Byte 7..8   int16 speed (scaled by 10)
-Byte 9      bool relative
 
 Typically ISO-TP multi-frame
 
@@ -65,7 +64,9 @@ Rapid move for one leg
 
 Payload:
 Byte 0      -> command id
-Byte 1..n   -> rapid move params
+Byte 1..2   int16 x (scaled by 10)
+Byte 3..4   int16 y (scaled by 10)
+Byte 5..6   int16 z (scaled by 10)
 
 Can be single or multi-frame
 
@@ -116,7 +117,7 @@ bool Can::begin()
     }
 
     #if LOG_LEVEL >= BASIC_DEBUG
-        Serial.printf("CAN tx/rx ready: 0x%X\n, 0x%X", _tx_node_id, _rx_node_id);
+        Serial.printf("CAN tx/rx ready: 0x%X, 0x%X\n", _tx_node_id, _rx_node_id);
     #endif
 
     return true;
@@ -289,7 +290,6 @@ void Can::sendLegTelemetry()
 
     payload[0] = CMD_LEG_STATE;
 
-    //TODO - replace placeholder values with real axis state
     int16_t positions[3] =
     {
         encodeScaledInt16(_leg->axes[0].getCurrentPos()),
@@ -297,8 +297,6 @@ void Can::sendLegTelemetry()
         encodeScaledInt16(_leg->axes[2].getCurrentPos())
     };
     int16_t toe_compression = encodeScaledInt16(_leg->readToe());
-
-
     memcpy(&payload[1], positions, sizeof(positions));
     memcpy(&payload[7], &toe_compression, sizeof(toe_compression));
 
@@ -310,7 +308,7 @@ void Can::sendLegTelemetry()
     sendIsoTp(payload, payload_len);
 
     //#if LOG_LEVEL >= CAN_DEBUG
-    //    Serial.println("CAN: Leg telemetry sent");
+    //   Serial.println("CAN: Leg telemetry sent");
     //#endif
 }
 
@@ -360,7 +358,6 @@ void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
             command.linear_move.y = decodeScaledInt16(y_raw);
             command.linear_move.z = decodeScaledInt16(z_raw);
             command.linear_move.speed = decodeScaledInt16(speed_raw);
-            command.linear_move.relative = d[9] != 0;
 
             if (LOG_LEVEL >= CAN_DEBUG)
             {
@@ -371,8 +368,7 @@ void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
                     command.linear_move.x,
                     command.linear_move.y,
                     command.linear_move.z,
-                    command.linear_move.speed,
-                    command.linear_move.relative
+                    command.linear_move.speed
                 );
             }
             _leg->command_queue.enqueue(command);
@@ -555,7 +551,7 @@ void Can::handleCanMessage(const CanMsg& msg)
                 (ISO_TP_FLOW_CONTROL << 4) |
                 0x00; // CTS
 
-            fc.data[1] = 0; // block size = unlimited
+            fc.data[1] = 3; // block size = unlimited
             fc.data[2] = 0; // STmin = 0 ms
 
             fc.data_length = 3;
@@ -625,9 +621,9 @@ void Can::handleCanMessage(const CanMsg& msg)
         case ISO_TP_FLOW_CONTROL:
         {
             //TODO - transmit-side flow control support
-            #if LOG_LEVEL >= CAN_DEBUG
-                Serial.println("CAN: Flow control frame received");
-            #endif
+            //#if LOG_LEVEL >= CAN_DEBUG
+            //    Serial.println("CAN: Flow control frame received");
+            //#endif
             return;
         }
 
@@ -662,7 +658,3 @@ void Can::poll()
         sendLegTelemetry();
     }
 }
-
-//
-//
-//sudo apt install nlohmann-json3-dev

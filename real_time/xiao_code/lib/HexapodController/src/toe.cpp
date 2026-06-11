@@ -6,7 +6,9 @@ Toe::Toe(bool useGPIO)
 
 bool Toe::begin()
 {
-    if (!sensor.begin()) {
+    bool ok = sensor.begin();
+    Serial.printf("sensor.begin returned %d\n", ok);
+    if (!ok) {
         return false;
     }
 
