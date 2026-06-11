@@ -12,6 +12,8 @@
 #include "three_by_matrices.hpp"
 #include "mux.hpp"
 #include "voltage_monitor.hpp"
+#include "command_queue.hpp"
+#include "toe.hpp"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -29,8 +31,6 @@
 	class Can;
 	enum move_stage {ACCELERATING, CRUISING, DECELERATING, STOPPED, UNINITIALIZED};
 
-	#define TOE_PIN D0  ///< Pin for toe/ground contact sensor
-
 	/**
 	 * @class Leg
 	 * @brief Represents a single leg of the hexapod robot
@@ -40,32 +40,17 @@
 	 */
 	class Leg {
 		public:
-			/// Constructor - initializes leg number to invalid state
 			Leg();
 			Can* can;
 			void initializeAxes(uint8_t leg_number);
-			
-			/// Array storing current target angles for all three axes (radians)
 			double current_angles[NUM_AXES_PER_LEG];
-			
-			/// Move leg to Cartesian position using inverse kinematics
 			_Bool rapidMove(double x, double y, double z);
-			
-			/// Array of axis controllers (motors) for this leg
 			Axis axes[NUM_AXES_PER_LEG];
-			
-			/// Setup a linear move to a target position with velocity profile
 			_Bool linearMoveSetup(double x, double y, double z, double target_speed, _Bool relative = false);
-			
-			/// Execute one iteration of active linear movement
 			uint8_t linearMovePerform();
-			
-			/// Initialize hardware - pins, multiplexer, and axes
 			void begin();
-			
-			/// Multiplexer for managing multiple servo signals
 			Mux mux;
-			
+			CommandQueue command_queue;
 			/// Main control loop - runs PID, logs telemetry, updates kinematics
 			void runSpeed();
 			void setAxisTargetPos(uint8_t axis_number, double pos);
@@ -73,14 +58,16 @@
 			void setAxisControlConstants(uint8_t axis_number, double Kp_pos, double Kd_pos, double Kp_vel, double Ki_vel, double Kv_ff);
 			_Bool rapidMove(ThreeByOne target_pos);
 			VoltageSensor voltage_sensor = VoltageSensor();
-
+			void processCommandQueue();
+			Toe toe;
+			float readToe();
 		private:
 			// Physical properties and calibration
 			uint8_t _leg_number;                         ///< Identifier for this leg (0-5)
 			double _length0 = 112.929;                   ///< Length of base link (mm)
 			double _length1 = 96.00;                     ///< Length of first joint link (mm)
-			double _length2 = 150.5;                     ///< Length of second joint link (mm)
-			uint8_t toe_threshold = 100;                 ///< Analog threshold for toe press detection
+			double _length2 = 150.5; 		   			 ///< Length of second joint link (mm) 
+			double _length2_dynamic = _length2;             ///< Length of second joint link (mm) with adjustement for toe compression
 			
 			// Kinematics calculation methods
 			/// Move all axes to target angles calculated by inverse kinematics

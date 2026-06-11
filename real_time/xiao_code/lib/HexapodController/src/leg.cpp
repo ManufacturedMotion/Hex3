@@ -20,6 +20,7 @@
 #include <Arduino.h>
 #include "log_levels.hpp"
 #include "mux.hpp"
+#include "command_queue.hpp"
 
 // Configuration tables loaded from config.hpp
 double zero_points[NUM_LEGS][NUM_AXES_PER_LEG] = ZERO_POINTS;
@@ -37,6 +38,7 @@ enum Dimension { X = 0, Y = 1, Z = 2};
 Leg::Leg() {
     _leg_number = 0;
     can = nullptr;
+    toe = Toe(false); //TODO gpio toe config in user config?
 }
 /**
  * @brief Initialize hardware - GPIO, multiplexer, and axis links
@@ -51,10 +53,12 @@ void Leg::begin(){
     axes[0].link(D8, D10, 5, mux);
     axes[1].link(D11, D12, D15, D16, 6, mux);
     axes[2].link(D17, D18, 7, mux);
-    pinMode(TOE_PIN, INPUT); 
-    //if (can){
-    //    can->begin();
-    //}
+    bool toe_init_success = toe.begin();
+    #if LOG_LEVEL >= BASIC_DEBUG
+        if (!toe_init_success) {
+            Serial.println("Failed to initialize toe sensor");
+        }
+    #endif
 }
 
 /**
@@ -146,7 +150,7 @@ void Leg::runSpeed() {
             axes[0].getCurrentAcceleration(), axes[1].getCurrentAcceleration(), axes[2].getCurrentAcceleration(),
             axes[0].getDutyCycle(), axes[1].getDutyCycle(), axes[2].getDutyCycle(),
             voltage_sensor.filteredRead());
-#else
+#elif TELEMETRY_LOGGING_SPACE != TELEMETRY_LOGGING_SPACE_NONE
         Serial.printf("{\"Error\": \"Invalid TELEMETRY_LOGGING_SPACE value\"}\n");
 #endif
     }
@@ -180,7 +184,7 @@ void Leg::setAxisControlConstants(uint8_t axis_number, double Kp_pos, double Kd_
  * @brief Calculate Cartesian position (XYZ) from joint angles using forward kinematics
  *
  * Implements 3-joint forward kinematics for the leg mechanism.
- * Uses DH parameters: _length0 (base), _length1, and _length2.
+ * Uses DH parameters: _length0 (base), _length1, and _length2_dynamic.
  *
  * @param theta0 Joint 0 angle (yaw/rotation in horizontal plane) [radians]
  * @param theta1 Joint 1 angle (pitch/elevation) [radians]
@@ -192,14 +196,14 @@ void Leg::setAxisControlConstants(uint8_t axis_number, double Kp_pos, double Kd_
  */
 _Bool Leg::_forwardKinematics(double theta0, double theta1, double theta2, double& x, double& y, double& z) {
     // Calculate distance in XY plane from vertical
-    double planar_distance = _length1 * cos(theta1) + _length2 * cos(theta1 + theta2) + _length0;
+    double planar_distance = _length1 * cos(theta1) + _length2_dynamic * cos(theta1 + theta2) + _length0;
     
     // Project planar distance to X,Y based on yaw angle
     x = planar_distance * sin(theta0);
     y = planar_distance * cos(theta0);
     
     // Calculate height (Z is measured downward from the hip)
-    z = -_length1 * sin(theta1) - _length2 * sin(theta1 + theta2);
+    z = -_length1 * sin(theta1) - _length2_dynamic * sin(theta1 + theta2);
     return true;
 }
 
@@ -248,14 +252,14 @@ _Bool Leg::_inverseKinematics(double x, double y, double z) {
     double planar_distance = sqrt(y_virtual_planar * y_virtual_planar + z * z);
     
     // Use law of cosines to calculate theta2 (elbow angle)
-    double theta2_tool = (planar_distance*planar_distance - _length1*_length1 - _length2*_length2)
-                        / (2 * _length1 * _length2);
+    double theta2_tool = (planar_distance*planar_distance - _length1*_length1 - _length2_dynamic*_length2_dynamic)
+                        / (2 * _length1 * _length2_dynamic);
 
     potential_results[2] = atan2(sqrt(1 - (theta2_tool*theta2_tool)), theta2_tool);
     
     // Calculate theta1 (shoulder angle)
     double theta1_tool0 = atan2(z, y_virtual_planar);
-    double theta1_tool1 = atan2(_length2 * sin(potential_results[2]), _length1 + _length2 * cos(potential_results[2]));
+    double theta1_tool1 = atan2(_length2_dynamic * sin(potential_results[2]), _length1 + _length2_dynamic * cos(potential_results[2]));
     potential_results[1] = theta1_tool0 - theta1_tool1;
     
     // Adjust angles for negative Z (target below the shoulder plane)
@@ -541,4 +545,70 @@ void Leg::setAxisTargetPos(uint8_t axis_number, double pos) {
 
 void Leg::stopAxis(uint8_t axis_number) {
     axes[axis_number].allowMotion(false);
+}
+
+void Leg::processCommandQueue()
+{
+    /*
+    if (!isReadyForNextCommand()) //TODO - talk to Zack
+    {
+        return;
+    }
+    */
+
+    Command cmd;
+    if (!command_queue.dequeue(cmd))
+    {
+        return;
+    }
+
+    switch (cmd.type)
+    {
+        case CommandType::SingleAxisMove:
+        {
+            axes[cmd.single_axis.axis].setTargetPos(cmd.single_axis.position);
+            break;
+        }
+
+        case CommandType::LinearMove:
+        {
+            linearMoveSetup(
+                cmd.linear_move.x,
+                cmd.linear_move.y,
+                cmd.linear_move.z,
+                cmd.linear_move.speed,
+                false
+            );
+            break;
+        }
+
+        case CommandType::QuadraticMove:
+        {
+            // TODO
+            break;
+        }
+
+        case CommandType::RapidMove:
+        {
+            rapidMove(cmd.rapid_move.x, cmd.rapid_move.y, cmd.rapid_move.z);
+            break;
+        }
+
+        case CommandType::AutoTune:
+        {
+            // TODO
+            break;
+        }
+    }
+}
+
+float Leg::readToe() {
+    //TODO fix if toe is bad
+    float toe_value = toe.read();
+    float compression_distance = toe.toe_idle - toe_value;
+    _length2_dynamic = _length2 + toe.exposed_length - compression_distance;
+    #if LOG_LEVEL >= CALCULATION_DEBUG
+        Serial.printf("Toe sensor reading: %f\n", toe_value);
+    #endif
+    return toe_value;
 }
