@@ -301,7 +301,7 @@ def handle_payload(arbitration_id, payload):
             payload[7:9]
         )
 
-        leg_number = arbitration_id - 0x100
+        leg_number = arbitration_id - 0x180
 
         latest_leg_telemetry[leg_number] = (
             positions,
