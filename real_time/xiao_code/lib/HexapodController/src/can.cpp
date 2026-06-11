@@ -551,7 +551,7 @@ void Can::handleCanMessage(const CanMsg& msg)
                 (ISO_TP_FLOW_CONTROL << 4) |
                 0x00; // CTS
 
-            fc.data[1] = 3; // block size = unlimited
+            fc.data[1] = 0; // block size = unlimited
             fc.data[2] = 0; // STmin = 0 ms
 
             fc.data_length = 3;
