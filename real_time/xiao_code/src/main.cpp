@@ -41,12 +41,7 @@ void handleCAN()
 {
     if (CAN.available())
     {
-<<<<<<< HEAD
-        CanMsg msg;
-
-=======
         CanMsg msg = CAN.read();
->>>>>>> main
         if (leg.can)
         {
             while (CAN.available())
