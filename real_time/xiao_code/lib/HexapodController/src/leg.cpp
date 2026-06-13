@@ -38,7 +38,7 @@ enum Dimension { X = 0, Y = 1, Z = 2};
 Leg::Leg() {
     _leg_number = 0;
     can = nullptr;
-    toe = Toe(false); //TODO gpio toe config in user config?
+    // toe = Toe(false); //TODO gpio toe config in user config?
 }
 /**
  * @brief Initialize hardware - GPIO, multiplexer, and axis links
@@ -53,12 +53,12 @@ void Leg::begin(){
     axes[0].link(D8, D10, 5, mux);
     axes[1].link(D11, D12, D15, D16, 6, mux);
     axes[2].link(D17, D18, 7, mux);
-    bool toe_init_success = toe.begin();
-    #if LOG_LEVEL >= BASIC_DEBUG
-        if (!toe_init_success) {
-            Serial.println("Failed to initialize toe sensor");
-        }
-    #endif
+    // bool toe_init_success = toe.begin();
+    // #if LOG_LEVEL >= BASIC_DEBUG
+    //     if (!toe_init_success) {
+    //         Serial.println("Failed to initialize toe sensor");
+    //     }
+    // #endif
 }
 
 /**
@@ -603,12 +603,13 @@ void Leg::processCommandQueue()
 }
 
 float Leg::readToe() {
-    //TODO fix if toe is bad
-    float toe_value = toe.read();
-    float compression_distance = toe.toe_idle - toe_value;
-    _length2_dynamic = _length2 + toe.exposed_length - compression_distance;
-    #if LOG_LEVEL >= CALCULATION_DEBUG
-        Serial.printf("Toe sensor reading: %f\n", toe_value);
-    #endif
-    return toe_value;
+    return 0;
+    // //TODO fix if toe is bad
+    // float toe_value = toe.read();
+    // float compression_distance = toe.toe_idle - toe_value;
+    // _length2_dynamic = _length2 + toe.exposed_length - compression_distance;
+    // #if LOG_LEVEL >= CALCULATION_DEBUG
+    //     Serial.printf("Toe sensor reading: %f\n", toe_value);
+    // #endif
+    // return toe_value;
 }
