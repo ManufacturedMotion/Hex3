@@ -29,7 +29,8 @@ class Can
         uint8_t _tx_pin;
         CanBitRate _bitrate;
         uint8_t _leg_number;
-        uint32_t _node_id;
+        uint32_t _tx_node_id;
+        uint32_t _rx_node_id;
         Leg* _leg;
         void queueCommand(std::function<void()> fn);
         void handleCommandPayload(

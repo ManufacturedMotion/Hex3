@@ -33,6 +33,7 @@ void loop() {
     // leg.linearMoveSetup(150.0 * dir, 112.0, -220.0, 200.0, false);
     // dir = -dir;
   }
+  leg.processCommandQueue();
   leg.runSpeed();
 }
 
@@ -40,8 +41,12 @@ void handleCAN()
 {
     if (CAN.available())
     {
+<<<<<<< HEAD
         CanMsg msg;
 
+=======
+        CanMsg msg = CAN.read();
+>>>>>>> main
         if (leg.can)
         {
             while (CAN.available())
@@ -58,10 +63,5 @@ void handleCAN()
     if (leg.can)
     {
         leg.can->poll();
-        auto fn = leg.can->popPendingCommand();
-        if (fn)
-        {
-            fn();
-        }
     }
 }

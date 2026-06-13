@@ -8,7 +8,7 @@
 #include "can.hpp"
 
 #define LOG_LEVEL 1
-Can can(1, 0, CanBitRate::BR_500k, 5);  
+Can can(1, 0, CanBitRate::BR_500k, 3);  
 
 void setup() {
   Serial.begin(115200);
