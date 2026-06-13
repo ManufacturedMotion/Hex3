@@ -180,17 +180,20 @@ void CanInterface::on_command_received(
   };
 
   payload.push_back(static_cast<uint8_t>(msg->command_type));
-
+  int16_t x = static_cast<int16_t>(msg->x * 10.0);
+  int16_t y = static_cast<int16_t>(msg->y * 10.0);
+  int16_t z = static_cast<int16_t>(msg->z * 10.0);
+  int16_t speed = static_cast<int16_t>(msg->speed * 10.0);
   if (msg->command_type == hexapod_msgs::msg::LegCommand::LINEAR) {
-    append_bytes(&msg->x, sizeof(msg->x));
-    append_bytes(&msg->y, sizeof(msg->y));
-    append_bytes(&msg->z, sizeof(msg->z));
-    append_bytes(&msg->speed, sizeof(msg->speed));
+    append_bytes(&x, sizeof(x));
+    append_bytes(&y, sizeof(y));
+    append_bytes(&z, sizeof(z));
+    append_bytes(&speed, sizeof(speed));
   }
   else if (msg->command_type == hexapod_msgs::msg::LegCommand::RAPID) {
-    append_bytes(&msg->x, sizeof(msg->x));
-    append_bytes(&msg->y, sizeof(msg->y));
-    append_bytes(&msg->z, sizeof(msg->z));
+    append_bytes(&x, sizeof(x));
+    append_bytes(&y, sizeof(y));
+    append_bytes(&z, sizeof(z));
   }
   else if (msg->command_type == hexapod_msgs::msg::LegCommand::SINGLE_AXIS) {
     append_bytes(&msg->axis, sizeof(msg->axis));
