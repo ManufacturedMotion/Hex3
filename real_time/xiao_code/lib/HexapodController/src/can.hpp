@@ -20,7 +20,7 @@ class Can
             Leg* leg
         );
         bool begin();
-        uint8_t handleCanMessage(const CanMsg& msg);
+        void handleCanMessage(const CanMsg& msg);
         void poll();
         std::function<void()> popPendingCommand();
 

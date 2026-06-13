@@ -44,13 +44,10 @@ void handleCAN()
         CanMsg msg = CAN.read();
         if (leg.can)
         {
-            while (CAN.available())
+            if (CAN.available())
             {
                 msg = CAN.read();
-                if (leg.can->handleCanMessage(msg)) {
-                    // Found a commandmessage and handled it, stop reading more messages for now
-                    break;
-                }
+                leg.can->handleCanMessage(msg);
             }
         }
     }

@@ -483,7 +483,7 @@ void Can::handleCanMessage(const CanMsg& msg)
 {
     if (msg.id != _rx_node_id)
     {
-        return 0;
+        return;
     }
 
     const uint8_t* d = msg.data;
@@ -506,7 +506,7 @@ void Can::handleCanMessage(const CanMsg& msg)
 
             handleCommandPayload(&d[1], payload_len);
 
-            return 1;
+            return;
         }
 
         case ISO_TP_FIRST_FRAME:
@@ -558,7 +558,7 @@ void Can::handleCanMessage(const CanMsg& msg)
 
             CAN.write(fc);
 
-            return 1;
+            return;
         }
 
         case ISO_TP_CONSECUTIVE_FRAME:
@@ -615,7 +615,7 @@ void Can::handleCanMessage(const CanMsg& msg)
                 resetIsoTp();
             }
 
-            return 1;
+            return;
         }
 
         case ISO_TP_FLOW_CONTROL:
