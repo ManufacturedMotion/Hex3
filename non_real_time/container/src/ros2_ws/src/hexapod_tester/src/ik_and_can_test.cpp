@@ -24,7 +24,7 @@ public:
             "/body_pose", 10);
 
         timer_ = this->create_wall_timer(
-            20ms,
+            10ms,
             std::bind(&TesterNode::update, this));
 
         start_time_ = this->now();
