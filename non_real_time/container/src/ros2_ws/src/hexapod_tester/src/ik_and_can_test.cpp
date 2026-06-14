@@ -51,65 +51,117 @@ private:
     {
         hexapod_msgs::msg::BodyPose msg;
 
-        // Sweep configuration
-        const double x_min = -100.0, x_max = 100.0;
-        const double y_min = -100.0, y_max = 100.0;
-        const double z_min = -240.0, z_max = -160.0;
-
-        const double r_max = 0.3;
-        const double p_max = 0.3;
-        const double yaw_max = 0.3;
-
-        const double duration_per_cycle = 20.0; // seconds per full sweep cycle
-
-        // Normalize time into [0,1]
-        double s = fmod(t / duration_per_cycle, 1.0);
-
-        // We divide sweep into segments so it doesn't couple dimensions weirdly
-        // 6 segments total:
-        // x → y → z → roll → pitch → yaw
-
-        double seg = s * 6.0;
-        int idx = (int)seg;
-        double local = seg - idx;
-
-        auto lerp = [](double a, double b, double t)
+        auto lerp = [](double a, double b, double s)
         {
-            return a + (b - a) * t;
+            return a + (b - a) * s;
         };
 
-        // Default pose
+        struct SweepAxis
+        {
+            double magnitude;
+        };
+
+        const SweepAxis axes[] =
+        {
+            {100.0}, // x
+            {100.0}, // y
+            {40.0},  // z (centered around -200)
+            {0.3},   // roll
+            {0.3},   // pitch
+            {0.3}    // yaw
+        };
+
+        constexpr double neutral_z = -200.0;
+
+        // Four phases per DOF:
+        // 0 -> +max
+        // +max -> 0
+        // 0 -> -max
+        // -max -> 0
+        constexpr double phase_duration = 2.0;
+
+        constexpr int phases_per_axis = 4;
+
+        const double total_cycle =
+            std::size(axes) *
+            phases_per_axis *
+            phase_duration;
+
+        double cycle_time = std::fmod(t, total_cycle);
+
+        int axis_index =
+            static_cast<int>(cycle_time /
+            (phases_per_axis * phase_duration));
+
+        double axis_time =
+            cycle_time -
+            axis_index *
+            phases_per_axis *
+            phase_duration;
+
+        int phase =
+            static_cast<int>(axis_time /
+            phase_duration);
+
+        double local =
+            (axis_time -
+            phase * phase_duration) /
+            phase_duration;
+
+        double value = 0.0;
+        double mag = axes[axis_index].magnitude;
+
+        switch (phase)
+        {
+            case 0: // 0 -> +max
+                value = lerp(0.0, mag, local);
+                break;
+
+            case 1: // +max -> 0
+                value = lerp(mag, 0.0, local);
+                break;
+
+            case 2: // 0 -> -max
+                value = lerp(0.0, -mag, local);
+                break;
+
+            case 3: // -max -> 0
+                value = lerp(-mag, 0.0, local);
+                break;
+        }
+
+        // Neutral pose
         msg.x = 0.0;
         msg.y = 0.0;
-        msg.z = -200.0;
+        msg.z = neutral_z;
         msg.roll = 0.0;
         msg.pitch = 0.0;
         msg.yaw = 0.0;
 
-        switch (idx)
+        switch (axis_index)
         {
-            case 0: // X sweep
-                msg.x = lerp(x_min, x_max, local);
+            case 0:
+                msg.x = value;
                 break;
 
-            case 1: // Y sweep
-                msg.y = lerp(y_min, y_max, local);
+            case 1:
+                msg.y = value;
                 break;
 
-            case 2: // Z sweep
-                msg.z = lerp(z_min, z_max, local);
+            case 2:
+                msg.z = neutral_z + value;
                 break;
 
-            case 3: // Roll sweep
-                msg.roll = lerp(-r_max, r_max, local);
+            case 3:
+                msg.roll = value;
                 break;
 
-            case 4: // Pitch sweep
-                msg.pitch = lerp(-p_max, p_max, local);
+            case 4:
+                msg.pitch = value;
                 break;
 
-            case 5: // Yaw sweep
-                msg.yaw = lerp(-yaw_max, yaw_max, local);
+            case 5:
+                msg.yaw = value;
                 break;
         }
 
@@ -118,10 +170,16 @@ private:
         RCLCPP_INFO_THROTTLE(
             this->get_logger(),
             *this->get_clock(),
-            200,
-            "IK Sweep -> x:%.1f y:%.1f z:%.1f r:%.2f p:%.2f y:%.2f",
-            msg.x, msg.y, msg.z, msg.roll, msg.pitch, msg.yaw
-        );
+            500,
+            "Axis %d Phase %d | x=%.1f y=%.1f z=%.1f r=%.3f p=%.3f yaw=%.3f",
+            axis_index,
+            phase,
+            msg.x,
+            msg.y,
+            msg.z,
+            msg.roll,
+            msg.pitch,
+            msg.yaw);
     }
 
     void publishFootTargets(double t)
