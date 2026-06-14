@@ -229,6 +229,7 @@ void InverseKinematicsNode::process()
     pose.yaw   = latest_body_pose_.yaw * 0.01;
 
     std::array<double, 3> body_offsets[NUM_LEGS];
+    RCLCPP_INFO(get_logger(), "Calculating IK...");
 
     _inverseKinematics(
         pose,
