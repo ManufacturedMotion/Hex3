@@ -65,7 +65,7 @@ private:
         {
             {75.0}, // x
             {75.0}, // y
-            {40.0},  // z (centered around -200)
+            {40.0},  // z (centered around -180)
             {0.5},   // roll
             {0.5},   // pitch
             {0.5}    // yaw
@@ -78,7 +78,7 @@ private:
         // +max -> 0
         // 0 -> -max
         // -max -> 0
-        constexpr double phase_duration = 0.5;
+        constexpr double phase_duration = 1.0;
 
         constexpr int phases_per_axis = 4;
 
