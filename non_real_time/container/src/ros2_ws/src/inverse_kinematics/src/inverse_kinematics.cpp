@@ -78,7 +78,10 @@ void InverseKinematicsNode::_inverseKinematics(
     const IKPose& pose,
     std::array<double, 3>* results
 ) {
-
+    RCLCPP_INFO(get_logger(),
+        "Calculating IK for body pose: x=%.1f y=%.1f z=%.1f roll=%.3f pitch=%.3f yaw=%.3f",
+        pose.x, pose.y, pose.z, pose.roll, pose.pitch, pose.yaw
+    );
 	std::array<double, 3> potential_results[NUM_LEGS];
 	for (uint8_t i = 0; i < NUM_LEGS; i++) {
 		potential_results[i][0] = pose.x;
