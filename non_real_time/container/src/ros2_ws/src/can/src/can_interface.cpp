@@ -28,13 +28,6 @@ CanInterface::CanInterface()
 : Node("can_node"), sockfd_(-1)
 {
 
-  scheduler_running_ = true;
-
-  scheduler_thread_ =
-    std::thread(
-        &CanInterface::scheduler_loop,
-        this);
-
   can_interface_ = this->declare_parameter<std::string>("can_interface", "can0");
   node_id_ = static_cast<uint32_t>(
     this->declare_parameter<int>("node_id", 0x100));
@@ -63,6 +56,13 @@ CanInterface::CanInterface()
         &CanInterface::on_command_received,
         this,
         std::placeholders::_1));
+
+  scheduler_running_ = true;
+
+  scheduler_thread_ =
+    std::thread(
+        &CanInterface::scheduler_loop,
+        this);
 
   RCLCPP_INFO(get_logger(),
     "can_node ready on interface '%s' target node ID 0x%X",
@@ -315,6 +315,13 @@ bool CanInterface::send_isotp(
           RCLCPP_ERROR(get_logger(),
               "ISO-TP write failed to 0x%X: %s",
               node_id, strerror(errno));
+          return false;
+      }
+      if (n != static_cast<ssize_t>(payload.size()))
+      {
+          RCLCPP_ERROR(get_logger(),
+              "ISO-TP write failed to 0x%X: incomplete write",
+              node_id);
           return false;
       }
 
