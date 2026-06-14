@@ -223,7 +223,7 @@ void CanInterface::on_command_received(
 
       if (leg < pending_commands_.size())
       {
-          ROSCPP_INFO(get_logger(),
+          RCLCPP_INFO(get_logger(),
               "Scheduling command for leg %u (node 0x%X)",
               leg, node_id);
           pending_commands_[leg].payload = payload;
