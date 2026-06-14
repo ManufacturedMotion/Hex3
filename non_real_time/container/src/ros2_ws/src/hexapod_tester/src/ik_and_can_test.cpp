@@ -63,8 +63,8 @@ private:
 
         const SweepAxis axes[] =
         {
-            {100.0}, // x
-            {100.0}, // y
+            {75.0}, // x
+            {75.0}, // y
             {40.0},  // z (centered around -200)
             {0.3},   // roll
             {0.3},   // pitch
