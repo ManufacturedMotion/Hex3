@@ -107,7 +107,7 @@ bool Can::begin()
     CAN.setRX(_rx_pin);
     CAN.setTX(_tx_pin);
 
-    if (!CAN.begin(_bitrate, 64))
+    if (!CAN.begin(_bitrate, 128))
     {
         #if LOG_LEVEL >= BASIC_DEBUG
             Serial.println("CAN init failed");
@@ -117,6 +117,7 @@ bool Can::begin()
     }
 
     #if LOG_LEVEL >= BASIC_DEBUG
+        Serial.println("CAN init succeeded");
         Serial.printf("CAN tx/rx ready: 0x%X, 0x%X\n", _tx_node_id, _rx_node_id);
     #endif
 
@@ -474,6 +475,164 @@ void Can::handleCommandPayload(const uint8_t* d, uint16_t len)
 
             _leg->command_queue.enqueue(command);
 
+            return;
+        }
+    }
+}
+
+void Can::canCallback(can2040 *cd, uint32_t notify, can2040_msg *msg)
+{
+    if (msg->id != _rx_node_id)
+    {
+        return;
+    }
+
+    const uint8_t* d = msg->data;
+    uint8_t pci = (d[0] >> 4) & 0x0F;
+    uint32_t now = millis();
+
+    switch (pci)
+    {
+        case ISO_TP_SINGLE_FRAME:
+        {
+            uint8_t payload_len = d[0] & 0x0F;
+
+            if (payload_len > 7)
+            {
+                #if LOG_LEVEL >= CAN_DEBUG
+                    Serial.println("CAN: Invalid single frame length");
+                #endif
+                return;
+            }
+
+            handleCommandPayload(&d[1], payload_len);
+
+            return;
+        }
+
+        case ISO_TP_FIRST_FRAME:
+        {
+            resetIsoTp();
+
+            _isotp_rx.active = true;
+            _isotp_rx.last_update = now;
+
+            _isotp_rx.expected_size =
+                ((d[0] & 0x0F) << 8) |
+                d[1];
+
+            if (_isotp_rx.expected_size > sizeof(_isotp_rx.data))
+            {
+                CanMsg fc{};
+
+                fc.id = _tx_node_id;
+
+                fc.data[0] =
+                    (ISO_TP_FLOW_CONTROL << 4) |
+                    0x02; // OVFLW
+
+                fc.data[1] = 0;
+                fc.data[2] = 0;
+
+                fc.data_length = 3;
+
+                CAN.write(fc);
+
+                resetIsoTp();
+                return;
+            }
+
+            memcpy(_isotp_rx.data, &d[2], 6);
+            _isotp_rx.current_size = 6;
+            _isotp_rx.sequence_number = 1;
+            CanMsg fc{};
+            fc.id = _tx_node_id;
+
+            fc.data[0] =
+                (ISO_TP_FLOW_CONTROL << 4) |
+                0x00; // CTS
+
+            fc.data[1] = 0; // block size = unlimited
+            fc.data[2] = 0; // STmin = 0 ms
+
+            fc.data_length = 3;
+
+            CAN.write(fc);
+
+            return;
+        }
+
+        case ISO_TP_CONSECUTIVE_FRAME:
+        {
+            if (!_isotp_rx.active)
+            {
+                #if LOG_LEVEL >= CAN_DEBUG
+                    Serial.println("CAN: Unexpected consecutive frame");
+                #endif
+                return;
+            }
+
+            uint8_t seq = d[0] & 0x0F;
+
+            if (seq != (_isotp_rx.sequence_number & 0x0F))
+            {
+                #if LOG_LEVEL >= CAN_DEBUG
+                    Serial.println("CAN: ISO-TP sequence mismatch");
+                #endif
+                resetIsoTp();
+                return;
+            }
+
+            _isotp_rx.last_update = now;
+
+            uint16_t remaining =
+                _isotp_rx.expected_size -
+                _isotp_rx.current_size;
+
+            uint8_t copy_len =
+                (remaining >= 7) ? 7 : remaining;
+
+            memcpy(
+                &_isotp_rx.data[_isotp_rx.current_size],
+                &d[1],
+                copy_len
+            );
+
+            _isotp_rx.current_size += copy_len;
+            _isotp_rx.sequence_number++;
+            if (_isotp_rx.current_size >= _isotp_rx.expected_size)
+            {
+                #if LOG_LEVEL >= CAN_DEBUG
+                    Serial.printf(
+                        "CAN: ISO-TP complete | %d bytes\n",
+                        _isotp_rx.current_size
+                    );
+                #endif
+
+                handleCommandPayload(
+                    _isotp_rx.data,
+                    _isotp_rx.expected_size
+                );
+                resetIsoTp();
+            }
+
+            return;
+        }
+
+        case ISO_TP_FLOW_CONTROL:
+        {
+            //TODO - transmit-side flow control support
+            //#if LOG_LEVEL >= CAN_DEBUG
+            //    Serial.println("CAN: Flow control frame received");
+            //#endif
+            return;
+        }
+
+        default:
+        {
+            #if LOG_LEVEL >= CAN_DEBUG
+                Serial.println("CAN: Unknown ISO-TP frame");
+            #endif
             return;
         }
     }

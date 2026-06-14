@@ -23,6 +23,7 @@ class Can
         void handleCanMessage(const CanMsg& msg);
         void poll();
         std::function<void()> popPendingCommand();
+        void canCallback(can2040 *cd, uint32_t notify, can2040_msg *msg);
 
     private:
         uint8_t _rx_pin;

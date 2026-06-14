@@ -39,21 +39,17 @@ void loop() {
 
 void handleCAN()
 {
-    if (CAN.available())
+    if (leg.can)
     {
-        CanMsg msg = CAN.read();
-        if (leg.can)
+        if (CAN.available())
         {
+        
             while (CAN.available())
             {
-                msg = CAN.read();
+                CanMsg msg = CAN.read();
                 leg.can->handleCanMessage(msg);
             }
         }
-    }
-
-    if (leg.can)
-    {
         leg.can->poll();
     }
 }
