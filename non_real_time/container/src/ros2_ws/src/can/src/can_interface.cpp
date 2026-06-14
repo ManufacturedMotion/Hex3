@@ -56,7 +56,7 @@ CanInterface::CanInterface()
   command_sub_ =
     this->create_subscription<hexapod_msgs::msg::LegCommand>(
       "/leg_commands",
-      rclcpp::BestAvailableQos(),
+      rclcpp::BestAvailableQoS(),
       std::bind(
         &CanInterface::on_command_received,
         this,
