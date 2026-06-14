@@ -34,6 +34,9 @@ public:
     }
 
 private:
+    double body_x_ = 0.0;
+    double body_y_ = 0.0;
+    double body_yaw_ = 0.0;
 
     void update()
     {
@@ -48,9 +51,15 @@ private:
     {
         hexapod_msgs::msg::BodyPose msg;
 
-        msg.x = 0.0;
+        const double speed = 20.0;   // mm/s forward
+        const double bounce = 10.0;  // mm
+
+        body_x_ = speed * t;
+
+        msg.x = body_x_;
         msg.y = 0.0;
-        msg.z = -200.0; // + 40.0 * std::sin(2.0 * t);
+        msg.z = -200.0 + bounce * std::sin(2.0 * M_PI * 1.0 * t);
+
         msg.roll  = 0.0;
         msg.pitch = 0.0;
         msg.yaw   = 0.0;
@@ -68,71 +77,60 @@ private:
     {
         hexapod_msgs::msg::FootTargetArray msg;
 
-        const double step_freq = 1.2;        // gait speed
-        const double step_length = 60.0;     // mm
-        const double lift_height = 35.0;     // mm
+        const double step_freq   = 1.2;
+        const double step_length = 50.0;   // forward stride in mm
+        const double lift_height = 30.0;
 
-        // Tripod grouping
-        const int tripodA[3] = {1, 2, 3};
-        const int tripodB[3] = {4, 5, 0};
+        // Tripod split (classic alternating diagonals)
+        const int tripodA[3] = {0, 3, 4};
+        const int tripodB[3] = {1, 2, 5};
 
-        auto compute_leg = [&](int leg_id, bool in_tripod_a)
+        // These are your FIXED nominal foot placements in BODY frame
+        // You SHOULD tune these to your real geometry
+        double nominal_x[6] = { 100,  100,  0, -100, -100,  0 };
+        double nominal_y[6] = { 120,   40, 120,  120,   40,  40 };
+        double nominal_z    = 0.0;
+
+        auto leg_phase = [&](int leg_id, bool tripod_a)
         {
-            double leg_phase_offset = in_tripod_a ? 0.0 : 0.5;
+            double phase_offset = tripod_a ? 0.0 : 0.5;
+            double phase = fmod(t * step_freq + phase_offset, 1.0);
 
-            double phase = fmod(t * step_freq + leg_phase_offset, 1.0);
+            double x = nominal_x[leg_id];
+            double y = nominal_y[leg_id];
 
             hexapod_msgs::msg::FootTarget ft;
 
-            // Default stance position (you likely want real neutral foot positions here)
-            double x0 = 0.0;
-            double y0 = 0.0;
-            double z0 = 0.0;
-
             if (phase < 0.5)
             {
-                // STANCE: move foot backward relative to body motion
-                double p = phase / 0.5; // 0→1
+                // STANCE: foot stays planted, moves backward relative to body motion
+                double p = phase / 0.5;
 
-                ft.x = x0 - step_length * (p - 0.5); // backward sweep
-                ft.z = z0;
+                ft.x = x - step_length * (p - 0.5);
+                ft.z = nominal_z;
             }
             else
             {
-                // SWING: lift and move forward
-                double p = (phase - 0.5) / 0.5; // 0→1
+                // SWING: lift + move forward
+                double p = (phase - 0.5) / 0.5;
 
-                ft.x = x0 + step_length * (p - 0.5);
-                ft.z = z0 + lift_height * std::sin(M_PI * p);
+                ft.x = x + step_length * (p - 0.5);
+                ft.z = nominal_z + lift_height * std::sin(M_PI * p);
             }
 
-            ft.y = y0;
+            ft.y = y;
             return ft;
         };
 
         // Fill tripod A
         for (int i = 0; i < 3; i++)
-        {
-            int leg = tripodA[i];
-            msg.foot_targets[leg] = compute_leg(leg, true);
-        }
+            msg.foot_targets[tripodA[i]] = leg_phase(tripodA[i], true);
 
         // Fill tripod B
         for (int i = 0; i < 3; i++)
-        {
-            int leg = tripodB[i];
-            msg.foot_targets[leg] = compute_leg(leg, false);
-        }
+            msg.foot_targets[tripodB[i]] = leg_phase(tripodB[i], false);
 
         foot_pub_->publish(msg);
-
-        RCLCPP_INFO(
-            this->get_logger(),
-            "Tripod gait published: L0(%.1f, %.1f, %.1f)",
-            msg.foot_targets[0].x,
-            msg.foot_targets[0].y,
-            msg.foot_targets[0].z
-        );
     }
 
 private:
