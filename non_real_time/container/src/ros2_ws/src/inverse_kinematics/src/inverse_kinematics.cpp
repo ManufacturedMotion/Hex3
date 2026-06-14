@@ -223,9 +223,8 @@ void InverseKinematicsNode::process()
         pose,
         body_offsets);
 
-    // for (uint8_t i = 0; i < NUM_LEGS; i++) {
+    for (uint8_t i = 0; i < NUM_LEGS; i++) {
 
-    uint8_t i = 5;
         hexapod_msgs::msg::LegCommand cmd;
 
         cmd.leg_number = i;
@@ -245,5 +244,5 @@ void InverseKinematicsNode::process()
             "Published LegCommand for leg %d: x=%.1f y=%.1f z=%.1f",
             i, cmd.x, cmd.y, cmd.z
         );
-    // }
+    }
 }
