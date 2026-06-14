@@ -50,7 +50,7 @@ private:
 
         msg.x = 0.0;
         msg.y = 0.0;
-        msg.z = -200.0 + 40.0 * std::sin(2.0 * t);
+        msg.z = -200.0; // + 40.0 * std::sin(2.0 * t);
         msg.roll  = 0.0;
         msg.pitch = 0.0;
         msg.yaw   = 0.0;
@@ -68,25 +68,67 @@ private:
     {
         hexapod_msgs::msg::FootTargetArray msg;
 
+        const double step_freq = 1.2;        // gait speed
+        const double step_length = 60.0;     // mm
+        const double lift_height = 35.0;     // mm
 
-        for (int i = 0; i < 6; i++)
+        // Tripod grouping
+        const int tripodA[3] = {0, 3, 4};
+        const int tripodB[3] = {1, 2, 5};
+
+        auto compute_leg = [&](int leg_id, bool in_tripod_a)
         {
-            double phase = t + i * 0.5;
+            double leg_phase_offset = in_tripod_a ? 0.0 : 0.5;
+
+            double phase = fmod(t * step_freq + leg_phase_offset, 1.0);
 
             hexapod_msgs::msg::FootTarget ft;
 
-            ft.x = 0.0; //100.0 * std::cos(phase);
-            ft.y = 0.0;
-            ft.z = 0.0; // (std::sin(phase) > 0.0) ? 40.0 : 0.0;
+            // Default stance position (you likely want real neutral foot positions here)
+            double x0 = 0.0;
+            double y0 = 0.0;
+            double z0 = 0.0;
 
-            msg.foot_targets[i] = ft;
+            if (phase < 0.5)
+            {
+                // STANCE: move foot backward relative to body motion
+                double p = phase / 0.5; // 0→1
+
+                ft.x = x0 - step_length * (p - 0.5); // backward sweep
+                ft.z = z0;
+            }
+            else
+            {
+                // SWING: lift and move forward
+                double p = (phase - 0.5) / 0.5; // 0→1
+
+                ft.x = x0 + step_length * (p - 0.5);
+                ft.z = z0 + lift_height * std::sin(M_PI * p);
+            }
+
+            ft.y = y0;
+            return ft;
+        };
+
+        // Fill tripod A
+        for (int i = 0; i < 3; i++)
+        {
+            int leg = tripodA[i];
+            msg.foot_targets[leg] = compute_leg(leg, true);
+        }
+
+        // Fill tripod B
+        for (int i = 0; i < 3; i++)
+        {
+            int leg = tripodB[i];
+            msg.foot_targets[leg] = compute_leg(leg, false);
         }
 
         foot_pub_->publish(msg);
 
         RCLCPP_INFO(
             this->get_logger(),
-            "Published FootTargets (6 legs) sample: leg0=(%.1f, %.1f, %.1f)",
+            "Tripod gait published: L0(%.1f, %.1f, %.1f)",
             msg.foot_targets[0].x,
             msg.foot_targets[0].y,
             msg.foot_targets[0].z

@@ -160,9 +160,6 @@ bool CanInterface::create_isotp_socket(uint32_t node_id)
 void CanInterface::on_command_received(
   const hexapod_msgs::msg::LegCommand::SharedPtr msg)
 {
-  RCLCPP_INFO(get_logger(),
-    "Received LegCommand for leg %d: x=%.1f y=%.1f z=%.1f",
-    msg->leg_number, msg->x, msg->y, msg->z);
   std::vector<uint32_t> target_nodes;
 
   if (static_cast<int8_t>(msg->leg_number) < 0) {
@@ -226,9 +223,6 @@ void CanInterface::on_command_received(
 
       if (leg < pending_commands_.size())
       {
-          RCLCPP_INFO(get_logger(),
-              "Scheduling command for leg %u (node 0x%X)",
-              leg, node_id);
           pending_commands_[leg].payload = payload;
           pending_commands_[leg].valid = true;
       }
@@ -308,33 +302,22 @@ bool CanInterface::send_isotp(
 
     int sock = it->second.sockfd;
 
-    auto start = std::chrono::steady_clock::now();
-
     ssize_t n = write(sock, payload.data(), payload.size());
 
-    auto end = std::chrono::steady_clock::now();
-
-    RCLCPP_INFO(
-        get_logger(),
-        "Leg %u write took %ld us",
-        node_id,
-        std::chrono::duration_cast<std::chrono::microseconds>(
-            end - start).count());
-
-      if (n < 0)
-      {
-          RCLCPP_ERROR(get_logger(),
-              "ISO-TP write failed to 0x%X: %s",
-              node_id, strerror(errno));
-          return false;
-      }
-      if (n != static_cast<ssize_t>(payload.size()))
-      {
-          RCLCPP_ERROR(get_logger(),
-              "ISO-TP write failed to 0x%X: incomplete write",
-              node_id);
-          return false;
-      }
+    if (n < 0)
+    {
+        RCLCPP_ERROR(get_logger(),
+            "ISO-TP write failed to 0x%X: %s",
+            node_id, strerror(errno));
+        return false;
+    }
+    if (n != static_cast<ssize_t>(payload.size()))
+    {
+        RCLCPP_ERROR(get_logger(),
+            "ISO-TP write failed to 0x%X: incomplete write",
+            node_id);
+        return false;
+    }
 
     return true;
 }
