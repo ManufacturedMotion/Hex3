@@ -129,7 +129,11 @@ private:
         hexapod_msgs::msg::FootTargetArray msg;
 
         for (int i = 0; i < 6; i++) {
-            msg.foot_targets[i] = {0.0, 0.0, 0.0};
+            hexapod_msgs::msg::FootTarget ft;
+            ft.x = 0.0;
+            ft.y = 0.0;
+            ft.z = 0.0;
+            msg.foot_targets[i] = ft;
         }
         // const double step_freq   = 1.2;
         // const double step_length = 50.0;   // forward stride in mm
