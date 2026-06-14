@@ -90,7 +90,7 @@ CanInterface::~CanInterface()
 
 bool CanInterface::init_can_socket()
 {
-  socket(AF_CAN, SOCK_DGRAM, CAN_ISOTP);
+  sockfd_ = socket(AF_CAN, SOCK_DGRAM, CAN_ISOTP);
   if (sockfd_ < 0) {
     RCLCPP_ERROR(get_logger(), "socket() failed: %s", std::strerror(errno));
     return false;
@@ -239,6 +239,11 @@ void CanInterface::scheduler_loop()
         {
             std::lock_guard<std::mutex> lock(command_mutex_);
             commands = pending_commands_;
+            for (auto &cmd : pending_commands_)
+            {
+                cmd.valid = false;
+                cmd.payload.clear();
+            }
         }
 
         for (size_t leg = 0; leg < commands.size(); ++leg)
@@ -292,15 +297,26 @@ bool CanInterface::send_isotp(
 
     int sock = it->second.sockfd;
 
+    auto start = std::chrono::steady_clock::now();
+
     ssize_t n = write(sock, payload.data(), payload.size());
 
-    if (n < 0)
-    {
-        RCLCPP_ERROR(get_logger(),
-            "ISO-TP write failed to 0x%X: %s",
-            node_id, strerror(errno));
-        return false;
-    }
+    auto end = std::chrono::steady_clock::now();
+
+    RCLCPP_INFO(
+        get_logger(),
+        "Leg %u write took %lld us",
+        node_id,
+        std::chrono::duration_cast<std::chrono::microseconds>(
+            end - start).count());
+
+      if (n < 0)
+      {
+          RCLCPP_ERROR(get_logger(),
+              "ISO-TP write failed to 0x%X: %s",
+              node_id, strerror(errno));
+          return false;
+      }
 
     return true;
 }
