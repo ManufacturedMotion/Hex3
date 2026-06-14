@@ -37,57 +37,65 @@ InverseKinematicsNode::InverseKinematicsNode()
         std::bind(&InverseKinematicsNode::process, this));
 }
 
+static inline void rotateVectorRPY(
+    std::array<double, 3>& v,
+    double roll,
+    double pitch,
+    double yaw)
+{
+    const double cr = std::cos(roll);
+    const double sr = std::sin(roll);
+
+    const double cp = std::cos(pitch);
+    const double sp = std::sin(pitch);
+
+    const double cy = std::cos(yaw);
+    const double sy = std::sin(yaw);
+
+    // Save original values before overwriting
+    const double x = v[0];
+    const double y = v[1];
+    const double z = v[2];
+
+    // Rz * Ry * Rx
+    v[0] =
+        cy * cp * x +
+        (cy * sp * sr - sy * cr) * y +
+        (cy * sp * cr + sy * sr) * z;
+
+    v[1] =
+        sy * cp * x +
+        (sy * sp * sr + cy * cr) * y +
+        (sy * sp * cr - cy * sr) * z;
+
+    v[2] =
+        -sp * x +
+        cp * sr * y +
+        cp * cr * z;
+}
+
 void InverseKinematicsNode::_inverseKinematics(
     const IKPose& pose,
     std::array<double, 3>* results
 ) {
 
+	std::array<double, 3> potential_results[NUM_LEGS];
+	for (uint8_t i = 0; i < NUM_LEGS; i++) {
+		potential_results[i][0] = pose.x;
+		potential_results[i][1] = pose.y;
+		potential_results[i][2] = pose.z + sin(pose.pitch) * (_leg_coordinate_transforms[i].x + pose.x) + sin(pose.roll) * (_leg_coordinate_transforms[i].y + pose.y);
 
-    // --- SoA buffers (SIMD-friendly) ---
-    alignas(32) double px[NUM_LEGS];
-    alignas(32) double py[NUM_LEGS];
-    alignas(32) double pz[NUM_LEGS];
+		rotateVectorRPY(potential_results[i], _leg_coordinate_transforms[i].roll, _leg_coordinate_transforms[i].pitch, _leg_coordinate_transforms[i].yaw);
+		potential_results[i][0] += _stance_offset[0];
+		potential_results[i][1] += _stance_offset[1];
+		potential_results[i][2] += _stance_offset[2];
+        rotateVectorRPY(potential_results[i], 0.0, 0.0, pose.yaw);
+	}
 
-    // --- base stage ---
-    for (uint8_t i = 0; i < NUM_LEGS; i++) {
-        px[i] = pose.x;
-        py[i] = pose.y;
-
-        pz[i] =
-            pose.z
-            + pose.sin_pitch * (_leg_coordinate_transforms[i].x + pose.x)
-            + pose.sin_roll  * (_leg_coordinate_transforms[i].y + pose.y);
-    }
-
-    // --- transform stage ---
-    for (uint8_t i = 0; i < NUM_LEGS; i++) {
-
-        double cy = cos(_leg_coordinate_transforms[i].yaw);
-        double sy = sin(_leg_coordinate_transforms[i].yaw);
-
-        double x = px[i];
-        double y = py[i];
-
-        // home yaw
-        double hx = x * cy - y * sy;
-        double hy = x * sy + y * cy;
-
-        // stance offset
-        hx += _stance_offset[0];
-        hy += _stance_offset[1];
-        pz[i] += _stance_offset[2];
-
-        // global yaw (precomputed)
-        double nx = hx * pose.cos_yaw - hy * pose.sin_yaw;
-        double ny = hx * pose.sin_yaw + hy * pose.cos_yaw;
-
-        px[i] = nx;
-        py[i] = ny;
-    }
-
-    // --- pack output ---
-    for (uint8_t i = 0; i < NUM_LEGS; i++) {
-        results[i] = { px[i], py[i], pz[i] };
+	for (uint8_t i = 0; i < NUM_LEGS; i++) {
+        for (int j = 0; j < 3; j++) {
+            results[i][j] += potential_results[i][j];
+        }
     }
 
 }
