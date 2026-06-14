@@ -96,6 +96,11 @@ void InverseKinematicsNode::_inverseKinematics(
         for (int j = 0; j < 3; j++) {
             results[i][j] += potential_results[i][j];
         }
+        RCLCPP_INFO(
+            this->get_logger(),
+            "Leg %d body offset: x=%.1f y=%.1f z=%.1f",
+            i, results[i][0], results[i][1], results[i][2]
+        );
     }
 
 }
