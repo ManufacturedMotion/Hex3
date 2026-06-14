@@ -237,7 +237,7 @@ void CanInterface::scheduler_loop()
 
     while (scheduler_running_ && rclcpp::ok())
     {
-        next_tick += std::chrono::milliseconds(10);
+        next_tick += std::chrono::milliseconds(100);
 
         std::array<PendingLegCommand, 6> commands;
 
