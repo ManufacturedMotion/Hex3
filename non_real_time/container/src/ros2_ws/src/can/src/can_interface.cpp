@@ -42,6 +42,11 @@ CanInterface::CanInterface()
         "Failed to create ISO-TP socket for node ID 0x%X",
         node_id);
     }
+    else {
+      RCLCPP_INFO(get_logger(),
+        "Created ISO-TP socket for node ID 0x%X",
+        node_id);
+    }
   }
 
   if (!config_file.empty()) {

@@ -44,7 +44,7 @@ void handleCAN()
         CanMsg msg = CAN.read();
         if (leg.can)
         {
-            if (CAN.available())
+            while (CAN.available())
             {
                 msg = CAN.read();
                 leg.can->handleCanMessage(msg);

@@ -159,7 +159,7 @@ struct IsoTpRxBuffer
 static IsoTpRxBuffer _isotp_rx;
 
 static const uint32_t CMD_TIMEOUT_MS = 250;
-static const uint32_t TELEMETRY_INTERVAL_MS = 10;
+static const uint32_t TELEMETRY_INTERVAL_MS = 100;
 
 static uint32_t _last_telemetry_tx = 0;
 
