@@ -94,7 +94,7 @@ void InverseKinematicsNode::_inverseKinematics(
 
 	for (uint8_t i = 0; i < NUM_LEGS; i++) {
         for (int j = 0; j < 3; j++) {
-            results[i][j] += potential_results[i][j];
+            results[i][j] = potential_results[i][j];
         }
         RCLCPP_INFO(
             this->get_logger(),
