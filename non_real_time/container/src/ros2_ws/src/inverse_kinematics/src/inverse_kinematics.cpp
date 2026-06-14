@@ -33,7 +33,7 @@ InverseKinematicsNode::InverseKinematicsNode()
             100);
     
     timer_ = create_wall_timer(
-        std::chrono::milliseconds(10),
+        std::chrono::milliseconds(50),
         std::bind(&InverseKinematicsNode::process, this));
 }
 
