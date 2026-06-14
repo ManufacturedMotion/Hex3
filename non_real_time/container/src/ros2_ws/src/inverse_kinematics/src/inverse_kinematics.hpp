@@ -14,12 +14,9 @@ struct IKPose {
     double x;
     double y;
     double z;
-
-    double sin_roll;
-    double sin_pitch;
-
-    double cos_yaw;
-    double sin_yaw;
+    double roll;
+    double pitch;
+    double yaw;
 };
 
 struct LegCoordinateTransform {

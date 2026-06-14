@@ -216,14 +216,9 @@ void InverseKinematicsNode::process()
     pose.y = latest_body_pose_.y;
     pose.z = latest_body_pose_.z;
 
-    double roll  = latest_body_pose_.roll * 0.01;
-    double pitch = latest_body_pose_.pitch * 0.01;
-    double yaw   = latest_body_pose_.yaw * 0.01;
-
-    pose.sin_roll  = sin(roll);
-    pose.sin_pitch = sin(pitch);
-    pose.sin_yaw   = sin(yaw);
-    pose.cos_yaw   = cos(yaw);
+    pose.roll  = latest_body_pose_.roll * 0.01;
+    pose.pitch = latest_body_pose_.pitch * 0.01;
+    pose.yaw   = latest_body_pose_.yaw * 0.01;
 
     std::array<double, 3> body_offsets[NUM_LEGS];
 
