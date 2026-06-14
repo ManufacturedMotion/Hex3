@@ -66,19 +66,19 @@ private:
             {75.0}, // x
             {75.0}, // y
             {40.0},  // z (centered around -200)
-            {0.3},   // roll
-            {0.3},   // pitch
-            {0.3}    // yaw
+            {0.5},   // roll
+            {0.5},   // pitch
+            {0.5}    // yaw
         };
 
-        constexpr double neutral_z = -200.0;
+        constexpr double neutral_z = -180.0;
 
         // Four phases per DOF:
         // 0 -> +max
         // +max -> 0
         // 0 -> -max
         // -max -> 0
-        constexpr double phase_duration = 2.0;
+        constexpr double phase_duration = 0.5;
 
         constexpr int phases_per_axis = 4;
 
