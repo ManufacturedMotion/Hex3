@@ -305,7 +305,7 @@ bool CanInterface::send_isotp(
 
     RCLCPP_INFO(
         get_logger(),
-        "Leg %u write took %lld us",
+        "Leg %u write took %ld us",
         node_id,
         std::chrono::duration_cast<std::chrono::microseconds>(
             end - start).count());
