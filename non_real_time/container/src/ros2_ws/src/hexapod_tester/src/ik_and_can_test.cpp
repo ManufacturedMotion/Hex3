@@ -60,7 +60,7 @@ private:
         const double p_max = 0.3;
         const double yaw_max = 0.3;
 
-        const double duration_per_cycle = 8.0; // seconds per full sweep cycle
+        const double duration_per_cycle = 20.0; // seconds per full sweep cycle
 
         // Normalize time into [0,1]
         double s = fmod(t / duration_per_cycle, 1.0);
