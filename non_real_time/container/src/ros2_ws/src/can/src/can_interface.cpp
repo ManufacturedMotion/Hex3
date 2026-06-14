@@ -160,6 +160,9 @@ bool CanInterface::create_isotp_socket(uint32_t node_id)
 void CanInterface::on_command_received(
   const hexapod_msgs::msg::LegCommand::SharedPtr msg)
 {
+  RCLCPP_INFO(get_logger(),
+    "Received LegCommand for leg %d: x=%.1f y=%.1f z=%.1f",
+    msg->leg_number, msg->x, msg->y, msg->z);
   std::vector<uint32_t> target_nodes;
 
   if (static_cast<int8_t>(msg->leg_number) < 0) {
