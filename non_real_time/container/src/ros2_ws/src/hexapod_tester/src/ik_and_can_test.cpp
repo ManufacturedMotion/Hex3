@@ -73,8 +73,8 @@ private:
         const double lift_height = 35.0;     // mm
 
         // Tripod grouping
-        const int tripodA[3] = {0, 3, 4};
-        const int tripodB[3] = {1, 2, 5};
+        const int tripodA[3] = {1, 2, 3};
+        const int tripodB[3] = {4, 5, 6};
 
         auto compute_leg = [&](int leg_id, bool in_tripod_a)
         {
