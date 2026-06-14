@@ -135,6 +135,7 @@ private:
             ft.z = 0.0;
             msg.foot_targets[i] = ft;
         }
+        foot_pub_->publish(msg);
         // const double step_freq   = 1.2;
         // const double step_length = 50.0;   // forward stride in mm
         // const double lift_height = 30.0;
