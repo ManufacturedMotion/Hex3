@@ -7,9 +7,35 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(hexapod_msgs REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
-# find_package(<dependency> REQUIRED)
+
+add_executable(
+    tripod_gait
+    src/tripod_gait.cpp
+    src/main.cpp
+)
+
+ament_target_dependencies(
+    tripod_gait
+    rclcpp
+    geometry_msgs
+    hexapod_msgs
+)
+
+target_include_directories(
+    tripod_gait
+    PUBLIC
+    include
+)
+
+install(
+    TARGETS tripod_gait
+    DESTINATION lib/${PROJECT_NAME}
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
