@@ -67,7 +67,7 @@ void TripodGaitNode::updateGait(
                     }
                     
                     step_group = static_cast<uint8_t>(current_step_type_);
-					std::array<uint8_t, NUM_LEGS / 2> lifted_legs = step_groups_[step_group];
+					std::array<uint8_t, NUM_LEGS / 2> lifted_legs = std::copy(step_groups_[step_group]);
 
                     Pose3D lift_leg_correction = Pose3D(base_body_pose);
                     lift_leg_correction.x *= -2.0; //Reverse and double to go in the opposite direction the same amount
@@ -149,14 +149,8 @@ void TripodGaitNode::updateGait(
                     rapidMove(next_pos, active_legs, true);
                 break;
                 case StepType::LINEAR_MOVE_RELATIVE:
-                    // Compute foot targets for linear move relative based on step_progress
-                    break;
                 case StepType::LINEAR_MOVE_ABSOLUTE:
-                    // Compute foot targets for linear move absolute based on step_progress
-                    break;
                 case StepType::RAPID_MOVE:
-                    // Compute foot targets for rapid move based on step_progress
-                    break;
                 default:
                     break;
            }
