@@ -16,6 +16,9 @@ find_package(hexapod_msgs REQUIRED)
 add_executable(
     tripod_gait
     src/tripod_gait.cpp
+    src/gait.cpp
+    src/pose.cpp
+    src/step_queue.cpp
     src/main.cpp
 )
 
@@ -25,6 +28,12 @@ ament_target_dependencies(
     geometry_msgs
     hexapod_msgs
 )
+
+rosidl_get_typesupport_target(
+    cpp_typesupport_target
+    hexapod_msgs
+    "rosidl_typesupport_cpp")
+target_link_libraries(tripod_gait "${cpp_typesupport_target}")
 
 target_include_directories(
     tripod_gait
