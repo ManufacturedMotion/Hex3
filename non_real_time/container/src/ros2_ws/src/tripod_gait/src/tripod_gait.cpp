@@ -260,7 +260,7 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
 	// | step_queue_.getCurrentQueueEndPos() + step | = MAX_STEP_MAGNITUDE
 	// 3. The step should be in the direction of the move
 	
-	buffer1 = step_queue_.getCurrentQueueEndPos();
+	Pose6D buffer1 = step_queue_.getCurrentQueueEndPos();
 	buffer1.z = 0.00; // For now we don't consider Z, roll, or pitch
 	buffer1.roll = 0.00;
 	buffer1.pitch = 0.00;
