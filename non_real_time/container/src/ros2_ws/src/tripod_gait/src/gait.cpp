@@ -70,7 +70,7 @@ void Gait::update()
 void Gait::publishFootTargetArray(
     const hexapod_msgs::msg::FootTargetArray& msg)
 {
-    foot_target_array_pub_->publish(msg);
+    foot_array_pub_->publish(msg);
 }
 
 void Gait::publishBodyPoseArray(
