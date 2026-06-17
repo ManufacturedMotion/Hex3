@@ -54,7 +54,7 @@ rclcpp::Duration StepQueue::enqueue(
                 return rclcpp::Duration::from_nanoseconds(0);
             }
 
-            end_pos_.setPos(op_end_pos);
+            end_pos_ = op_end_pos;
             break;
         }
 
@@ -69,7 +69,7 @@ rclcpp::Duration StepQueue::enqueue(
                 static_cast<int64_t>(((op_end_pos - end_pos_).magnitude() /
                  op_speed) * 2000000.0));
 
-            end_pos_.setPos(op_end_pos);
+            end_pos_ = op_end_pos;
             state_ = StepQueueState::NEUTRAL;
             break;
         }
@@ -78,7 +78,7 @@ rclcpp::Duration StepQueue::enqueue(
         {
             op_time = rclcpp::Duration::from_nanoseconds(100000000);
 
-            end_pos_.setPos(op_end_pos);
+            end_pos_ = op_end_pos;
             state_ = StepQueueState::NEUTRAL;
             break;
         }

@@ -9,16 +9,6 @@
 
 #define ROTATION_MAGNITUDE_SCALE 100.0
 
-enum class StepType {
-    GROUP0 = 0,
-    GROUP1 = 1,
-    LINEAR_MOVE_RELATIVE = 254,
-    LINEAR_MOVE_ABSOLUTE = 253,
-    RETURN_TO_NEUTRAL = 252,
-    RAPID_MOVE = 251,
-    NONE = 255,
-};
-
 class TripodGaitNode : public Gait
 {
 public:
