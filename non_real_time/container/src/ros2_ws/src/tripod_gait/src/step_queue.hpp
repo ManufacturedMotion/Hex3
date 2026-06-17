@@ -16,6 +16,28 @@ enum class StepType {
     NONE = 255,
 };
 
+struct Step
+{
+    Pose6D end_pos;
+    double speed = DEFAULT_MOVE_SPEED;
+    StepType step_type = StepType::RAPID_MOVE;
+    rclcpp::Duration time = 0.0;
+
+    Step() = default;
+
+    Step(
+        const Pose6D& pos,
+        double spd,
+        StepType type,
+        rclcpp::Duration duration)
+        : end_pos(pos)
+        , speed(spd)
+        , step_type(type)
+        , time(duration)
+    {
+    }
+};
+
 class StepQueue
 {
 public:
@@ -57,24 +79,3 @@ private:
     StepType last_step_type_ = StepType::RAPID_MOVE;
 };
 
-struct Step
-{
-    Pose6D end_pos;
-    double speed = DEFAULT_MOVE_SPEED;
-    StepType step_type = StepType::RAPID_MOVE;
-    rclcpp::Duration time = 0.0;
-
-    Step() = default;
-
-    Step(
-        const Pose6D& pos,
-        double spd,
-        StepType type,
-        rclcpp::Duration duration)
-        : end_pos(pos)
-        , speed(spd)
-        , step_type(type)
-        , time(duration)
-    {
-    }
-};

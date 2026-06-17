@@ -164,7 +164,7 @@ void TripodGaitNode::updateGait(
     } else {
         // if there is a step to take
         if (step_queue_.empty()) {
-            _enqueueMaxStepInDirection(v_command, max(fabs(v_command.magnitude()) / max_step_speed_, 0.25));
+            enqueueMaxStepInDirection_(v_command, std::max(fabs(v_command.magnitude()) / max_step_speed_, 0.25));
         }
         else {
             last_step_type_ = current_step_type_;
@@ -174,7 +174,7 @@ void TripodGaitNode::updateGait(
 					current_pos_.x *= -1.0;
 					current_pos_.y *= -1.0;
 					current_pos_.yaw *= -1.0;
-				}_
+				}
 			}
 			else if (current_step_type_ == StepType::GROUP1) {
 				if (last_step_type_ == StepType::GROUP0) {
