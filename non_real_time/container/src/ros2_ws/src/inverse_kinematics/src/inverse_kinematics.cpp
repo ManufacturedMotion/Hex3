@@ -122,6 +122,20 @@ void InverseKinematicsNode::_inverseKinematics(
 
 }
 
+void InverseKinematicsNode::footTargetCallback(
+    const hexapod_msgs::msg::FootTarget::SharedPtr msg)
+{
+    latest_feet_.foot_targets[msg->leg_number] = *msg;
+    feet_received_ = true;
+    RCLCPP_INFO_THROTTLE(
+        this->get_logger(),
+        *this->get_clock(),
+        1000,   // 1 Hz log rate
+        "Received FootTarget: x=%.1f y=%.1f z=%.1f",
+        msg->x, msg->y, msg->z
+    );
+}
+
 void InverseKinematicsNode::footTargetArrayCallback(
     const hexapod_msgs::msg::FootTargetArray::SharedPtr msg)
 {
