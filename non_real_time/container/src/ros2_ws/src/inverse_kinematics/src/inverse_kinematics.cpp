@@ -19,7 +19,7 @@ InverseKinematicsNode::InverseKinematicsNode()
                 std::placeholders::_1));
 
     body_pose_sub_ =
-        create_subscription<hexapod_msgs::msg::BodyPose>(
+        create_subscription<hexapod_msgs::msg::BodyPoseArray>(
             "/body_pose",
             10,
             std::bind(
@@ -75,15 +75,12 @@ static inline void rotateVectorRPY(
 }
 
 void InverseKinematicsNode::_inverseKinematics(
-    const IKPose& pose,
+    const std::array<IKPose, NUM_LEGS>& poses,
     std::array<double, 3>* results
 ) {
-    RCLCPP_INFO(get_logger(),
-        "Calculating IK for body pose: x=%.1f y=%.1f z=%.1f roll=%.3f pitch=%.3f yaw=%.3f",
-        pose.x, pose.y, pose.z, pose.roll, pose.pitch, pose.yaw
-    );
 	std::array<double, 3> potential_results[NUM_LEGS];
 	for (uint8_t i = 0; i < NUM_LEGS; i++) {
+        const IKPose& pose = poses[i];
 		potential_results[i][0] = pose.x;
 		potential_results[i][1] = pose.y;
 		potential_results[i][2] = pose.z + sin(pose.pitch) * (_leg_coordinate_transforms[i].x + pose.x) + sin(pose.roll) * (_leg_coordinate_transforms[i].y + pose.y);
@@ -92,7 +89,7 @@ void InverseKinematicsNode::_inverseKinematics(
 		potential_results[i][0] += _stance_offset[0];
 		potential_results[i][1] += _stance_offset[1];
 		potential_results[i][2] += _stance_offset[2];
-        rotateVectorRPY(potential_results[i], 0.0, 0.0, pose.yaw + latest_feet_);
+        rotateVectorRPY(potential_results[i], 0.0, 0.0, pose.yaw);
 	}
 
 	for (uint8_t i = 0; i < NUM_LEGS; i++) {
@@ -123,16 +120,17 @@ void InverseKinematicsNode::footTargetCallback(
 }
 
 void InverseKinematicsNode::bodyPoseCallback(
-    const hexapod_msgs::msg::BodyPose::SharedPtr msg)
+    const hexapod_msgs::msg::BodyPoseArray::SharedPtr msg)
 {
-    latest_body_pose_ = *msg;
+    latest_body_poses_ = *msg;
     pose_received_ = true;
     RCLCPP_INFO_THROTTLE(
         this->get_logger(),
         *this->get_clock(),
         1000,   // 1 Hz log rate
-        "Received BodyPose: x=%.2f y=%.2f z=%.2f roll=%.3f pitch=%.3f yaw=%.3f",
-        msg->x, msg->y, msg->z, msg->roll, msg->pitch, msg->yaw
+        "Received BodyPoseArray: leg0 x=%.2f y=%.2f z=%.2f roll=%.3f pitch=%.3f yaw=%.3f",
+        msg->body_poses[0].x, msg->body_poses[0].y, msg->body_poses[0].z,
+        msg->body_poses[0].roll, msg->body_poses[0].pitch, msg->body_poses[0].yaw
     );
 }
 
@@ -217,21 +215,25 @@ void InverseKinematicsNode::process()
         return;
     }
 
-    // --- Build SIMD-friendly pose ---
-    IKPose pose;
-
-    pose.x = latest_body_pose_.x;
-    pose.y = latest_body_pose_.y;
-    pose.z = latest_body_pose_.z;
-    pose.roll = latest_body_pose_.roll;
-    pose.pitch = latest_body_pose_.pitch;
-    pose.yaw = latest_body_pose_.yaw;
+    // --- Build per-leg poses ---
+    std::array<IKPose, NUM_LEGS> poses;
+    for (uint8_t i = 0; i < NUM_LEGS; i++) {
+        const auto& body_pose = latest_body_poses_.body_poses[i];
+        poses[i] = {
+            body_pose.x,
+            body_pose.y,
+            body_pose.z,
+            body_pose.roll,
+            body_pose.pitch,
+            body_pose.yaw
+        };
+    }
 
     std::array<double, 3> body_offsets[NUM_LEGS];
     RCLCPP_INFO(get_logger(), "Calculating IK...");
 
     _inverseKinematics(
-        pose,
+        poses,
         body_offsets);
 
     for (uint8_t i = 0; i < NUM_LEGS; i++) {

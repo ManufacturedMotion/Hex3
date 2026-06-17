@@ -22,7 +22,7 @@ Gait::Gait(
 
     body_pub_ =
         create_publisher<
-            hexapod_msgs::msg::BodyPose>(
+            hexapod_msgs::msg::BodyPoseArray>(
             "/body_pose",
             10);
 
@@ -61,8 +61,8 @@ void Gait::publishFootTargets(
     foot_pub_->publish(msg);
 }
 
-void Gait::publishBodyPose(
-    const hexapod_msgs::msg::BodyPose& msg)
+void Gait::publishBodyPoses(
+    const hexapod_msgs::msg::BodyPoseArray& msg)
 {
     body_pub_->publish(msg);
 }

@@ -5,7 +5,7 @@
 #include "geometry_msgs/msg/twist.hpp"
 
 #include "hexapod_msgs/msg/foot_target_array.hpp"
-#include "hexapod_msgs/msg/body_pose.hpp"
+#include "hexapod_msgs/msg/body_pose_array.hpp"
 #include "pose.hpp"
 
 class Gait : public rclcpp::Node
@@ -21,8 +21,8 @@ protected:
     void publishFootTargets(
         const hexapod_msgs::msg::FootTargetArray& msg);
 
-    void publishBodyPose(
-        const hexapod_msgs::msg::BodyPose& msg);
+    void publishBodyPoses(
+        const hexapod_msgs::msg::BodyPoseArray& msg);
 
     Pose6D v_command = Pose6D();
 
@@ -38,7 +38,7 @@ protected:
         foot_pub_;
 
     rclcpp::Publisher<
-        hexapod_msgs::msg::BodyPose>::SharedPtr
+        hexapod_msgs::msg::BodyPoseArray>::SharedPtr
         body_pub_;
 
 private:

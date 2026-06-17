@@ -34,6 +34,17 @@ Pose6D Pose6D::operator*( double scalar ) {
     };
 }
 
+Pose6D Pose6D::operator/( double scalar ) {
+    return {
+        x / scalar,
+        y / scalar,
+        z / scalar,
+        roll / scalar,
+        pitch / scalar,
+        yaw / scalar
+    };
+}
+
 Pose6D Pose6D::unitVector() {
     return Pose6D((this) * (1.0 / magnitude()));
 }

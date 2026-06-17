@@ -5,7 +5,7 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "hexapod_msgs/msg/foot_target_array.hpp"
-#include "hexapod_msgs/msg/body_pose.hpp"
+#include "hexapod_msgs/msg/body_pose_array.hpp"
 #include "hexapod_msgs/msg/leg_command.hpp"
 
 #define NUM_LEGS 6
@@ -47,12 +47,12 @@ private:
         const hexapod_msgs::msg::FootTargetArray::SharedPtr msg);
 
     void bodyPoseCallback(
-        const hexapod_msgs::msg::BodyPose::SharedPtr msg);
+        const hexapod_msgs::msg::BodyPoseArray::SharedPtr msg);
 
     void process();
 
     void _inverseKinematics(
-        const IKPose& pose,
+        const std::array<IKPose, NUM_LEGS>& poses,
         std::array<double, 3> * results);
 
     rclcpp::Subscription<
@@ -60,7 +60,7 @@ private:
         foot_target_sub_;
 
     rclcpp::Subscription<
-        hexapod_msgs::msg::BodyPose>::SharedPtr
+        hexapod_msgs::msg::BodyPoseArray>::SharedPtr
         body_pose_sub_;
 
     rclcpp::Publisher<
@@ -68,7 +68,7 @@ private:
         leg_command_pub_;
 
     hexapod_msgs::msg::FootTargetArray latest_feet_;
-    hexapod_msgs::msg::BodyPose latest_body_pose_;
+    hexapod_msgs::msg::BodyPoseArray latest_body_poses_;
 
     bool feet_received_{false};
     bool pose_received_{false};

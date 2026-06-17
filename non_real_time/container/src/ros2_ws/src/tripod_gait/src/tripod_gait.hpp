@@ -2,6 +2,7 @@
 
 #include "gait.hpp"
 #include "pose.hpp"
+#include "step_queue.hpp"
 #include "hexapod_msgs/msg/foot_target_array.hpp"
 #include "hexapod_msgs/msg/body_pose.hpp"
 #include <array>
@@ -26,9 +27,10 @@ public:
 private:
     void updateGait(
         double dt, double current_time) override;
-    double _getMaxStepMagnitudeInDirection(Pose6D direction_vector, bool flipped_step_group);
+    double getMaxStepMagnitude_();
+    double getMaxStepMagnitudeInDirection_(Pose6D direction_vector, bool flipped_step_group);
     
-    std::array<std::array<uint8_t, 3>, 2> step_groups = {
+    std::array<std::array<uint8_t, 3>, 2> step_groups_ = {
         {0, 3, 4}, // Group 0: Legs 1, 4, 5
         {1, 2, 5}  // Group 1: Legs 2, 3, 6
     };
@@ -48,7 +50,10 @@ private:
 
     Pose6D start_pos_;
     Pose6D end_pos_;
+    Pose6D current_pos_;
 
     StepType getNextStepType();
+
+    StepQueue step_queue_;
 
 };

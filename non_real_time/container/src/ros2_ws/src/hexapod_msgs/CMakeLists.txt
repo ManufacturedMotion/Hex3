@@ -7,6 +7,7 @@ find_package(rosidl_default_generators REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/LegCommand.msg"
   "msg/BodyPose.msg"
+  "msg/BodyPoseArray.msg"
   "msg/FootTarget.msg"
   "msg/FootTargetArray.msg"
 )

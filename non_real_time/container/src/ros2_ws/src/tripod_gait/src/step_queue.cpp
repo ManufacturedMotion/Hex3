@@ -1,0 +1,110 @@
+#include "step_queue.hpp"
+
+uint32_t StepQueue::enqueue(
+    const Position& op_end_pos,
+    double op_speed,
+    StepType op_step_type)
+{
+    if (state_ == StepQueueState::UNINITIALIZED &&
+        op_step_type != StepType::RAPID_MOVE)
+    {
+        return 0;
+    }
+
+    double op_time = 0.0;
+
+    switch (op_step_type)
+    {
+        case StepType::GROUP0:
+        case StepType::GROUP1:
+        {
+            if (!(state_ == StepQueueState::NEUTRAL ||
+                  last_step_type_ == op_step_type))
+            {
+                end_pos_.x *= -1.0;
+                end_pos_.y *= -1.0;
+                end_pos_.yaw *= -1.0;
+            }
+
+            end_pos_ += op_end_pos;
+            op_time =
+                (op_end_pos.magnitude() / op_speed) * 1000.0;
+
+            state_ = StepQueueState::STEPPED;
+            break;
+        }
+
+        case StepType::LINEAR_MOVE_RELATIVE:
+        {
+            end_pos_ += op_end_pos;
+
+            op_time =
+                (op_end_pos.magnitude() / op_speed) * 1000.0;
+            break;
+        }
+
+        case StepType::LINEAR_MOVE_ABSOLUTE:
+        {
+            op_time =
+                ((op_end_pos - end_pos_).magnitude() /
+                 op_speed) * 1000.0;
+
+            if (op_time < 0.0001)
+            {
+                return 0;
+            }
+
+            end_pos_.setPos(op_end_pos);
+            break;
+        }
+
+        case StepType::RETURN_TO_NEUTRAL:
+        {
+            if (state_ == StepQueueState::NEUTRAL)
+            {
+                return 0;
+            }
+
+            op_time =
+                ((op_end_pos - end_pos_).magnitude() /
+                 op_speed) * 2000.0;
+
+            end_pos_.setPos(op_end_pos);
+            state_ = StepQueueState::NEUTRAL;
+            break;
+        }
+
+        case StepType::RAPID_MOVE:
+        {
+            op_time = 100.0;
+
+            end_pos_.setPos(op_end_pos);
+            state_ = StepQueueState::NEUTRAL;
+            break;
+        }
+
+        default:
+            return 0;
+    }
+
+    queue_.emplace_back(
+        op_end_pos,
+        op_speed,
+        op_step_type,
+        op_time);
+
+    last_step_type_ = op_step_type;
+
+    return static_cast<uint32_t>(op_time);
+}
+
+bool StepQueue::dequeue()
+{
+    if (queue_.empty())
+    {
+        return false;
+    }
+
+    queue_.pop_front();
+    return true;
+}

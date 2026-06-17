@@ -6,7 +6,7 @@
 
 #include "hexapod_msgs/msg/foot_target.hpp"
 #include "hexapod_msgs/msg/foot_target_array.hpp"
-#include "hexapod_msgs/msg/body_pose.hpp"
+#include "hexapod_msgs/msg/body_pose_array.hpp"
 
 using namespace std::chrono_literals;
 
@@ -20,7 +20,7 @@ public:
             "/foot_targets", 10);
 
         body_pub_ = this->create_publisher<
-            hexapod_msgs::msg::BodyPose>(
+            hexapod_msgs::msg::BodyPoseArray>(
             "/body_pose", 10);
 
         timer_ = this->create_wall_timer(
@@ -49,7 +49,7 @@ private:
 
     void publishBodyPose(double t)
     {
-        hexapod_msgs::msg::BodyPose msg;
+        hexapod_msgs::msg::BodyPose pose;
 
         auto lerp = [](double a, double b, double s)
         {
@@ -131,38 +131,43 @@ private:
         }
 
         // Neutral pose
-        msg.x = 0.0;
-        msg.y = 0.0;
-        msg.z = neutral_z;
-        msg.roll = 0.0;
-        msg.pitch = 0.0;
-        msg.yaw = 0.0;
+        pose.x = 0.0;
+        pose.y = 0.0;
+        pose.z = neutral_z;
+        pose.roll = 0.0;
+        pose.pitch = 0.0;
+        pose.yaw = 0.0;
 
         switch (axis_index)
         {
             case 0:
-                msg.x = value;
+                pose.x = value;
                 break;
 
             case 1:
-                msg.y = value;
+                pose.y = value;
                 break;
 
             case 2:
-                msg.z = neutral_z + value;
+                pose.z = neutral_z + value;
                 break;
 
             case 3:
-                msg.roll = value;
+                pose.roll = value;
                 break;
 
             case 4:
-                msg.pitch = value;
+                pose.pitch = value;
                 break;
 
             case 5:
-                msg.yaw = value;
+                pose.yaw = value;
                 break;
+        }
+
+        hexapod_msgs::msg::BodyPoseArray msg;
+        for (auto& body_pose : msg.body_poses) {
+            body_pose = pose;
         }
 
         body_pub_->publish(msg);
@@ -174,12 +179,12 @@ private:
             "Axis %d Phase %d | x=%.1f y=%.1f z=%.1f r=%.3f p=%.3f yaw=%.3f",
             axis_index,
             phase,
-            msg.x,
-            msg.y,
-            msg.z,
-            msg.roll,
-            msg.pitch,
-            msg.yaw);
+            msg.body_poses[0].x,
+            msg.body_poses[0].y,
+            msg.body_poses[0].z,
+            msg.body_poses[0].roll,
+            msg.body_poses[0].pitch,
+            msg.body_poses[0].yaw);
     }
 
     void publishFootTargets(double t)
@@ -255,7 +260,7 @@ private:
         hexapod_msgs::msg::FootTargetArray>::SharedPtr foot_pub_;
 
     rclcpp::Publisher<
-        hexapod_msgs::msg::BodyPose>::SharedPtr body_pub_;
+        hexapod_msgs::msg::BodyPoseArray>::SharedPtr body_pub_;
 
     rclcpp::TimerBase::SharedPtr timer_;
 
