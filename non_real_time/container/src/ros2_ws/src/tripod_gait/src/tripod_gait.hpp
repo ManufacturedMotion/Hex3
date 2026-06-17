@@ -1,0 +1,53 @@
+#pragma once
+
+#include "gait.hpp"
+#include "pose.hpp"
+#include "hexapod_msgs/msg/foot_target_array.hpp"
+#include "hexapod_msgs/msg/body_pose.hpp"
+#include <array>
+
+enum class StepType {
+    GROUP0 = 0,
+    GROUP1 = 1,
+    LINEAR_MOVE_RELATIVE = 254,
+    LINEAR_MOVE_ABSOLUTE = 253,
+    RETURN_TO_NEUTRAL = 252,
+    RAPID_MOVE = 251,
+    NONE = 255,
+};
+
+class TripodGaitNode : public Gait
+{
+public:
+    TripodGaitNode();
+
+private:
+    void updateGait(
+        double dt, double current_time) override;
+
+private:
+
+    std::array<std::array<uint8_t, 3>, 2> step_groups = {
+        {0, 3, 4}, // Group 0: Legs 1, 4, 5
+        {1, 2, 5}  // Group 1: Legs 2, 3, 6
+    };
+    double phase_ = 0.0;
+    double gait_period_ = 0.5;
+
+    double step_height_ = 40.0;
+    double max_step_length_ = 100.0;
+    double max_step_speed_ = 200.0;
+    double neutral_z_ = 180.0;
+
+    bool step_in_progress_ = false;
+    double move_start_time_ = 0.0;
+    double move_end_time_ = 0.0;
+    StepType current_step_type_ = StepType::NONE;
+    StepType last_step_type_ = StepType::NONE;
+
+    Pose6D start_pos_;
+    Pose6D end_pos_;
+
+    StepType getNextStepType();
+
+};
