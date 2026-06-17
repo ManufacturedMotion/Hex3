@@ -16,7 +16,7 @@ public:
 
 protected:
     virtual void updateGait(
-        double dt, rclcpp::Time current_time) = 0;
+        double dt, rclcpp::Duration current_time) = 0;
 
     void publishFootTargetArray(
         const hexapod_msgs::msg::FootTargetArray& msg);
