@@ -70,7 +70,7 @@ void Gait::update()
 void Gait::publishFootTargetArray(
     const hexapod_msgs::msg::FootTargetArray& msg)
 {
-    foot_pub_->publish(msg);
+    foot_target_pub_->publish(msg);
 }
 
 void Gait::publishBodyPoseArray(
@@ -82,11 +82,11 @@ void Gait::publishBodyPoseArray(
 void Gait::publishFootTarget(
     const hexapod_msgs::msg::FootTarget& msg)
 {
-    foot_pub_->publish(msg);
+    foot_target_pub_->publish(msg);
 }
 
 void Gait::publishBodyPose(
     const hexapod_msgs::msg::BodyPose& msg)
 {
-    body_pub_->publish(msg);
+    body_pose_pub_->publish(msg);
 }
