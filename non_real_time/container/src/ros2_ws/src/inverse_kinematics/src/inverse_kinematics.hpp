@@ -44,9 +44,15 @@ private:
     void loadConfig(const std::string& config_path);
 
     void footTargetCallback(
-        const hexapod_msgs::msg::FootTargetArray::SharedPtr msg);
+        const hexapod_msgs::msg::FootTarget::SharedPtr msg);
 
     void bodyPoseCallback(
+        const hexapod_msgs::msg::BodyPose::SharedPtr msg);
+
+    void footTargetArrayCallback(
+        const hexapod_msgs::msg::FootTargetArray::SharedPtr msg);
+
+    void bodyPoseArrayCallback(
         const hexapod_msgs::msg::BodyPoseArray::SharedPtr msg);
 
     void process();

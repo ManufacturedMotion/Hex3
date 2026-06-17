@@ -26,7 +26,6 @@ Gait::Gait(
             "/body_pose/array",
             10);
 
-
     body_pub_ =
         create_publisher<
             hexapod_msgs::msg::BodyPose>(
