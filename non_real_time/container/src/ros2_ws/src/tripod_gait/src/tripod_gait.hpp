@@ -17,7 +17,7 @@ public:
 
 private:
     void updateGait(
-        double dt, rclcpp::Time current_time) override;
+        double dt, rclcpp::Duration current_time) override;
     rclcpp::Duration enqueueMaxStepInDirection_(Pose6D direction_vector, double scalar);
     double getMaxStepMagnitude_();
     double getMaxStepMagnitudeInDirection_(Pose6D direction_vector, bool flipped_step_group);

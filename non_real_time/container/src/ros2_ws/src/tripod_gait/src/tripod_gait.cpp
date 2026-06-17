@@ -39,7 +39,7 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 
 
 void TripodGaitNode::updateGait(
-    double dt, rclcpp::Time current_time)
+    double dt, rclcpp::Duration current_time)
 {
     hexapod_msgs::msg::FootTargetArray foot_targets;
     hexapod_msgs::msg::BodyPoseArray next_body_poses;
