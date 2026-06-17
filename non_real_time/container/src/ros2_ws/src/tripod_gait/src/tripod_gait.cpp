@@ -199,7 +199,7 @@ void TripodGaitNode::updateGait(
 			}
 			start_pos_ = current_pos_;
 			current_speed_ = step_queue_.head->speed;
-			move_time_ = step_queue_.head->time;
+			move_end_time_ = step_queue_.head->time;
 			move_start_time_ = current_time;
 			step_queue_.dequeue();
 			step_in_progress_ = true;

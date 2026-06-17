@@ -8,6 +8,7 @@
 #include <array>
 
 #define ROTATION_MAGNITUDE_SCALE 100.0
+#define NUM_LEGS 6
 
 class TripodGaitNode : public Gait
 {
