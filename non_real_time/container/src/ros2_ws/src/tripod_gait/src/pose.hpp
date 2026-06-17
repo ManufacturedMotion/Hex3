@@ -22,6 +22,7 @@ class Pose6D
         Pose6D operator-( const Pose6D& other );
         Pose6D operator*( double scalar );
         Pose6D operator/( double scalar );
+        Pose6D operator=(const Pose6D& other);
 
         void operator+=( const Pose6D& other );
         void operator-=( const Pose6D& other );
