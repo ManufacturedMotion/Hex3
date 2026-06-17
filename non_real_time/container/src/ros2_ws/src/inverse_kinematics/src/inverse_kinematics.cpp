@@ -235,7 +235,6 @@ void InverseKinematicsNode::process()
         body_offsets);
 
     for (uint8_t i = 0; i < NUM_LEGS; i++) {
-
         hexapod_msgs::msg::LegCommand cmd;
 
         cmd.leg_number = i;
