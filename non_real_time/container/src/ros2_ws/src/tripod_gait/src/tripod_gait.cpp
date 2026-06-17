@@ -103,10 +103,10 @@ void TripodGaitNode::updateGait(
                             start_pos_.x *= -1.0;
                             start_pos_.y *= -1.0;
                             start_pos_.yaw *= -1.0;
-                            switch(_last_step_type) {
+                            switch(last_step_type_) {
                                 case StepType::GROUP0:
                                 case StepType::GROUP1:
-                                    step_group = static_cast<uint8_t>(_last_step_type) ^ 1;
+                                    step_group = static_cast<uint8_t>(last_step_type_) ^ 1;
                                     break;
                                 default:
                                     step_group = 1;
@@ -167,10 +167,10 @@ void TripodGaitNode::updateGait(
             _enqueueMaxStepInDirection(v_command, max(fabs(v_command.magnitude()) / max_step_speed_, 0.25));
         }
         else {
-            _last_step_type = _current_step_type;
-			_current_step_type = step_queue_.front()->step_type;
-			if (_current_step_type == StepType::GROUP0) {
-				if (_last_step_type == StepType::GROUP1) {
+            last_step_type_ = current_step_type_;
+			current_step_type_ = step_queue_.front()->step_type;
+			if (current_step_type_ == StepType::GROUP0) {
+				if (last_step_type_ == StepType::GROUP1) {
 					current_pos_.x *= -1.0;
 					current_pos_.y *= -1.0;
 					current_pos_.yaw *= -1.0;
