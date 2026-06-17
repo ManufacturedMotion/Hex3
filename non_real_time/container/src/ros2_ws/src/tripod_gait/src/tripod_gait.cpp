@@ -246,8 +246,8 @@ StepType TripodGaitNode::getNextStepType_(Pose6D direction_vector) {
 }
 
 double TripodGaitNode::getMaxStepMagnitude_() {
-	Position current_pos = step_queue_.getCurrentQueueEndPos();
-	return MAX_STEP_MAGNITUDE - sqrt(pow((current_pos.z - 100.0) / 2.0, 2) + pow(current_pos.roll, 2) + pow(current_pos.pitch, 2)) / 2.0;
+	Pose6D current_pos = step_queue_.getCurrentQueueEndPos();
+	return max_step_length_ - sqrt(pow((current_pos.z - 100.0) / 2.0, 2) + pow(current_pos.roll, 2) + pow(current_pos.pitch, 2)) / 2.0;
 }
 
 double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, bool flipped_step_group) {	
