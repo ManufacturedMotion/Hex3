@@ -26,13 +26,13 @@ Gait::Gait(
             "/body_pose/array",
             10);
 
-    body_pub_ =
+    body_pose_pub_ =
         create_publisher<
             hexapod_msgs::msg::BodyPose>(
             "/body_pose",
             10);
 
-    foot_pub_ =
+    foot_target_pub_ =
         create_publisher<
             hexapod_msgs::msg::FootTarget>(
             "/foot_target",
