@@ -25,11 +25,11 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 
 	if (max_step_magnitude < get_max_step_magnitude()) {
 		Position buffer0;
-		buffer0.setPos(_step_queue.getCurrentQueueEndPos());
+		buffer0.setPos(step_queue_.getCurrentQueueEndPos());
 		buffer0.x = 0.00;
 		buffer0.y = 0.00;
 		buffer0.yaw = 0.00;
-		walk_time += _step_queue.enqueue(buffer0, speed, StepType::RETURN_TO_NEUTRAL);
+		walk_time += step_queue_.enqueue(buffer0, speed, StepType::RETURN_TO_NEUTRAL);
 	}
 	
 	Position step_vector = direction_vector.unitVector() * max_step_magnitude;
@@ -168,7 +168,7 @@ void TripodGaitNode::updateGait(
         }
         else {
             _last_step_type = _current_step_type;
-			_current_step_type = _step_queue.head->step_type;
+			_current_step_type = step_queue_.head->step_type;
 			if (_current_step_type == StepType::GROUP0) {
 				if (_last_step_type == StepType::GROUP1) {
 					current_pos_.x *= -1.0;
@@ -246,7 +246,7 @@ StepType TripodGaitNode::getNextStepType_(Pose6D direction_vector) {
 }
 
 double TripodGaitNode::getMaxStepMagnitude_() {
-	Position current_pos = _step_queue.getCurrentQueueEndPos();
+	Position current_pos = step_queue_.getCurrentQueueEndPos();
 	return MAX_STEP_MAGNITUDE - sqrt(pow((current_pos.z - 100.0) / 2.0, 2) + pow(current_pos.roll, 2) + pow(current_pos.pitch, 2)) / 2.0;
 }
 
@@ -257,10 +257,10 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
 	// Constraints:
 	// 1. The step must be in the direction of the move
 	// 2. The step should end up in a position that is equal to the max step magnitude
-	// | _step_queue.getCurrentQueueEndPos() + step | = MAX_STEP_MAGNITUDE
+	// | step_queue_.getCurrentQueueEndPos() + step | = MAX_STEP_MAGNITUDE
 	// 3. The step should be in the direction of the move
 	
-	buffer1 = step_queue.getCurrenQueueEndPos();
+	buffer1 = step_queue_.getCurrentQueueEndPos();
 	buffer1.z = 0.00; // For now we don't consider Z, roll, or pitch
 	buffer1.roll = 0.00;
 	buffer1.pitch = 0.00;
