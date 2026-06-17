@@ -22,6 +22,6 @@ ENV XDG_RUNTIME_DIR=/app/temp
 COPY src /app/src
 WORKDIR /app/src/ros2_ws
 
-RUN colcon build
+RUN bash -c 'source "/opt/ros/$ROS_DISTRO/setup.bash" && colcon build'
 
 ENTRYPOINT ["bash" "/app/src/idle_entry_point.sh"]

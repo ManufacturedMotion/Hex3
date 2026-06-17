@@ -5,7 +5,7 @@ TripodGaitNode::TripodGaitNode()
 {
 }
 
-uint32_t TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vector, double scalar) {
+rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vector, double scalar) {
 	direction_vector.z = 0.00; // For now we don't consider Z, roll, or pitch
 	direction_vector.roll = 0.00;
 	direction_vector.pitch = 0.00;
@@ -14,9 +14,9 @@ uint32_t TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vector, dou
 	}
 
 	double speed = v_command.magnitude();
-	uint32_t walk_time = 0;
-	double max_step_magnitude_with_flip = _getMaxStepMagnitudeInDirection(direction_vector, true);
-	double max_step_magnitude_without_flip = _getMaxStepMagnitudeInDirection(direction_vector, false);
+	rclcpp::Duration walk_time;
+	double max_step_magnitude_with_flip = getMaxStepMagnitudeInDirection_(direction_vector, true);
+	double max_step_magnitude_without_flip = getMaxStepMagnitudeInDirection_(direction_vector, false);
 	double max_step_magnitude = max_step_magnitude_without_flip;
 	if (max_step_magnitude_with_flip > max_step_magnitude_without_flip) {
 		_next_step_type = static_cast<decltype(_next_step_type)>(static_cast<uint8_t>(_next_step_type) ^ 1);
@@ -33,13 +33,13 @@ uint32_t TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vector, dou
 	}
 	
 	Position step_vector = direction_vector.unitVector() * max_step_magnitude;
-	walk_time += _step_queue.enqueue(step_vector * fabs(scalar), speed, _next_step_type);
+	walk_time += step_queue_.enqueue(step_vector * fabs(scalar), speed, _next_step_type);
 	return walk_time;
 }
 
 
 void TripodGaitNode::updateGait(
-    double dt, double current_time)
+    double dt, rclcpp::Time current_time)
 {
     hexapod_msgs::msg::FootTargetArray foot_targets;
     hexapod_msgs::msg::BodyPoseArray next_body_poses;
@@ -208,6 +208,22 @@ void TripodGaitNode::updateGait(
 
     publishFootTargets(foot_targets);
     publishBodyPoses(next_body_poses);
+}
+
+void TripodGaitNode::rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_legs) {
+    for (uint8_t i = 0; i < NUM_LEGS; i++) {
+        if (active_legs[i]) {
+            hexapod_msgs::msg::BodyPose body_pose;
+            body_pose.x = pos.x;
+            body_pose.y = pos.y;
+            body_pose.z = pos.z;
+            body_pose.roll = pos.roll;
+            body_pose.pitch = pos.pitch;
+            body_pose.yaw = pos.yaw;
+            body_pose.leg_number = i;
+            body_pose_pub_->publish(body_pose);
+        }
+    }
 }
 
 StepType TripodGaitNode::getNextStepType_(Pose6D direction_vector) {

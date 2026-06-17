@@ -9,17 +9,34 @@ InverseKinematicsNode::InverseKinematicsNode()
 : Node("inverse_kinematics")
 {
     loadConfig(this->declare_parameter<std::string>("ik_config", "config/ik_config.json"));
-    foot_target_sub_ =
+    foot_target_array_sub_ =
         create_subscription<hexapod_msgs::msg::FootTargetArray>(
             "/foot_targets",
+            10,
+            std::bind(
+                &InverseKinematicsNode::footTargetArrayCallback,
+                this,
+                std::placeholders::_1));
+
+    foot_target_sub_ =
+        create_subscription<hexapod_msgs::msg::FootTarget>(
+            "/foot_target",
             10,
             std::bind(
                 &InverseKinematicsNode::footTargetCallback,
                 this,
                 std::placeholders::_1));
 
-    body_pose_sub_ =
+    body_pose_array_sub_ =
         create_subscription<hexapod_msgs::msg::BodyPoseArray>(
+            "/body_pose/array",
+            10,
+            std::bind(
+                &InverseKinematicsNode::bodyPoseArrayCallback,
+                this,
+                std::placeholders::_1));
+    body_pose_sub_ =
+        create_subscription<hexapod_msgs::msg::BodyPose>(
             "/body_pose",
             10,
             std::bind(
@@ -105,7 +122,7 @@ void InverseKinematicsNode::_inverseKinematics(
 
 }
 
-void InverseKinematicsNode::footTargetCallback(
+void InverseKinematicsNode::footTargetArrayCallback(
     const hexapod_msgs::msg::FootTargetArray::SharedPtr msg)
 {
     latest_feet_ = *msg;
@@ -119,11 +136,10 @@ void InverseKinematicsNode::footTargetCallback(
     );
 }
 
-void InverseKinematicsNode::bodyPoseCallback(
+void InverseKinematicsNode::bodyPoseArrayCallback(
     const hexapod_msgs::msg::BodyPoseArray::SharedPtr msg)
 {
     latest_body_poses_ = *msg;
-    pose_received_ = true;
     RCLCPP_INFO_THROTTLE(
         this->get_logger(),
         *this->get_clock(),
@@ -131,6 +147,19 @@ void InverseKinematicsNode::bodyPoseCallback(
         "Received BodyPoseArray: leg0 x=%.2f y=%.2f z=%.2f roll=%.3f pitch=%.3f yaw=%.3f",
         msg->body_poses[0].x, msg->body_poses[0].y, msg->body_poses[0].z,
         msg->body_poses[0].roll, msg->body_poses[0].pitch, msg->body_poses[0].yaw
+    );
+}
+
+void InverseKinematicsNode::bodyPoseCallback(
+    const hexapod_msgs::msg::BodyPose::SharedPtr msg)
+{
+    latest_body_poses_.body_poses[msg->leg_number] = *msg;
+    RCLCPP_INFO_THROTTLE(
+        this->get_logger(),
+        *this->get_clock(),
+        1000,   // 1 Hz log rate
+        "Received BodyPose: x=%.2f y=%.2f z=%.2f roll=%.3f pitch=%.3f yaw=%.3f",
+        msg->x, msg->y, msg->z, msg->roll, msg->pitch, msg->yaw
     );
 }
 

@@ -26,10 +26,11 @@ public:
 
 private:
     void updateGait(
-        double dt, double current_time) override;
+        double dt, rclcpp::Time current_time) override;
+    rclcpp::Duration enqueueMaxStepInDirection_(Pose6D direction_vector, double scalar);
     double getMaxStepMagnitude_();
     double getMaxStepMagnitudeInDirection_(Pose6D direction_vector, bool flipped_step_group);
-    
+
     std::array<std::array<uint8_t, 3>, 2> step_groups_ = {
         {0, 3, 4}, // Group 0: Legs 1, 4, 5
         {1, 2, 5}  // Group 1: Legs 2, 3, 6
@@ -42,9 +43,11 @@ private:
     double max_step_speed_ = 200.0;
     double neutral_z_ = 180.0;
 
+    double last_step_progress_ = 0.0;
+
     bool step_in_progress_ = false;
-    double move_start_time_ = 0.0;
-    double move_end_time_ = 0.0;
+    rclcpp::Time move_start_time_ = 0.0;
+    rclcpp::Time move_end_time_ = 0.0;
     StepType current_step_type_ = StepType::NONE;
     StepType last_step_type_ = StepType::NONE;
 

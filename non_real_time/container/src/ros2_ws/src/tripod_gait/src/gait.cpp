@@ -14,16 +14,29 @@ Gait::Gait(
                 this,
                 std::placeholders::_1));
 
-    foot_pub_ =
+    foot_array_pub_ =
         create_publisher<
             hexapod_msgs::msg::FootTargetArray>(
-            "/foot_targets",
+            "/foot_targets/array",
             10);
+
+    body_array_pub_ =
+        create_publisher<
+            hexapod_msgs::msg::BodyPoseArray>(
+            "/body_pose/array",
+            10);
+
 
     body_pub_ =
         create_publisher<
-            hexapod_msgs::msg::BodyPoseArray>(
+            hexapod_msgs::msg::BodyPose>(
             "/body_pose",
+            10);
+
+    foot_pub_ =
+        create_publisher<
+            hexapod_msgs::msg::FootTarget>(
+            "/foot_target",
             10);
 
     timer_ =

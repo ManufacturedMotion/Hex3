@@ -3,12 +3,15 @@
 #include <deque>
 #include <cstdint>
 
+#include "pose.hpp"
+#include "rclcpp/rclcpp.hpp"
+
 class StepQueue
 {
 public:
     StepQueue() = default;
 
-    uint32_t enqueue(
+    rclcpp::Duration enqueue(
         const Pose6D& end_pos,
         double speed,
         StepType step_type);
@@ -42,4 +45,26 @@ private:
 
     StepQueueState state_ = StepQueueState::UNINITIALIZED;
     StepType last_step_type_ = StepType::RAPID_MOVE;
+};
+
+struct Step
+{
+    Pose6D end_pos;
+    double speed = DEFAULT_MOVE_SPEED;
+    StepType step_type = StepType::RAPID_MOVE;
+    rclcpp::Duration time = 0.0;
+
+    Step() = default;
+
+    Step(
+        const Position& pos,
+        double spd,
+        StepType type,
+        rclcpp::Duration duration)
+        : end_pos(pos)
+        , speed(spd)
+        , step_type(type)
+        , time(duration)
+    {
+    }
 };

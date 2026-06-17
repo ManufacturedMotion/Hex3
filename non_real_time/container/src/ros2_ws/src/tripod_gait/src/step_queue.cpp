@@ -1,6 +1,6 @@
 #include "step_queue.hpp"
 
-uint32_t StepQueue::enqueue(
+rclcpp::Duration StepQueue::enqueue(
     const Position& op_end_pos,
     double op_speed,
     StepType op_step_type)
@@ -27,8 +27,8 @@ uint32_t StepQueue::enqueue(
             }
 
             end_pos_ += op_end_pos;
-            op_time =
-                (op_end_pos.magnitude() / op_speed) * 1000.0;
+            op_time = rclcpp::Duration::from_nanoseconds(
+                static_cast<int64_t>((op_end_pos.magnitude() / op_speed) * 1000000.0));
 
             state_ = StepQueueState::STEPPED;
             break;
@@ -38,20 +38,20 @@ uint32_t StepQueue::enqueue(
         {
             end_pos_ += op_end_pos;
 
-            op_time =
-                (op_end_pos.magnitude() / op_speed) * 1000.0;
+            op_time = rclcpp::Duration::from_nanoseconds(
+                static_cast<int64_t>((op_end_pos.magnitude() / op_speed) * 1000000.0));
             break;
         }
 
         case StepType::LINEAR_MOVE_ABSOLUTE:
         {
-            op_time =
-                ((op_end_pos - end_pos_).magnitude() /
-                 op_speed) * 1000.0;
+            op_time = rclcpp::Duration::from_nanoseconds(
+                static_cast<int64_t>(((op_end_pos - end_pos_).magnitude() /
+                 op_speed) * 1000000.0));
 
             if (op_time < 0.0001)
             {
-                return 0;
+                return rclcpp::Duration::from_nanoseconds(0);
             }
 
             end_pos_.setPos(op_end_pos);
@@ -62,12 +62,12 @@ uint32_t StepQueue::enqueue(
         {
             if (state_ == StepQueueState::NEUTRAL)
             {
-                return 0;
+                return rclcpp::Duration::from_nanoseconds(0);
             }
 
-            op_time =
-                ((op_end_pos - end_pos_).magnitude() /
-                 op_speed) * 2000.0;
+            op_time = rclcpp::Duration::from_nanoseconds(
+                static_cast<int64_t>(((op_end_pos - end_pos_).magnitude() /
+                 op_speed) * 2000000.0));
 
             end_pos_.setPos(op_end_pos);
             state_ = StepQueueState::NEUTRAL;
@@ -76,7 +76,7 @@ uint32_t StepQueue::enqueue(
 
         case StepType::RAPID_MOVE:
         {
-            op_time = 100.0;
+            op_time = rclcpp::Duration::from_nanoseconds(100000000);
 
             end_pos_.setPos(op_end_pos);
             state_ = StepQueueState::NEUTRAL;
@@ -84,7 +84,7 @@ uint32_t StepQueue::enqueue(
         }
 
         default:
-            return 0;
+            return rclcpp::Duration::from_nanoseconds(0);
     }
 
     queue_.emplace_back(
@@ -95,7 +95,7 @@ uint32_t StepQueue::enqueue(
 
     last_step_type_ = op_step_type;
 
-    return static_cast<uint32_t>(op_time);
+    return op_time;
 }
 
 bool StepQueue::dequeue()

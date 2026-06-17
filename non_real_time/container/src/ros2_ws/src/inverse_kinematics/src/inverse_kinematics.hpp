@@ -57,11 +57,19 @@ private:
 
     rclcpp::Subscription<
         hexapod_msgs::msg::FootTargetArray>::SharedPtr
-        foot_target_sub_;
+        foot_target_array_sub_;
 
     rclcpp::Subscription<
         hexapod_msgs::msg::BodyPoseArray>::SharedPtr
+        body_pose_array_sub_;
+
+    rclcpp::Subscription<
+        hexapod_msgs::msg::BodyPose>::SharedPtr
         body_pose_sub_;
+
+    rclcpp::Subscription<
+        hexapod_msgs::msg::FootTarget>::SharedPtr
+        foot_target_sub_;
 
     rclcpp::Publisher<
         hexapod_msgs::msg::LegCommand>::SharedPtr

@@ -16,7 +16,7 @@ public:
 
 protected:
     virtual void updateGait(
-        double dt, double current_time) = 0;
+        double dt, rclcpp::Time current_time) = 0;
 
     void publishFootTargets(
         const hexapod_msgs::msg::FootTargetArray& msg);
@@ -35,11 +35,19 @@ private:
 protected:
     rclcpp::Publisher<
         hexapod_msgs::msg::FootTargetArray>::SharedPtr
-        foot_pub_;
+        foot_array_pub_;
 
     rclcpp::Publisher<
         hexapod_msgs::msg::BodyPoseArray>::SharedPtr
-        body_pub_;
+        body_array_pub_;
+
+    rclcpp::Publisher<
+        hexapod_msgs::msg::BodyPose>::SharedPtr
+        body_pose_pub_; 
+
+    rclcpp::Publisher<
+        hexapod_msgs::msg::FootTarget>::SharedPtr
+        foot_target_pub_;
 
 private:
     rclcpp::Subscription<
