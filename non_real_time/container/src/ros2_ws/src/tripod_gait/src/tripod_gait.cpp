@@ -168,7 +168,7 @@ void TripodGaitNode::updateGait(
         }
         else {
             _last_step_type = _current_step_type;
-			_current_step_type = step_queue_.head->step_type;
+			_current_step_type = step_queue_.front()->step_type;
 			if (_current_step_type == StepType::GROUP0) {
 				if (_last_step_type == StepType::GROUP1) {
 					current_pos_.x *= -1.0;
@@ -188,18 +188,18 @@ void TripodGaitNode::updateGait(
 				case StepType::RETURN_TO_NEUTRAL:
 				case StepType::RAPID_MOVE:
 				case StepType::LINEAR_MOVE_ABSOLUTE:
-					end_pos_ = step_queue_.head->end_pos;
+					end_pos_ = step_queue_.front()->end_pos;
 					break;
 				case StepType::GROUP0:
 				case StepType::GROUP1:
 				case StepType::LINEAR_MOVE_RELATIVE:
 				default:
-					end_pos_ = current_pos_ + step_queue_.head->end_pos;
+					end_pos_ = current_pos_ + step_queue_.front()->end_pos;
 					break;
 			}
 			start_pos_ = current_pos_;
-			current_speed_ = step_queue_.head->speed;
-			move_end_time_ = step_queue_.head->time;
+			current_speed_ = step_queue_.front()->speed;
+			move_end_time_ = step_queue_.front()->time;
 			move_start_time_ = current_time;
 			step_queue_.dequeue();
 			step_in_progress_ = true;
