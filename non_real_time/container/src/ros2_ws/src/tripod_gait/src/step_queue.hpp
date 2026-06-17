@@ -16,6 +16,12 @@ enum class StepType {
     NONE = 255,
 };
 
+enum class StepQueueState {
+    NEUTRAL = 0,
+    STEPPED = 1,
+    UNINITIALIZED = 2,
+};
+
 struct Step
 {
     Pose6D end_pos;
