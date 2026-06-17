@@ -223,27 +223,27 @@ void TripodGaitNode::rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_leg
     }
 }
 
-StepType TripodGaitNode::getNextStepType_(Pose6D direction_vector) {
-    if (current_step_type_ == StepType::RETURN_TO_NEUTRAL) {
-        return StepType::GROUP0; // If just returned to neutral then either leg group is fine
-    }
+// StepType TripodGaitNode::getNextStepType_(Pose6D direction_vector) {
+//     if (current_step_type_ == StepType::RETURN_TO_NEUTRAL) {
+//         return StepType::GROUP0; // If just returned to neutral then either leg group is fine
+//     }
     
-    double no_flip_magnitude = _getMaxStepMagnitudeInDirection(Pose6D direction_vector, false);
-    double with_flip_magnitude = _getMaxStepMagnitudeInDirection(Pose6D direction_vector, false);
+//     double no_flip_magnitude = _getMaxStepMagnitudeInDirection(Pose6D direction_vector, false);
+//     double with_flip_magnitude = _getMaxStepMagnitudeInDirection(Pose6D direction_vector, false);
 
-    if (no_flip_magnitude > with_flip_magnitude) {
-        if (no_flip_magnitude > 0.5 * max_step_length_) {
-            return StepType::RETURN_TO_NEUTRAL
-        }
-        return current_step_type_;
-    }
-    else {
-        if (with_flip_magnitude > 0.5 * max_step_length_) {
-            return StepType::RETURN_TO_NEUTRAL
-        }
-        return current_step_type_ ^ 0x01;
-    }
-}
+//     if (no_flip_magnitude > with_flip_magnitude) {
+//         if (no_flip_magnitude > 0.5 * max_step_length_) {
+//             return StepType::RETURN_TO_NEUTRAL
+//         }
+//         return current_step_type_;
+//     }
+//     else {
+//         if (with_flip_magnitude > 0.5 * max_step_length_) {
+//             return StepType::RETURN_TO_NEUTRAL
+//         }
+//         return current_step_type_ ^ 0x01;
+//     }
+// }
 
 double TripodGaitNode::getMaxStepMagnitude_() {
 	Pose6D current_pos = step_queue_.getCurrentQueueEndPos();
