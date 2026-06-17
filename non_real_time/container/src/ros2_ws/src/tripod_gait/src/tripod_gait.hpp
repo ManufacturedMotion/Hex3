@@ -1,53 +1,54 @@
 #pragma once
 
-#include <array>
-
-#include "rclcpp/rclcpp.hpp"
-
-#include "geometry_msgs/msg/twist.hpp"
-
-#include "hexapod_msgs/msg/foot_target.hpp"
+#include "gait.hpp"
+#include "pose.hpp"
 #include "hexapod_msgs/msg/foot_target_array.hpp"
 #include "hexapod_msgs/msg/body_pose.hpp"
+#include <array>
 
-class TripodGaitNode : public rclcpp::Node
+#define ROTATION_MAGNITUDE_SCALE 100.0
+
+enum class StepType {
+    GROUP0 = 0,
+    GROUP1 = 1,
+    LINEAR_MOVE_RELATIVE = 254,
+    LINEAR_MOVE_ABSOLUTE = 253,
+    RETURN_TO_NEUTRAL = 252,
+    RAPID_MOVE = 251,
+    NONE = 255,
+};
+
+class TripodGaitNode : public Gait
 {
 public:
     TripodGaitNode();
 
 private:
-    void timerCallback();
-    void cmdVelCallback(
-        const geometry_msgs::msg::Twist::SharedPtr msg);
+    void updateGait(
+        double dt, double current_time) override;
+    double _getMaxStepMagnitudeInDirection(Pose6D direction_vector, bool flipped_step_group);
+    
+    std::array<std::array<uint8_t, 3>, 2> step_groups = {
+        {0, 3, 4}, // Group 0: Legs 1, 4, 5
+        {1, 2, 5}  // Group 1: Legs 2, 3, 6
+    };
+    double phase_ = 0.0;
+    double gait_period_ = 0.5;
 
-    void updateGait(double dt);
+    double step_height_ = 40.0;
+    double max_step_length_ = 100.0;
+    double max_step_speed_ = 200.0;
+    double neutral_z_ = 180.0;
 
-    bool legInGroupA(size_t leg) const;
+    bool step_in_progress_ = false;
+    double move_start_time_ = 0.0;
+    double move_end_time_ = 0.0;
+    StepType current_step_type_ = StepType::NONE;
+    StepType last_step_type_ = StepType::NONE;
 
-    geometry_msgs::msg::Twist cmd_vel_;
+    Pose6D start_pos_;
+    Pose6D end_pos_;
 
-    rclcpp::Subscription<
-        geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
+    StepType getNextStepType();
 
-    rclcpp::Publisher<
-        hexapod_msgs::msg::FootTargetArray>::SharedPtr
-        foot_target_pub_;
-
-    rclcpp::Publisher<
-        hexapod_msgs::msg::BodyPose>::SharedPtr
-        body_pose_pub_;
-
-    rclcpp::TimerBase::SharedPtr timer_;
-
-    rclcpp::Time last_update_;
-
-    double gait_phase_;
-
-    double cycle_time_;
-    double step_height_;
-    double max_step_length_;
-    double body_height_;
-
-    std::array<double, 6> home_x_;
-    std::array<double, 6> home_y_;
 };
