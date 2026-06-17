@@ -57,7 +57,7 @@ struct Step
     Step() = default;
 
     Step(
-        const Position& pos,
+        const Pose6D& pos,
         double spd,
         StepType type,
         rclcpp::Duration duration)

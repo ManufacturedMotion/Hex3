@@ -1,7 +1,7 @@
 #include "step_queue.hpp"
 
 rclcpp::Duration StepQueue::enqueue(
-    const Position& op_end_pos,
+    const Pose6D& op_end_pos,
     double op_speed,
     StepType op_step_type)
 {
@@ -11,7 +11,7 @@ rclcpp::Duration StepQueue::enqueue(
         return 0;
     }
 
-    double op_time = 0.0;
+    rclcpp::Duration op_time = rclcpp::Duration::from_nanoseconds(0);
 
     switch (op_step_type)
     {
