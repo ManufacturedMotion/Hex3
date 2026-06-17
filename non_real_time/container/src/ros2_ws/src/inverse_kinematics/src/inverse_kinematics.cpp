@@ -92,7 +92,7 @@ void InverseKinematicsNode::_inverseKinematics(
 		potential_results[i][0] += _stance_offset[0];
 		potential_results[i][1] += _stance_offset[1];
 		potential_results[i][2] += _stance_offset[2];
-        rotateVectorRPY(potential_results[i], 0.0, 0.0, pose.yaw);
+        rotateVectorRPY(potential_results[i], 0.0, 0.0, pose.yaw + latest_feet_);
 	}
 
 	for (uint8_t i = 0; i < NUM_LEGS; i++) {
