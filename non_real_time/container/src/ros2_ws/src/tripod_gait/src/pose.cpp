@@ -50,7 +50,7 @@ Pose6D Pose6D::operator=( const Pose6D& other ) {
 }
 
 Pose6D Pose6D::unitVector() {
-    return Pose6D((this) * (1.0 / magnitude()));
+    return Pose6D(*(this) * (1.0 / magnitude()));
 }
 
 double magnitude() {
