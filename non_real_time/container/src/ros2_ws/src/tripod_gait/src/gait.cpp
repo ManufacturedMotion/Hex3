@@ -67,14 +67,26 @@ void Gait::update()
     updateGait(dt, current_time);
 }
 
-void Gait::publishFootTargets(
+void Gait::publishFootTargetArray(
     const hexapod_msgs::msg::FootTargetArray& msg)
 {
     foot_pub_->publish(msg);
 }
 
-void Gait::publishBodyPoses(
+void Gait::publishBodyPoseArray(
     const hexapod_msgs::msg::BodyPoseArray& msg)
+{
+    body_array_pub_->publish(msg);
+}
+
+void Gait::publishFootTarget(
+    const hexapod_msgs::msg::FootTarget& msg)
+{
+    foot_pub_->publish(msg);
+}
+
+void Gait::publishBodyPose(
+    const hexapod_msgs::msg::BodyPose& msg)
 {
     body_pub_->publish(msg);
 }

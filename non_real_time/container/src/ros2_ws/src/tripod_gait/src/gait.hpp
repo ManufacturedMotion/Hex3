@@ -18,11 +18,17 @@ protected:
     virtual void updateGait(
         double dt, rclcpp::Time current_time) = 0;
 
-    void publishFootTargets(
+    void publishFootTargetArray(
         const hexapod_msgs::msg::FootTargetArray& msg);
 
-    void publishBodyPoses(
+    void publishBodyPoseArray(
         const hexapod_msgs::msg::BodyPoseArray& msg);
+
+    void publishFootTarget(
+        const hexapod_msgs::msg::FootTarget& msg);
+
+    void publishBodyPose(
+        const hexapod_msgs::msg::BodyPose& msg);
 
     Pose6D v_command = Pose6D();
 

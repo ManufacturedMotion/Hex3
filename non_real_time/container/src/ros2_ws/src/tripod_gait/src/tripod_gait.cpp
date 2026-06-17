@@ -205,9 +205,6 @@ void TripodGaitNode::updateGait(
 			step_in_progress_ = true;
 		}
     }
-
-    publishFootTargets(foot_targets);
-    publishBodyPoses(next_body_poses);
 }
 
 void TripodGaitNode::rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_legs) {
@@ -221,7 +218,7 @@ void TripodGaitNode::rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_leg
             body_pose.pitch = pos.pitch;
             body_pose.yaw = pos.yaw;
             body_pose.leg_number = i;
-            body_pose_pub_->publish(body_pose);
+            publishBodyPose(body_pose);
         }
     }
 }
