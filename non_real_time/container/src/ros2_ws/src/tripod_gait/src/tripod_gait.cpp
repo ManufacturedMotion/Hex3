@@ -69,7 +69,7 @@ void TripodGaitNode::updateGait(
                             next_body_poses.body_poses[i] = base_body_pose;
                         }
                         
-                        step_group = static_cast<uint8_t>(current_step_type_);
+                        uint8_t step_group = static_cast<uint8_t>(current_step_type_);
                         std::array<uint8_t, NUM_LEGS / 2> lifted_legs = std::copy(step_groups_[step_group]);
 
                         Pose3D lift_leg_correction = Pose3D(base_body_pose.x, base_body_pose.y, base_body_pose.z);
