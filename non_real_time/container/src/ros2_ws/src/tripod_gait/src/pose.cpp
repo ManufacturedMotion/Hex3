@@ -53,7 +53,7 @@ Pose6D Pose6D::unitVector() {
     return Pose6D(*(this) * (1.0 / magnitude()));
 }
 
-double magnitude() {
+double Pose6D::magnitude() {
     return std::sqrt(x*x + y*y + z*z + roll*roll + pitch*pitch + yaw*yaw);
 }
 
