@@ -88,6 +88,7 @@ void TripodGaitNode::updateGait(
                     break;
                 case StepType::RETURN_TO_NEUTRAL:
                     {
+                        uint8_t step_group;
                         if ((last_step_progress_ < 0.5 && step_progress >= 0.5) || (last_step_progress_ >= 0.5 && step_progress < 0.5)) {
                             // Switch step groups
                             if (step_progress < 0.5) {
@@ -142,7 +143,7 @@ void TripodGaitNode::updateGait(
                                 }
                             }
                         }
-                        
+                        uint8_t active_legs[NUM_LEGS];
                         for (uint8_t i = 0; i < NUM_LEGS / NUM_STEP_GROUPS; i++) {
                             active_legs[step_groups_[step_group][i]] = true;
                             active_legs[step_groups_[(step_group^1)][i]] = false;
