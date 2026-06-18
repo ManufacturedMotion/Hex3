@@ -1,4 +1,5 @@
 #include "tripod_gait.hpp"
+#include "step_queue.hpp"
 
 TripodGaitNode::TripodGaitNode()
     : Gait("tripod_gait")
