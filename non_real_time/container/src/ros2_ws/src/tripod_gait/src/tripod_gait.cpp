@@ -11,7 +11,7 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 	direction_vector.roll = 0.00;
 	direction_vector.pitch = 0.00;
 	if (direction_vector.magnitude() < 0.001) {
-		return 0; // No step to take
+		return rclcpp::Duration::from_nanoseconds(0); // No step to take
 	}
 
 	double speed = v_command.magnitude();
@@ -19,8 +19,9 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 	double max_step_magnitude_with_flip = getMaxStepMagnitudeInDirection_(direction_vector, true);
 	double max_step_magnitude_without_flip = getMaxStepMagnitudeInDirection_(direction_vector, false);
 	double max_step_magnitude = max_step_magnitude_without_flip;
+    StepType next_step_type;
 	if (max_step_magnitude_with_flip > max_step_magnitude_without_flip) {
-		_next_step_type = static_cast<decltype(_next_step_type)>(static_cast<uint8_t>(_next_step_type) ^ 1);
+		next_step_type = static_cast<decltype(next_step_type)>(static_cast<uint8_t>(last_step_type_) ^ 1);
 		max_step_magnitude = max_step_magnitude_with_flip;
 	}
 
@@ -34,7 +35,7 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 	}
 	
 	Position step_vector = direction_vector.unitVector() * max_step_magnitude;
-	walk_time += step_queue_.enqueue(step_vector * fabs(scalar), speed, _next_step_type);
+	walk_time += step_queue_.enqueue(step_vector * fabs(scalar), speed, next_step_type);
 	return walk_time;
 }
 
