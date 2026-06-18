@@ -24,10 +24,10 @@ private:
     double getMaxStepMagnitudeInDirection_(Pose6D direction_vector, bool flipped_step_group);
     void rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_legs);
 
-    std::array<std::array<uint8_t, 3>, 2> step_groups_ = {
-        {0, 3, 4}, // Group 0: Legs 1, 4, 5
-        {1, 2, 5}  // Group 1: Legs 2, 3, 6
-    };
+    std::array<std::array<uint8_t, 3>, 2> step_groups_ = {{
+        {{0, 3, 4}}, // Group 0: Legs 1, 4, 5
+        {{1, 2, 5}}  // Group 1: Legs 2, 3, 6
+    }};
     double phase_ = 0.0;
     double gait_period_ = 0.5;
 
