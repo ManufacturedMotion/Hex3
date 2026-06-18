@@ -37,8 +37,8 @@ private:
     double last_step_progress_ = 0.0;
 
     bool step_in_progress_ = false;
-    rclcpp::Duration move_start_time_;
-    rclcpp::Duration move_time_;
+    rclcpp::Duration move_start_time_ = rclcpp::Duration::from_nanoseconds(0);
+    rclcpp::Duration move_time_ = rclcpp::Duration::from_nanoseconds(0);
     StepType current_step_type_ = StepType::NONE;
     StepType last_step_type_ = StepType::NONE;
 
