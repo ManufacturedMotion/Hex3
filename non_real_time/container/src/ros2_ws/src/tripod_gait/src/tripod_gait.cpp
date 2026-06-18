@@ -7,6 +7,8 @@ TripodGaitNode::TripodGaitNode()
 }
 
 rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vector, double scalar) {
+    Pose6D buffer0;
+
 	direction_vector.z = 0.00; // For now we don't consider Z, roll, or pitch
 	direction_vector.roll = 0.00;
 	direction_vector.pitch = 0.00;
@@ -15,7 +17,7 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 	}
 
 	double speed = v_command.magnitude();
-	rclcpp::Duration walk_time;
+	rclcpp::Duration walk_time = rclcpp::Duration::from_nanoseconds(0);
 	double max_step_magnitude_with_flip = getMaxStepMagnitudeInDirection_(direction_vector, true);
 	double max_step_magnitude_without_flip = getMaxStepMagnitudeInDirection_(direction_vector, false);
 	double max_step_magnitude = max_step_magnitude_without_flip;
@@ -25,8 +27,7 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 		max_step_magnitude = max_step_magnitude_with_flip;
 	}
 
-	if (max_step_magnitude < get_max_step_magnitude()) {
-		Position buffer0;
+	if (max_step_magnitude < getMaxStepMagnitude_()) {
 		buffer0.setPos(step_queue_.getCurrentQueueEndPos());
 		buffer0.x = 0.00;
 		buffer0.y = 0.00;

@@ -52,7 +52,7 @@ public:
     StepQueue() = default;
 
     rclcpp::Duration enqueue(
-        const Pose6D& end_pos,
+        Pose6D end_pos,
         double speed,
         StepType step_type);
 
