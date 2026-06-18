@@ -6,6 +6,8 @@
 #include "pose.hpp"
 #include "rclcpp/rclcpp.hpp"
 
+DEFAULT_MOVE_SPEED = 100.0
+
 enum class StepType {
     GROUP0 = 0,
     GROUP1 = 1,
@@ -27,7 +29,7 @@ struct Step
     Pose6D end_pos;
     double speed = DEFAULT_MOVE_SPEED;
     StepType step_type = StepType::RAPID_MOVE;
-    rclcpp::Duration time = 0.0;
+    rclcpp::Duration time = rclcpp::Duration::from_nanoseconds(0);
 
     Step() = default;
 

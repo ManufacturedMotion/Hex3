@@ -8,7 +8,7 @@ rclcpp::Duration StepQueue::enqueue(
     if (state_ == StepQueueState::UNINITIALIZED &&
         op_step_type != StepType::RAPID_MOVE)
     {
-        return 0;
+        return rclcpp::Duration::from_nanoseconds(0);
     }
 
     rclcpp::Duration op_time = rclcpp::Duration::from_nanoseconds(0);

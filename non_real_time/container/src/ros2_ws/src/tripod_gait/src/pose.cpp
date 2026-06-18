@@ -2,47 +2,47 @@
 #include <cmath>
 
 Pose6D Pose6D::operator+( const Pose6D& other ) {
-    return {
+    return Pose6D (
         x + other.x,
         y + other.y,
         z + other.z,
         roll + other.roll,
         pitch + other.pitch,
         yaw + other.yaw
-    };
+    );
 }
 
 Pose6D Pose6D::operator-( const Pose6D& other ) {
-    return {
+    return Pose6D(
         x - other.x,
         y - other.y,
         z - other.z,
         roll - other.roll,
         pitch - other.pitch,
         yaw - other.yaw
-    };
+    );
 }
 
 Pose6D Pose6D::operator*( double scalar ) {
-    return {
+    return Pose6D(
         x * scalar,
         y * scalar,
         z * scalar,
         roll * scalar,
         pitch * scalar,
         yaw * scalar
-    };
+    );
 }
 
 Pose6D Pose6D::operator/( double scalar ) {
-    return {
+    return Pose6D (
         x / scalar,
         y / scalar,
         z / scalar,
         roll / scalar,
         pitch / scalar,
         yaw / scalar
-    };
+    );
 }
 
 Pose6D Pose6D::operator=( const Pose6D& other ) {
