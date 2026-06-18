@@ -28,8 +28,6 @@ private:
         {{0, 3, 4}}, // Group 0: Legs 1, 4, 5
         {{1, 2, 5}}  // Group 1: Legs 2, 3, 6
     }};
-    double phase_ = 0.0;
-    double gait_period_ = 0.5;
 
     double step_height_ = 40.0;
     double max_step_length_ = 100.0;
@@ -40,7 +38,6 @@ private:
 
     bool step_in_progress_ = false;
     rclcpp::Duration move_start_time_;
-    rclcpp::Duration move_end_time_;
     rclcpp::Duration move_time_;
     StepType current_step_type_ = StepType::NONE;
     StepType last_step_type_ = StepType::NONE;
