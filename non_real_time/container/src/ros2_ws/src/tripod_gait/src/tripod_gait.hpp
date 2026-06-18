@@ -9,6 +9,7 @@
 
 #define ROTATION_MAGNITUDE_SCALE 100.0
 #define NUM_LEGS 6
+#define NUM_STEP_GROUPS 2
 
 class TripodGaitNode : public Gait
 {
