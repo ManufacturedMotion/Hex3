@@ -28,7 +28,7 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 	}
 
 	if (max_step_magnitude < getMaxStepMagnitude_()) {
-		buffer0.setPos(step_queue_.getCurrentQueueEndPos());
+		buffer0 = step_queue_.getCurrentQueueEndPos();
 		buffer0.x = 0.00;
 		buffer0.y = 0.00;
 		buffer0.yaw = 0.00;
@@ -54,7 +54,7 @@ void TripodGaitNode::updateGait(
     // tripod gait logic here
     //
     if (step_in_progress_) {
-        double step_progress = (current_time - static_cast<double>(move_start_time_)) / gait_period_;
+        double step_progress = ;
         Pose6D next_pos;
         if (step_progress >= 1.0) {
             // Step complete
@@ -71,7 +71,10 @@ void TripodGaitNode::updateGait(
                         }
                         
                         uint8_t step_group = static_cast<uint8_t>(current_step_type_);
-                        std::array<uint8_t, NUM_LEGS / 2> lifted_legs = std::copy(step_groups_[step_group]);
+                        std::array<uint8_t, NUM_LEGS / 2> lifted_legs;
+                        for (uint8_t i = 0; i < NUM_LEGS / 2; i++) {
+                            lifted_legs[i] = step_groups_[step_group][i];
+                        }
 
                         Pose3D lift_leg_correction = Pose3D(base_body_pose.x, base_body_pose.y, base_body_pose.z);
                         lift_leg_correction.x *= -2.0; //Reverse and double to go in the opposite direction the same amount
