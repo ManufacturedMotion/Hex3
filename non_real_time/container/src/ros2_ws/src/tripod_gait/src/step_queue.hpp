@@ -84,6 +84,6 @@ private:
     Pose6D end_pos_;
 
     StepQueueState state_ = StepQueueState::UNINITIALIZED;
-    StepType last_step_type_ = StepType::RAPID_MOVE;
+    StepType last_step_type_ = StepType::NONE;
 };
 
