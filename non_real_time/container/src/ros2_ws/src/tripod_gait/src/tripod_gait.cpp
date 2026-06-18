@@ -58,96 +58,100 @@ void TripodGaitNode::updateGait(
             // Step complete
             step_in_progress_ = false;
         } else {
-           switch(current_step_type_) {
+            switch(current_step_type_) {
                 case StepType::GROUP0:
                 case StepType::GROUP1:
-                    next_pos = (end_pos_ - start_pos_) * step_progress + start_pos_;
-                    base_body_pose = next_pos.toBodyPose();
-                    for (uint8_t i = 0; i < NUM_LEGS; i++) {
-                        next_body_poses.body_poses[i] = base_body_pose;
-                    }
-                    
-                    step_group = static_cast<uint8_t>(current_step_type_);
-					std::array<uint8_t, NUM_LEGS / 2> lifted_legs = std::copy(step_groups_[step_group]);
+                    {
+                        next_pos = (end_pos_ - start_pos_) * step_progress + start_pos_;
+                        base_body_pose = next_pos.toBodyPose();
+                        for (uint8_t i = 0; i < NUM_LEGS; i++) {
+                            next_body_poses.body_poses[i] = base_body_pose;
+                        }
+                        
+                        step_group = static_cast<uint8_t>(current_step_type_);
+                        std::array<uint8_t, NUM_LEGS / 2> lifted_legs = std::copy(step_groups_[step_group]);
 
-                    Pose3D lift_leg_correction = Pose3D(base_body_pose);
-                    lift_leg_correction.x *= -2.0; //Reverse and double to go in the opposite direction the same amount
-					lift_leg_correction.y *= -2.0;
-					// lift_leg_correction.yaw *= -2.0; //TODO: Figure out yaw moves in this paradigm
-                    
-                    lift_leg_correction.z += -4 * step_progress * (step_progress - 1.0) * _step_height;
+                        Pose3D lift_leg_correction = Pose3D(base_body_pose);
+                        lift_leg_correction.x *= -2.0; //Reverse and double to go in the opposite direction the same amount
+                        lift_leg_correction.y *= -2.0;
+                        // lift_leg_correction.yaw *= -2.0; //TODO: Figure out yaw moves in this paradigm
+                        
+                        lift_leg_correction.z += -4 * step_progress * (step_progress - 1.0) * _step_height;
 
-                    for (uint8_t leg : lifted_legs) {
-                        hexapod_msgs::msg::BodyPose& leg_pose = next_body_poses.body_poses[leg];
-                        leg_pose.x = base_body_pose.x + static_cast<float>(lift_leg_correction.x);
-                        leg_pose.y = base_body_pose.y + static_cast<float>(lift_leg_correction.y);
-                        leg_pose.z = base_body_pose.z + static_cast<float>(lift_leg_correction.z);
+                        for (uint8_t leg : lifted_legs) {
+                            hexapod_msgs::msg::BodyPose& leg_pose = next_body_poses.body_poses[leg];
+                            leg_pose.x = base_body_pose.x + static_cast<float>(lift_leg_correction.x);
+                            leg_pose.y = base_body_pose.y + static_cast<float>(lift_leg_correction.y);
+                            leg_pose.z = base_body_pose.z + static_cast<float>(lift_leg_correction.z);
+                        }
                     }
                     break;
                 case StepType::RETURN_TO_NEUTRAL:
-                    if ((last_step_progress_ < 0.5 && step_progress >= 0.5) || (last_step_progress_ >= 0.5 && step_progress < 0.5)) {
-                        // Switch step groups
-                        if (step_progress < 0.5) {
-                            switch(last_step_type_) {
-                                case StepType::GROUP0:
-                                case StepType::GROUP1:
-                                    step_group = static_cast<uint8_t>(last_step_type_);
-                                    break;
-                                default:
-                                    step_group = 0;
-                                    break;
+                    {
+                        if ((last_step_progress_ < 0.5 && step_progress >= 0.5) || (last_step_progress_ >= 0.5 && step_progress < 0.5)) {
+                            // Switch step groups
+                            if (step_progress < 0.5) {
+                                switch(last_step_type_) {
+                                    case StepType::GROUP0:
+                                    case StepType::GROUP1:
+                                        step_group = static_cast<uint8_t>(last_step_type_);
+                                        break;
+                                    default:
+                                        step_group = 0;
+                                        break;
+                                }
+                            }
+                            else {
+                                // Since return to neutral doesn't move the body, we reset the position when moving switching which legs are moving
+                                // to neutral as the opposite set of legs is in the reverse position as the other set of legs
+                                start_pos_.x *= -1.0;
+                                start_pos_.y *= -1.0;
+                                start_pos_.yaw *= -1.0;
+                                switch(last_step_type_) {
+                                    case StepType::GROUP0:
+                                    case StepType::GROUP1:
+                                        step_group = static_cast<uint8_t>(last_step_type_) ^ 1;
+                                        break;
+                                    default:
+                                        step_group = 1;
+                                }
                             }
                         }
                         else {
-                            // Since return to neutral doesn't move the body, we reset the position when moving switching which legs are moving
-                            // to neutral as the opposite set of legs is in the reverse position as the other set of legs
-                            start_pos_.x *= -1.0;
-                            start_pos_.y *= -1.0;
-                            start_pos_.yaw *= -1.0;
-                            switch(last_step_type_) {
-                                case StepType::GROUP0:
-                                case StepType::GROUP1:
-                                    step_group = static_cast<uint8_t>(last_step_type_) ^ 1;
-                                    break;
-                                default:
-                                    step_group = 1;
+                            if (step_progress < 0.5) {
+                                switch(last_step_type_) {
+                                    case StepType::GROUP0:
+                                    case StepType::GROUP1:
+                                        step_group = static_cast<uint8_t>(last_step_type_);
+                                        break;
+                                    default:
+                                        step_group = 0;
+                                        break;
+                                }
+                            }
+                            else {
+                                // Since return to neutral doesn't move the body, we reset the position when moving switching which legs are moving
+                                // to neutral as the opposite set of legs is in the reverse position as the other set of legs
+                                switch(last_step_type_) {
+                                    case StepType::GROUP0:
+                                    case StepType::GROUP1:
+                                        step_group = static_cast<uint8_t>(last_step_type_) ^ 1;
+                                        break;
+                                    default:
+                                        step_group = 1;
+                                }
                             }
                         }
-                    }
-                    else {
-                        if (step_progress < 0.5) {
-                            switch(last_step_type_) {
-                                case StepType::GROUP0:
-                                case StepType::GROUP1:
-                                    step_group = static_cast<uint8_t>(last_step_type_);
-                                    break;
-                                default:
-                                    step_group = 0;
-                                    break;
-                            }
+                        
+                        for (uint8_t i = 0; i < NUM_LEGS / NUM_STEP_GROUPS; i++) {
+                            active_legs[step_groups_[step_group][i]] = true;
+                            active_legs[step_groups_[(step_group^1)][i]] = false;
                         }
-                        else {
-                            // Since return to neutral doesn't move the body, we reset the position when moving switching which legs are moving
-                            // to neutral as the opposite set of legs is in the reverse position as the other set of legs
-                            switch(last_step_type_) {
-                                case StepType::GROUP0:
-                                case StepType::GROUP1:
-                                    step_group = static_cast<uint8_t>(last_step_type_) ^ 1;
-                                    break;
-                                default:
-                                    step_group = 1;
-                            }
-                        }
+                        adjusted_step_progress = step_progress < 0.5 ? 2.0 * step_progress : (step_progress - 0.5) * 2.0;
+                        next_pos = (end_pos_ - start_pos_) * adjusted_step_progress + start_pos_;
+                        next_pos.z -= -4 * adjusted_step_progress * (adjusted_step_progress - 1.0) * step_height_;
+                        rapidMove(next_pos, active_legs, true);
                     }
-                    
-                    for (uint8_t i = 0; i < NUM_LEGS / NUM_STEP_GROUPS; i++) {
-                        active_legs[step_groups_[step_group][i]] = true;
-                        active_legs[step_groups_[(step_group^1)][i]] = false;
-                    }
-                    adjusted_step_progress = step_progress < 0.5 ? 2.0 * step_progress : (step_progress - 0.5) * 2.0;
-                    next_pos = (end_pos_ - start_pos_) * adjusted_step_progress + start_pos_;
-                    next_pos.z -= -4 * adjusted_step_progress * (adjusted_step_progress - 1.0) * step_height_;
-                    rapidMove(next_pos, active_legs, true);
                 break;
                 case StepType::LINEAR_MOVE_RELATIVE:
                 case StepType::LINEAR_MOVE_ABSOLUTE:
