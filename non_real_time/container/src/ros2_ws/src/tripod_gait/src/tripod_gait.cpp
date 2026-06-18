@@ -148,7 +148,7 @@ void TripodGaitNode::updateGait(
                             active_legs[step_groups_[step_group][i]] = true;
                             active_legs[step_groups_[(step_group^1)][i]] = false;
                         }
-                        adjusted_step_progress = step_progress < 0.5 ? 2.0 * step_progress : (step_progress - 0.5) * 2.0;
+                        double adjusted_step_progress = step_progress < 0.5 ? 2.0 * step_progress : (step_progress - 0.5) * 2.0;
                         next_pos = (end_pos_ - start_pos_) * adjusted_step_progress + start_pos_;
                         next_pos.z -= -4 * adjusted_step_progress * (adjusted_step_progress - 1.0) * step_height_;
                         rapidMove(next_pos, active_legs);
