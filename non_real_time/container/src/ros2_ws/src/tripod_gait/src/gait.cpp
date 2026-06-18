@@ -54,6 +54,12 @@ void Gait::cmdVelCallback(
     v_command = Pose6D(msg);
 }
 
+void Gait::updateGait(
+    double dt,
+    rclcpp::Duration current_time)
+{
+}
+
 void Gait::update()
 {
     auto current_time = now();
