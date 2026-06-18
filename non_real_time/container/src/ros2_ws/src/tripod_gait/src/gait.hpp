@@ -62,5 +62,5 @@ private:
 
     rclcpp::TimerBase::SharedPtr timer_;
 
-    rclcpp::Time last_update_;
+    rclcpp::Time last_update_ = now();
 };
