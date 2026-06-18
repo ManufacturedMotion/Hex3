@@ -6,7 +6,7 @@
 #include "pose.hpp"
 #include "rclcpp/rclcpp.hpp"
 
-DEFAULT_MOVE_SPEED = 100.0
+DEFAULT_MOVE_SPEED 100.0
 
 enum class StepType {
     GROUP0 = 0,
