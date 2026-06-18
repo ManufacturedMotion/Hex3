@@ -143,7 +143,7 @@ void TripodGaitNode::updateGait(
                                 }
                             }
                         }
-                        std::array<uint8_t, NUM_LEGS> active_legs;
+                        std::array<bool, NUM_LEGS> active_legs;
                         for (uint8_t i = 0; i < NUM_LEGS / NUM_STEP_GROUPS; i++) {
                             active_legs[step_groups_[step_group][i]] = true;
                             active_legs[step_groups_[(step_group^1)][i]] = false;
