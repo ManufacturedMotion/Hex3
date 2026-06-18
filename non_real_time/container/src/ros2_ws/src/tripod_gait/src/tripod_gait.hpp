@@ -41,6 +41,7 @@ private:
     bool step_in_progress_ = false;
     rclcpp::Duration move_start_time_;
     rclcpp::Duration move_end_time_;
+    rclcpp::Duration move_time_;
     StepType current_step_type_ = StepType::NONE;
     StepType last_step_type_ = StepType::NONE;
 

@@ -50,11 +50,9 @@ void TripodGaitNode::updateGait(
     for (uint8_t i = 0; i < NUM_LEGS; i++) {
         next_body_poses.body_poses[i] = base_body_pose;
     }
-    //
-    // tripod gait logic here
-    //
+
     if (step_in_progress_) {
-        double step_progress = ;
+        double step_progress = (current_time.seconds() - move_start_time_.seconds()) / move_time_.seconds();
         Pose6D next_pos;
         if (step_progress >= 1.0) {
             // Step complete
@@ -203,7 +201,7 @@ void TripodGaitNode::updateGait(
 					break;
 			}
 			start_pos_ = current_pos_;
-			move_end_time_ = step_queue_.front()->time;
+			move_time_ = step_queue_.front()->time;
 			move_start_time_ = current_time;
 			step_queue_.dequeue();
 			step_in_progress_ = true;
