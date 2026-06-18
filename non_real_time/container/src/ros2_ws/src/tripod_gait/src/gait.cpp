@@ -64,7 +64,7 @@ void Gait::update()
 
     last_update_ = current_time;
 
-    updateGait(dt, rclcpp::Duration(current_time.nanoseconds()));
+    updateGait(dt, rclcpp::Duration(static_cast<int64_t>(current_time.nanoseconds())));
 }
 
 void Gait::publishFootTargetArray(

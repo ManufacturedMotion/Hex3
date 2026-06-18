@@ -93,6 +93,7 @@ hexapod_msgs::msg::BodyPose Pose6D::toBodyPose() {
     body_pose.roll = roll;
     body_pose.pitch = pitch;
     body_pose.yaw = yaw;
+    return body_pose;
 }
 
 void Pose3D::operator+=( const Pose3D& other ) {
