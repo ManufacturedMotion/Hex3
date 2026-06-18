@@ -1,3 +1,5 @@
+#pragma once
+
 #include "hexapod_msgs/msg/foot_target_array.hpp"
 #include "hexapod_msgs/msg/body_pose.hpp"
 #include "geometry_msgs/msg/twist.hpp"
