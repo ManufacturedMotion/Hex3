@@ -55,7 +55,7 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
         step_vector.roll,
         step_vector.pitch,
         step_vector.yaw
-    )
+    );
     walk_time += step_queue_.enqueue(step_vector * fabs(scalar), speed, next_step_type);
 	return walk_time;
 }
