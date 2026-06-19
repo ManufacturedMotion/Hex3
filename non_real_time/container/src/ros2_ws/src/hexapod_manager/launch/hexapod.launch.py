@@ -24,7 +24,7 @@ def generate_launch_description():
     )
 
     control = Node(
-        package='hexapod',
+        package='control',
         executable='xbox_joy_config',
         name='xbox',
         output='screen'
