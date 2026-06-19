@@ -19,10 +19,24 @@ def generate_launch_description():
 
     # # Gait planner
     control = Node(
-        package='hexapod_control',
+        package='hexapod',
         executable='xbox_joy_config',
         name='xbox',
         output='screen'
+    )
+
+    joy_config_file = os.path.join(
+        get_package_share_directory('hexapod'),
+        'config',
+        'xbox_joy_config.yaml'
+    )
+
+    joy = Node(
+        package='joy',
+        executable='joy_node',
+        name='joy',
+        output='screen',
+        parameters=[joy_config_file]
     )
 
     # Inverse kinematics
