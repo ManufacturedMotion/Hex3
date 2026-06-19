@@ -2,7 +2,7 @@
 
 Gait::Gait(
     const std::string& node_name),
-    const Pose6D v_command_multiplier,
+    Pose6D v_command_multiplier,
     : Node(node_name)
 {
     cmd_vel_sub_ =
