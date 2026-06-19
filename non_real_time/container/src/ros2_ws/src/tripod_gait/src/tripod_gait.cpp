@@ -37,17 +37,26 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 		next_step_type = static_cast<decltype(next_step_type)>(static_cast<uint8_t>(last_step_type_) ^ 1);
 		max_step_magnitude = max_step_magnitude_with_flip;
 	}
-
-	if (max_step_magnitude < getMaxStepMagnitude_()) {
+    RCLCPP_INFO(get_logger(), "max step magnitude: %f", max_step_magnitude);
+	if (max_step_magnitude < getMaxStepMagnitude_() * 0.5) {
 		buffer0 = step_queue_.getCurrentQueueEndPos();
 		buffer0.x = 0.00;
 		buffer0.y = 0.00;
 		buffer0.yaw = 0.00;
 		walk_time += step_queue_.enqueue(buffer0, speed, StepType::RETURN_TO_NEUTRAL);
+        RCLCPP_INFO(get_logger(), "enqueueing return to neutral");
 	}
-	
+
 	Pose6D step_vector = direction_vector.unitVector() * max_step_magnitude;
-	walk_time += step_queue_.enqueue(step_vector * fabs(scalar), speed, next_step_type);
+	RCLCPP_INFO("Enqueueing step vector: x: %f, y: %f, z: %f, roll: %f, pitch %f, yaw: %f", 
+        step_vector.x,
+        step_vector.y,
+        step_vector.z,
+        step_vector.roll,
+        step_vector.pitch,
+        step_vector.yaw
+    )
+    walk_time += step_queue_.enqueue(step_vector * fabs(scalar), speed, next_step_type);
 	return walk_time;
 }
 
