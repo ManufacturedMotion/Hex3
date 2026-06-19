@@ -17,16 +17,10 @@ def generate_launch_description():
         'leg_groups.json'
     )
 
-    joy_config_file = os.path.join(
-        get_package_share_directory('control'),
-        'config',
-        'xbox_joy_config.yaml'
-    )
-
     control = Node(
         package='control',
         executable='xbox_joy_config',
-        name='xbox',
+        name='control',
         output='screen'
     )
 

@@ -4,6 +4,7 @@
 TripodGaitNode::TripodGaitNode()
     : Gait("tripod_gait")
 {
+    RCLCPP_INFO(get_logger(), "TripodGaitNode started")
 }
 
 rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vector, double scalar) {
