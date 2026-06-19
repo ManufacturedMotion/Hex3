@@ -131,7 +131,6 @@ void InverseKinematicsNode::footTargetCallback(
 {   
     feet_received_[msg->leg_number] = true;
     latest_feet_.foot_targets[msg->leg_number] = *msg;
-    feet_received_ = true;
     RCLCPP_INFO_THROTTLE(
         this->get_logger(),
         *this->get_clock(),
