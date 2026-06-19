@@ -11,6 +11,12 @@
 #define NUM_LEGS 6
 #define NUM_STEP_GROUPS 2
 
+enum class MacroCode {
+    STAND,
+    SIT,
+    FLIP
+}
+
 class TripodGaitNode : public Gait
 {
 public:

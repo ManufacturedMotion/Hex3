@@ -17,6 +17,17 @@ Gait::Gait(
                 this,
                 std::placeholders::_1));
 
+    cmd_vel_sub_ =
+    create_subscription<
+        std::msg::Int8>(
+        "/macro",
+        10,
+        std::bind(
+            &Gait::cmdMacroCallback,
+            this,
+            std::placeholders::_1));
+
+
     foot_array_pub_ =
         create_publisher<
             hexapod_msgs::msg::FootTargetArray>(
@@ -51,6 +62,13 @@ Gait::Gait(
     last_update_ = now();
 }
 
+void Gait::cmdMacroCallback(
+    const std::msg::Int8::SharedPtr msg)
+{
+    run_macro(msg.data);
+}
+
+
 void Gait::cmdVelCallback(
     const geometry_msgs::msg::Twist::SharedPtr msg)
 {
@@ -69,6 +87,10 @@ void Gait::cmdVelCallback(
 void Gait::updateGait(
     double dt,
     rclcpp::Duration current_time)
+{
+}
+
+void Gait::runMacro(int8_t macro_num)
 {
 }
 

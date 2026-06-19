@@ -60,6 +60,15 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 	return walk_time;
 }
 
+void TripodGaitNode::runMacro(int8_t macro_num) {
+    switch(static_cast<MacroCode>macro_num):
+        case MacroCode::STAND:
+            step_queue_.enqueue(Pose6D(0, 0, 200, 0, 0, 0), 100, StepType::RAPID_MOVE);
+        break;
+        default;
+        break;
+}
+
 
 void TripodGaitNode::updateGait(
     double dt, rclcpp::Duration current_time)

@@ -19,6 +19,8 @@ protected:
     virtual void updateGait(
         double dt, rclcpp::Duration current_time);
 
+    virtual void runMacro(int8_t macro_num);
+
     void publishFootTargetArray(
         const hexapod_msgs::msg::FootTargetArray& msg);
 
@@ -61,6 +63,10 @@ private:
     rclcpp::Subscription<
         geometry_msgs::msg::Twist>::SharedPtr
         cmd_vel_sub_;
+    
+    rclcpp::Subscription<
+        std::msg::Int8>::SharedPtr
+        cmd_macro_sub_;
 
     rclcpp::TimerBase::SharedPtr timer_;
 
