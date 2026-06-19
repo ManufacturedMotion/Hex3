@@ -6,7 +6,7 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
-from sts_msgs.msg import Int
+from std_msgs.msg import Int
 
 class XboxJoyNode(Node):
     def __init__(self):
