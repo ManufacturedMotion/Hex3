@@ -38,7 +38,7 @@ class XboxJoyNode(Node):
 
     def joy_callback(self, msg):
         
-        if msg.buttons[0] != last_joy.buttons[0]:
+        if msg.buttons[0] != self.last_joy.buttons[0]:
             if msg.buttons[1]:
                 macro_pub.pub(1)
         left_y = -msg.axes[0]
