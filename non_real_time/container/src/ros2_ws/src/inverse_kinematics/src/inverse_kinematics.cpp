@@ -117,8 +117,10 @@ void InverseKinematicsNode::_inverseKinematics(
         for (int j = 0; j < 3; j++) {
             results[i][j] = potential_results[i][j];
         }
-        RCLCPP_INFO(
+        RCLCPP_INFO_THROTTLE(
             this->get_logger(),
+            *get_clock(),
+            1000,  // milliseconds
             "Leg %d body offset: x=%.1f y=%.1f z=%.1f",
             i, results[i][0], results[i][1], results[i][2]
         );
@@ -215,9 +217,14 @@ void InverseKinematicsNode::loadConfig(
     }
 
     _stance_offset = { stance[0].get<double>(), stance[1].get<double>(), stance[2].get<double>() };
-    RCLCPP_INFO(get_logger(),
+    RCLCPP_INFO_THROTTLE(
+        get_logger(),
+        *get_clock(),
+        1000,  // milliseconds
         "Loaded stance offset: x=%.1f y=%.1f z=%.1f",
-        _stance_offset[0], _stance_offset[1], _stance_offset[2]);
+        _stance_offset[0],
+        _stance_offset[1],
+        _stance_offset[2]);
 
     //
     // Leg coordinate transforms
@@ -280,7 +287,6 @@ void InverseKinematicsNode::process()
     }
 
     std::array<double, 3> body_offsets[NUM_LEGS];
-    RCLCPP_INFO(get_logger(), "Calculating IK...");
 
     _inverseKinematics(
         poses,
@@ -302,8 +308,10 @@ void InverseKinematicsNode::process()
         // cmd.speed = 200.0f;
 
         leg_command_pub_->publish(cmd);
-        RCLCPP_INFO(
+        RCLCPP_INFO_THROTTLE(
             this->get_logger(),
+            *get_clock(),
+            1000,  // milliseconds
             "Published LegCommand for leg %d: x=%.1f y=%.1f z=%.1f",
             i, cmd.x, cmd.y, cmd.z
         );
