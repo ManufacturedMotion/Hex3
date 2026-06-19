@@ -1,7 +1,7 @@
 #include "step_queue.hpp"
 
 StepQueue::StepQueue(rclcpp::Logger logger) {
-    logger_ = logger
+    logger_ = logger;
 }
 
 rclcpp::Duration StepQueue::enqueue(
@@ -98,7 +98,7 @@ rclcpp::Duration StepQueue::enqueue(
         op_time);
 
     last_step_type_ = op_step_type;
-    RCLCPP_INFO(logger_, "Enqueued step of type %d", op_step_type);
+    RCLCPP_INFO(logger_, "Enqueued step of type %d", static_cast<uint8_t>(op_step_type));
 
     return op_time;
 }
