@@ -177,6 +177,7 @@ private:
             msg.leg_number = i;
             body_pub_->publish(msg);
         }
+    }
 
     void publishFootTargets(double t)
     {
