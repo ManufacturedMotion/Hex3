@@ -94,7 +94,7 @@ rclcpp::Duration StepQueue::enqueue(
         op_time);
 
     last_step_type_ = op_step_type;
-    RCLCPP_INFO_THROTTLE(rclcpp::get_logger(), *get_clock(), 1000, "Enqueued step of type %d", op_step_type);
+    // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Enqueued step of type %d", op_step_type);
 
     return op_time;
 }
