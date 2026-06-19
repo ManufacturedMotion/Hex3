@@ -97,7 +97,7 @@ rclcpp::Duration StepQueue::enqueue(
         op_time);
 
     last_step_type_ = op_step_type;
-    RCLCPP_INFO(logger_, "Enqueued step of type %d", static_cast<uint8_t>(op_step_type));
+    RCLCPP_INFO(logger_, "Enqueued step of type %d, which will take %f seconds", static_cast<uint8_t>(op_step_type), op_time.seconds());
 
     return op_time;
 }
@@ -110,5 +110,6 @@ bool StepQueue::dequeue()
     }
 
     queue_.pop_front();
+    RCLCPP_INFO(logger_, "Dequeued step successfully");
     return true;
 }
