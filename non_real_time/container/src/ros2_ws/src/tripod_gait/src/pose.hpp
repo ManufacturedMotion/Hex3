@@ -24,11 +24,14 @@ class Pose6D
         Pose6D operator-( const Pose6D& other );
         Pose6D operator*( double scalar );
         Pose6D operator/( double scalar );
+        Pose6D operator*(const Pose6D& multipler);
+
         // Pose6D operator=(const Pose6D& other);
 
         void operator+=( const Pose6D& other );
         void operator-=( const Pose6D& other );
         void operator*=( double scalar );
+        void operator*=( const Pose6D& multiplier );
 
         hexapod_msgs::msg::BodyPose toBodyPose();
 
