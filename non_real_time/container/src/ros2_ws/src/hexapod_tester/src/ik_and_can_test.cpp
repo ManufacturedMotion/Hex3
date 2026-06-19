@@ -21,7 +21,7 @@ public:
 
         body_pub_ = this->create_publisher<
             hexapod_msgs::msg::BodyPoseArray>(
-            "/body_pose", 10);
+            "/body_pose/array", 10);
 
         timer_ = this->create_wall_timer(
             10ms,

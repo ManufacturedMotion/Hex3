@@ -69,7 +69,6 @@ void Gait::update()
             .seconds();
 
     last_update_ = current_time;
-
     updateGait(dt, rclcpp::Duration::from_nanoseconds(static_cast<int64_t>(current_time.nanoseconds())));
 }
 
