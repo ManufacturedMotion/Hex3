@@ -163,7 +163,7 @@ void TripodGaitNode::updateGait(
         if (step_queue_.empty()) {
             RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, 
             "enqueing step based on v_command x:%f; y:%f; z:%f; roll:%f; pitch:%f; yaw:%f;", 
-            v_command.x, v_command.y, v_command.z, v_command.roll, v_command.pitch, v_command.yaw)
+            v_command.x, v_command.y, v_command.z, v_command.roll, v_command.pitch, v_command.yaw);
             enqueueMaxStepInDirection_(v_command, std::max(fabs(v_command.magnitude()) / max_step_speed_, 0.25));
         }
         else {
