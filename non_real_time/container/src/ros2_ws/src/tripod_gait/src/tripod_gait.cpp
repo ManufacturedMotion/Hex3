@@ -221,7 +221,7 @@ void TripodGaitNode::updateGait(
 			move_start_time_ = current_time;
 			step_queue_.dequeue();
 			step_in_progress_ = true;
-            RCLCPP_INFO("Running step with:\n    start_pos: %f %f %f %f %f %f\n    move_time: %f\n    move_start_time: %f",
+            RCLCPP_INFO(get_logger(), "Running step with:\n    start_pos: %f %f %f %f %f %f\n    move_time: %f\n    move_start_time: %f",
                 start_pos_.x,
                 start_pos_.y,
                 start_pos_.z, 
