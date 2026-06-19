@@ -57,9 +57,9 @@ void Gait::cmdVelCallback(
     msg->linear.x, 
     msg->linear.y, 
     msg->linear.z, 
-    msg->angular.roll, 
-    msg->angular.pitch, 
-    msg->angular.yaw);
+    msg->angular.x, 
+    msg->angular.y, 
+    msg->angular.z);
     // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, 
     // "received cmd_vel x:%f; y:%f; z:%f, roll:%f, pitch:%f, yaw:%f", 
     // v_command.x, 
