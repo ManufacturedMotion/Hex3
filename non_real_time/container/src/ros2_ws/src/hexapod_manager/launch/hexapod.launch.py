@@ -18,12 +18,12 @@ def generate_launch_description():
     )
 
     # # Gait planner
-    # gait_planner = Node(
-    #     package='hexapod_control',
-    #     executable='gait_planner',
-    #     name='gait_planner',
-    #     output='screen'
-    # )
+    control = Node(
+        package='hexapod_control',
+        executable='xbox_joy_config',
+        name='xbox',
+        output='screen'
+    )
 
     # Inverse kinematics
     inverse_kinematics = Node(
