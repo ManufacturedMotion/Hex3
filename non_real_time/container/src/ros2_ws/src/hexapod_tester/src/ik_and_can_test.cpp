@@ -173,7 +173,7 @@ private:
             msg.z = pose.z;
             msg.roll = pose.roll;
             msg.pitch = pose.pitch;
-            msg.yaw = pose.yaw
+            msg.yaw = pose.yaw;
             msg.leg_number = i;
             body_pub_->publish(msg);
         }
