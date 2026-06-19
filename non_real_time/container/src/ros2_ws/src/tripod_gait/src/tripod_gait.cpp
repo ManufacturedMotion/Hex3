@@ -2,7 +2,7 @@
 #include "step_queue.hpp"
 
 TripodGaitNode::TripodGaitNode()
-    : Gait("tripod_gait", Pose6D(500.0, 500.0, 500.0, 1.0, 1.0, 1.0))
+    : Gait("tripod_gait", Pose6D(200.0, 200.0, 200.0, 1.0, 1.0, 1.0))
 {
     RCLCPP_INFO(get_logger(), "TripodGaitNode started");
 }
@@ -173,7 +173,7 @@ void TripodGaitNode::updateGait(
             RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, 
             "enqueing step based on v_command x:%f; y:%f; z:%f; roll:%f; pitch:%f; yaw:%f;", 
             v_command.x, v_command.y, v_command.z, v_command.roll, v_command.pitch, v_command.yaw);
-            enqueueMaxStepInDirection_(v_command, std::max(fabs(v_command.magnitude()) / max_step_speed_, 0.25));
+            enqueueMaxStepInDirection_(v_command.unitVector(), std::max(fabs(v_command.magnitude()) / max_step_speed_, 0.25));
         }
         else {
             last_step_type_ = current_step_type_;
