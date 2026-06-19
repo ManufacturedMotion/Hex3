@@ -182,8 +182,11 @@ void TripodGaitNode::updateGait(
                     }
                 break;
                 case StepType::LINEAR_MOVE_RELATIVE:
+                break;
                 case StepType::LINEAR_MOVE_ABSOLUTE:
+                break;
                 case StepType::RAPID_MOVE:
+                    rapidMove(_end_pos);
                 default:
                     break;
            }
@@ -245,6 +248,14 @@ void TripodGaitNode::updateGait(
             
 		}
     }
+}
+
+void TripodGaitNode::rapidMove(Pose6D pos) {
+    std::array<bool, NUM_LEGS> active_legs;
+    for (uint8_t i = 0; i < NUM_LEGS; i++) {
+        active_legs[i] = true;
+    }
+    rapidMove(pos, active_legs);
 }
 
 void TripodGaitNode::rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_legs) {
