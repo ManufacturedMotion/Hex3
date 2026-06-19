@@ -65,16 +65,16 @@ void TripodGaitNode::updateGait(
                         next_pos = (_end_pos - _start_pos) * step_progress + _start_pos;
                         step_group = static_cast<uint8_t>(current_step_type_);
                         for (uint8_t i = 0; i < NUM_LEGS / NUM_STEP_GROUPS; i++) {
-                            active_legs[_step_groups[step_group][i]] = true;
-                            active_legs[_step_groups[(step_group^1)][i]] = false;
+                            active_legs[step_groups_[step_group][i]] = true;
+                            active_legs[step_groups_[(step_group^1)][i]] = false;
                         }
                         rapidMove(next_pos, active_legs);
                         step_group ^= 1; 
                         for (uint8_t i = 0; i < NUM_LEGS / 2; i++) {
-                            active_legs[_step_groups[step_group][i]] = true;
-                            active_legs[_step_groups[(step_group^1)][i]] = false;
+                            active_legs[step_groups_[step_group][i]] = true;
+                            active_legs[step_groups_[(step_group^1)][i]] = false;
                         }
-                        next_pos.z -= -4 * step_progress * (step_progress - 1.0) * MAX_STEP_HEIGHT;
+                        next_pos.z -= -4 * step_progress * (step_progress - 1.0) * step_height_;
                         next_pos.x *= -1.0;
                         next_pos.y *= -1.0;
                         next_pos.yaw *= -1.0;
