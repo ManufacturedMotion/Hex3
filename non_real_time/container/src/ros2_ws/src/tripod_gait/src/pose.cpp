@@ -62,7 +62,7 @@ Pose6D Pose6D::operator*(const Pose6D& multiplier) {
         roll * multiplier.roll,
         pitch * multiplier.pitch,
         yaw * multiplier.yaw
-    )
+    );
 }
 
 // Pose6D Pose6D::operator=( const Pose6D& other ) {
