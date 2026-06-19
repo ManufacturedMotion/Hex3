@@ -45,9 +45,9 @@ Pose6D Pose6D::operator/( double scalar ) {
     );
 }
 
-Pose6D Pose6D::operator=( const Pose6D& other ) {
-    return Pose6D(other);
-}
+// Pose6D Pose6D::operator=( const Pose6D& other ) {
+//     return Pose6D(other);
+// }
 
 Pose6D Pose6D::unitVector() {
     return Pose6D(*(this) * (1.0 / magnitude()));
