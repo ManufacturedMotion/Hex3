@@ -40,10 +40,12 @@ class XboxJoyNode(Node):
 
         try:
             if msg.buttons[0] != self.last_joy.buttons[0]:
+                msg = Int8()
                 if msg.buttons[0]:
-                    self.macro_pub.publish(Int8(1))
+                    msg.data = 1
                 else:
-                    self.macro_pub.publish(Int8(0))
+                    msg.data = 0
+                self.macro_pub.publish(msg)
         except IndexError:
             pass # self.last_joy has an empty buttons array to start
         left_y = -msg.axes[0]
