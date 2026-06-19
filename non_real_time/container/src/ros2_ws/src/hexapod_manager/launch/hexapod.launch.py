@@ -35,7 +35,10 @@ def generate_launch_description():
         executable='joy_node',
         name='joy',
         output='screen',
-        parameters=[joy_config_file]
+        parameters=[joy_config_file,
+                {'log_level': 'debug'} 
+            ]
+
     )
 
     # Inverse kinematics
