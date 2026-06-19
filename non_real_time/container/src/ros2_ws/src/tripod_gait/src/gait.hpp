@@ -12,7 +12,8 @@ class Gait : public rclcpp::Node
 {
 public:
     explicit Gait(
-        const std::string& node_name);
+        const std::string& node_name,
+        Pose6D multiplier);
 
 protected:
     virtual void updateGait(

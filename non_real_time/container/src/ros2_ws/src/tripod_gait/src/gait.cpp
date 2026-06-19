@@ -1,4 +1,5 @@
 #include "gait.hpp"
+#include "pose.hpp"
 
 Gait::Gait(
     const std::string& node_name),
