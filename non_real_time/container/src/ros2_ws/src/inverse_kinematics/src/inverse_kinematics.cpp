@@ -10,7 +10,11 @@ InverseKinematicsNode::InverseKinematicsNode()
 {
     for (uint8_t i = 0; i < NUM_LEGS; i++) {
         pose_received_[i] = false;
-        feet_received_[i] = false;
+        feet_received_[i] = true;
+        latest_feet_.foot_targets[i].x = 0.0;
+        latest_feet_.foot_targets[i].y = 0.0;
+        latest_feet_.foot_targets[i].z = 0.0;
+        latest_feet.foot_targets[i].leg_number = i;
     }
     loadConfig(this->declare_parameter<std::string>("ik_config", "config/ik_config.json"));
     foot_target_array_sub_ =
