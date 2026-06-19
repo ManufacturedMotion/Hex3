@@ -65,7 +65,7 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
         case MacroCode::STAND:
             step_queue_.enqueue(Pose6D(0, 0, 200, 0, 0, 0), 100, StepType::RAPID_MOVE);
         break;
-        default;
+        default:
         break;
 }
 
