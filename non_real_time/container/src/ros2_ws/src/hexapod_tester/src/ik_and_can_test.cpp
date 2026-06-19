@@ -168,8 +168,13 @@ private:
         
         for (uint8_t i = 0; i < 6; i++) {
             hexapod_msgs::msg::BodyPose msg;
-            body_pose = pose;
-            body_pose.leg_number = i;
+            msg.x = pose.x;
+            msg.y = pose.y;
+            msg.z = pose.z;
+            msg.roll = pose.roll;
+            msg.pitch = pose.pitch;
+            msg.yaw = pose.yaw
+            msg.leg_number = i;
             body_pub_->publish(msg);
         }
         
