@@ -45,6 +45,26 @@ Pose6D Pose6D::operator/( double scalar ) {
     );
 }
 
+void Pose6D::operator*=(const Pose6D& multiplier) {
+    x *= multiplier.x;
+    y *= multiplier.y;
+    z *= multiplier.z;
+    roll *= multiplier.roll;
+    pitch *= multiplier.pitch;
+    yaw *= multiplier.yaw;
+}
+
+Pose6D operator*(const Pose6D& multipler) {
+    return Pose6D(
+        x * multiplier.x,
+        y * multiplier.y,
+        z * multiplier.z,
+        roll * multiplier.roll,
+        pitch * multiplier.pitch,
+        yaw * multiplier.yaw
+    )
+}
+
 // Pose6D Pose6D::operator=( const Pose6D& other ) {
 //     return Pose6D(other);
 // }

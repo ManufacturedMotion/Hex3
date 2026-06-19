@@ -14,7 +14,7 @@
 class TripodGaitNode : public Gait
 {
 public:
-    TripodGaitNode();
+    TripodGaitNode());
 
 private:
     void updateGait(

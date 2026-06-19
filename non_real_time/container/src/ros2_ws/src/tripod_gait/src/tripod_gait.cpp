@@ -2,7 +2,7 @@
 #include "step_queue.hpp"
 
 TripodGaitNode::TripodGaitNode()
-    : Gait("tripod_gait")
+    : Gait("tripod_gait", Pose6D(500.0, 500.0, 500.0, 1.0, 1.0, 1.0))
 {
     RCLCPP_INFO(get_logger(), "TripodGaitNode started");
 }

@@ -31,6 +31,7 @@ protected:
         const hexapod_msgs::msg::BodyPose& msg);
 
     Pose6D v_command = Pose6D();
+    Pose6D v_command_multiplier = Pose6D();
 
 private:
     void cmdVelCallback(

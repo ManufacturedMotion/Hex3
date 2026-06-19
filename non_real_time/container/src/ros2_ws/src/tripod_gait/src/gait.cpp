@@ -1,7 +1,8 @@
 #include "gait.hpp"
 
 Gait::Gait(
-    const std::string& node_name)
+    const std::string& node_name),
+    Pose6D v_command_multiplier,
     : Node(node_name)
 {
     cmd_vel_sub_ =
@@ -52,14 +53,7 @@ void Gait::cmdVelCallback(
     const geometry_msgs::msg::Twist::SharedPtr msg)
 {
     v_command = Pose6D(msg);
-    // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, 
-    // "received cmd_vel x:%f; y:%f; z:%f, roll:%f, pitch:%f, yaw:%f", 
-    // msg->linear.x, 
-    // msg->linear.y, 
-    // msg->linear.z, 
-    // msg->angular.x, 
-    // msg->angular.y, 
-    // msg->angular.z);
+    v_command *= v_command_multiplier;
     RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, 
     "received cmd_vel x:%f; y:%f; z:%f, roll:%f, pitch:%f, yaw:%f", 
     v_command.x, 
