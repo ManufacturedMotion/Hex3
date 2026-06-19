@@ -9,7 +9,7 @@ class Pose6D
     public:
         Pose6D() : x(0), y(0), z(0), roll(0), pitch(0), yaw(0) {}
         Pose6D(double x, double y, double z, double roll, double pitch, double yaw) : x(x), y(y), z(z), roll(roll), pitch(pitch), yaw(yaw) {}
-        // Pose6D(const Pose6D& other) : x(other.x), y(other.y), z(other.z), roll(other.roll), pitch(other.pitch), yaw(other.yaw) {}
+        Pose6D(const Pose6D& other) : x(other.x), y(other.y), z(other.z), roll(other.roll), pitch(other.pitch), yaw(other.yaw) {}
         // Pose6D(const Pose3D& pose3d); : x(pose3d.x), y(pose3d.y), z(pose3d.z), roll(0), pitch(0), yaw(0) {}
         Pose6D(const geometry_msgs::msg::Twist::SharedPtr msg) : x(msg->linear.x), y(msg->linear.y), z(msg->linear.z), roll(msg->angular.x), pitch(msg->angular.y), yaw(msg->angular.z) {}
 
