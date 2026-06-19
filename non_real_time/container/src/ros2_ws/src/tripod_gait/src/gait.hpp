@@ -41,6 +41,9 @@ private:
     void cmdVelCallback(
         const geometry_msgs::msg::Twist::SharedPtr msg);
 
+    void cmdMacroCallback(
+        const std_msgs::msg::Int8::SharedPtr msg);
+
     void update();
 
 protected:
