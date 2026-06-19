@@ -49,7 +49,7 @@ struct Step
 class StepQueue
 {
 public:
-    StepQueue(rclcpp::Logger logger);
+    StepQueue(rclcpp::Logger *logger);
 
     rclcpp::Duration enqueue(
         Pose6D end_pos,
@@ -85,6 +85,6 @@ private:
 
     StepQueueState state_ = StepQueueState::UNINITIALIZED;
     StepType last_step_type_ = StepType::NONE;
-    rclcpp::Logger logger_; 
+    rclcpp::Logger *logger_; 
 };
 
