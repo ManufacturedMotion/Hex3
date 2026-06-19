@@ -6,14 +6,14 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
-from std_msgs.msg import Int
+from std_msgs.msg import Int8
 
 class XboxJoyNode(Node):
     def __init__(self):
         super().__init__('xbox_joy_config')
         self.joy_sub = self.create_subscription(Joy, '/joy', self.joy_callback, 10)
         self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
-        self.macro_pub = self.create_publisher(Int, '/macros', 10)
+        self.macro_pub = self.create_publisher(Int8, '/macros', 10)
         self.last_twist = Twist()
         self.last_joy_time = self.get_clock().now()
         self.timeout_sec = 0.5
