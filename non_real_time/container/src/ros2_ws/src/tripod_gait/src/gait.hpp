@@ -65,7 +65,7 @@ private:
         cmd_vel_sub_;
     
     rclcpp::Subscription<
-        std::msg::Int8>::SharedPtr
+        std_msgs::msg::Int8>::SharedPtr
         cmd_macro_sub_;
 
     rclcpp::TimerBase::SharedPtr timer_;

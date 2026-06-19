@@ -63,7 +63,7 @@ Gait::Gait(
 }
 
 void Gait::cmdMacroCallback(
-    const std::msg::Int8::SharedPtr msg)
+    const std_msgs::msg::Int8::SharedPtr msg)
 {
     run_macro(msg.data);
 }
