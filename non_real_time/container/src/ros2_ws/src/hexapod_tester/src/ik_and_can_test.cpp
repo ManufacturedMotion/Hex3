@@ -262,7 +262,7 @@ private:
         hexapod_msgs::msg::FootTargetArray>::SharedPtr foot_pub_;
 
     rclcpp::Publisher<
-        hexapod_msgs::msg::BodyPoseArray>::SharedPtr body_pub_;
+        hexapod_msgs::msg::BodyPose>::SharedPtr body_pub_;
 
     rclcpp::TimerBase::SharedPtr timer_;
 
