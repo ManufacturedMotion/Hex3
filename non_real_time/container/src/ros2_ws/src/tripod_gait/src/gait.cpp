@@ -60,14 +60,14 @@ void Gait::cmdVelCallback(
     msg.angular.roll, 
     msg.angular.pitch, 
     msg.angular.yaw);
-    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, 
-    "received cmd_vel x:%f; y:%f; z:%f, roll:%f, pitch:%f, yaw:%f", 
-    v_command.x, 
-    v_command.y, 
-    v_command.z, 
-    v_command.roll, 
-    v_command.pitch, 
-    v_command.yaw);
+    // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, 
+    // "received cmd_vel x:%f; y:%f; z:%f, roll:%f, pitch:%f, yaw:%f", 
+    // v_command.x, 
+    // v_command.y, 
+    // v_command.z, 
+    // v_command.roll, 
+    // v_command.pitch, 
+    // v_command.yaw);
 }
 
 void Gait::updateGait(
