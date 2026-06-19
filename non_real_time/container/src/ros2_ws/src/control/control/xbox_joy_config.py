@@ -6,19 +6,41 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import Twist
+from sts_msgs.msg import Int
 
 class XboxJoyNode(Node):
     def __init__(self):
         super().__init__('xbox_joy_config')
         self.joy_sub = self.create_subscription(Joy, '/joy', self.joy_callback, 10)
-        self.cmd_pub = self.create_publisher(Twist, '/cmd_vel', 10)
+        self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
+        self.macro_pub = self.create_publisher(Int, '/macros', 10)
         self.last_twist = Twist()
         self.last_joy_time = self.get_clock().now()
         self.timeout_sec = 0.5
         self.poll_rate = 20.0
         self.poll_timer = self.create_timer(1.0 / self.poll_rate, self.poll_callback)
+        self.last_joy = None
+
+    def joy_equal(j1, j2, axis_tol=1e-5):
+        if len(j1.axes) != len(j2.axes):
+            return False
+        if len(j1.buttons) != len(j2.buttons):
+            return False
+
+        for a, b in zip(j1.axes, j2.axes):
+            if not math.isclose(a, b, abs_tol=axis_tol):
+                return False
+
+        if j1.buttons != j2.buttons:
+            return False
+
+        return True
 
     def joy_callback(self, msg):
+        
+        if msg.buttons[0] != last_joy.buttons[0]
+            if msg.buttons[1]:
+                macro_pub.pub(1)
         left_y = -msg.axes[0]
         left_x = -msg.axes[1]
         right_x = -msg.axes[3]
@@ -78,15 +100,16 @@ class XboxJoyNode(Node):
 
         self.last_twist = twist
         self.last_joy_time = self.get_clock().now()
+        self.last_joy = msg
 
     def poll_callback(self):
         # If timeout, publish zero Twist
         now = self.get_clock().now()
         if (now - self.last_joy_time).nanoseconds * 1e-9 > self.timeout_sec:
             zero_twist = Twist()
-            self.cmd_pub.publish(zero_twist)
+            self.cmd_vel_pub.publish(zero_twist)
         else:
-            self.cmd_pub.publish(self.last_twist)
+            self.cmd_vel_pub.publish(self.last_twist)
 
 def main(args=None):
     rclpy.init(args=args)
