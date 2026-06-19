@@ -6,7 +6,7 @@
 
 #include "hexapod_msgs/msg/foot_target.hpp"
 #include "hexapod_msgs/msg/foot_target_array.hpp"
-#include "hexapod_msgs/msg/body_pose_array.hpp"
+#include "hexapod_msgs/msg/body_pose.hpp"
 
 using namespace std::chrono_literals;
 
@@ -20,8 +20,8 @@ public:
             "/foot_targets", 10);
 
         body_pub_ = this->create_publisher<
-            hexapod_msgs::msg::BodyPoseArray>(
-            "/body_pose/array", 10);
+            hexapod_msgs::msg::BodyPose>(
+            "/body_pose", 10);
 
         timer_ = this->create_wall_timer(
             10ms,
@@ -165,12 +165,14 @@ private:
                 break;
         }
 
-        hexapod_msgs::msg::BodyPoseArray msg;
-        for (auto& body_pose : msg.body_poses) {
+        
+        for (uint8_t i = 0; i < 6; i++) {
+            hexapod_msgs::msg::BodyPose msg;
             body_pose = pose;
+            body_pose.leg_number = i;
+            body_pub_->publish(msg);
         }
-
-        body_pub_->publish(msg);
+        
 
         RCLCPP_INFO_THROTTLE(
             this->get_logger(),
