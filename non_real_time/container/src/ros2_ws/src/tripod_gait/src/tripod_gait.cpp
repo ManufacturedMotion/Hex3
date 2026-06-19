@@ -22,7 +22,7 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 	direction_vector.z = 0.00; // For now we don't consider Z, roll, or pitch
 	direction_vector.roll = 0.00;
 	direction_vector.pitch = 0.00;
-	if (direction_vector.magnitude() < 0.001 || isnan(direction_vector.x)) {
+	if (direction_vector.magnitude() < 0.001 || std::isnan(direction_vector.x)) {
         RCLCPP_INFO(get_logger(), "no step to take");
 		return rclcpp::Duration::from_nanoseconds(0); // No step to take
 	}
