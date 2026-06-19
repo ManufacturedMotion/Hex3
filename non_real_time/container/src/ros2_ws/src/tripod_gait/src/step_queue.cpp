@@ -1,5 +1,9 @@
 #include "step_queue.hpp"
 
+StepQueue::StepQueue(rclcpp::Logger logger) {
+    logger_ = logger
+}
+
 rclcpp::Duration StepQueue::enqueue(
     Pose6D op_end_pos,
     double op_speed,
