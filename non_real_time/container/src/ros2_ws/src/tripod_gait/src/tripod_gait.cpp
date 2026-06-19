@@ -15,7 +15,7 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
         direction_vector.roll,
         direction_vector.pitch,
         direction_vector.yaw
-    )
+    );
     Pose6D buffer0;
 
 	direction_vector.z = 0.00; // For now we don't consider Z, roll, or pitch
