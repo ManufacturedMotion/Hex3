@@ -54,7 +54,7 @@ void Pose6D::operator*=(const Pose6D& multiplier) {
     yaw *= multiplier.yaw;
 }
 
-Pose6D operator*(const Pose6D& multipler) {
+Pose6D Pose6D::operator*(const Pose6D& multipler) {
     return Pose6D(
         x * multiplier.x,
         y * multiplier.y,
