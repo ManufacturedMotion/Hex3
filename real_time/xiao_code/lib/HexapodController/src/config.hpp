@@ -17,7 +17,7 @@
     #define ZERO_POINTS { \
          {\
             0.437185 + CALIBRATION_OFFSET_A0,  \
-            -2.419088 + CALIBRATION_OFFSET_A1, \
+            -0.852893 + CALIBRATION_OFFSET_A1, \
             1.362175 + CALIBRATION_OFFSET_A2}, \
          {\
             -2.218136 + CALIBRATION_OFFSET_A0, \
