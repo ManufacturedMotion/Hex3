@@ -17,15 +17,15 @@ Gait::Gait(
                 this,
                 std::placeholders::_1));
 
-    cmd_vel_sub_ =
-    create_subscription<
-        std_msgs::msg::Int8>(
-        "/macro",
-        10,
-        std::bind(
-            &Gait::cmdMacroCallback,
-            this,
-            std::placeholders::_1));
+    cmd_macro_sub_ =
+        create_subscription<
+            std_msgs::msg::Int8>(
+            "/macro",
+            10,
+            std::bind(
+                &Gait::cmdMacroCallback,
+                this,
+                std::placeholders::_1));
 
 
     foot_array_pub_ =
