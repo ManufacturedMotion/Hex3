@@ -3,9 +3,10 @@
 
 Gait::Gait(
     const std::string& node_name,
-    Pose6D v_command_multiplier)
+    Pose6D multiplier)
     : Node(node_name)
-{
+{   
+    v_command_multiplier = multiplier
     cmd_vel_sub_ =
         create_subscription<
             geometry_msgs::msg::Twist>(
