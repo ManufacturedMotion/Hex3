@@ -19,7 +19,7 @@ Gait::Gait(
 
     cmd_vel_sub_ =
     create_subscription<
-        std::msg::Int8>(
+        std_msgs::msg::Int8>(
         "/macro",
         10,
         std::bind(
