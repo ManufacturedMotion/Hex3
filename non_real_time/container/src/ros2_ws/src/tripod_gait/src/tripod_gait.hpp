@@ -48,6 +48,5 @@ private:
 
     StepType getNextStepType();
 
-    StepQueue step_queue_;
-
+    StepQueue step_queue_ = StepQueue(this->get_logger());
 };
