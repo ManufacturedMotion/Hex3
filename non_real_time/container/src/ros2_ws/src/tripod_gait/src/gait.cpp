@@ -20,7 +20,7 @@ Gait::Gait(
     cmd_macro_sub_ =
         create_subscription<
             std_msgs::msg::Int8>(
-            "/macro",
+            "/macros",
             10,
             std::bind(
                 &Gait::cmdMacroCallback,
