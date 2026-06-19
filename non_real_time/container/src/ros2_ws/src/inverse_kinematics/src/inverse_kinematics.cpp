@@ -128,7 +128,8 @@ void InverseKinematicsNode::_inverseKinematics(
 
 void InverseKinematicsNode::footTargetCallback(
     const hexapod_msgs::msg::FootTarget::SharedPtr msg)
-{
+{   
+    feet_received_[msg->leg_number] = true;
     latest_feet_.foot_targets[msg->leg_number] = *msg;
     feet_received_ = true;
     RCLCPP_INFO_THROTTLE(
@@ -143,6 +144,9 @@ void InverseKinematicsNode::footTargetCallback(
 void InverseKinematicsNode::footTargetArrayCallback(
     const hexapod_msgs::msg::FootTargetArray::SharedPtr msg)
 {
+    for (uint8_t i = 0; i < NUM_LEGS; i++) {
+        feet_received_[i] = true;
+    }
     latest_feet_ = *msg;
     feet_received_ = true;
     RCLCPP_INFO_THROTTLE(
@@ -157,7 +161,9 @@ void InverseKinematicsNode::footTargetArrayCallback(
 void InverseKinematicsNode::bodyPoseArrayCallback(
     const hexapod_msgs::msg::BodyPoseArray::SharedPtr msg)
 {
-    pose_received_ = True;
+    for (uint8_t i = 0; i < NUM_LEGS; i++) {
+        pose_received_[i] = true;
+    }
     latest_body_poses_ = *msg;
     RCLCPP_INFO_THROTTLE(
         this->get_logger(),
@@ -172,6 +178,7 @@ void InverseKinematicsNode::bodyPoseArrayCallback(
 void InverseKinematicsNode::bodyPoseCallback(
     const hexapod_msgs::msg::BodyPose::SharedPtr msg)
 {
+    pose_received_[msg->leg_number] = true;
     latest_body_poses_.body_poses[msg->leg_number] = *msg;
     RCLCPP_INFO_THROTTLE(
         this->get_logger(),
