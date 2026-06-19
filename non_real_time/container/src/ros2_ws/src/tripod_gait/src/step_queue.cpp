@@ -15,6 +15,7 @@ rclcpp::Duration StepQueue::enqueue(
     //     return rclcpp::Duration::from_nanoseconds(0);
     // }
 
+    RCLCPP_INFO(logger_, "Enqueued step of type %d", static_cast<uint8_t>(op_step_type)); 
     rclcpp::Duration op_time = rclcpp::Duration::from_nanoseconds(0);
 
     switch (op_step_type)
