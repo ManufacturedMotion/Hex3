@@ -177,22 +177,6 @@ private:
             msg.leg_number = i;
             body_pub_->publish(msg);
         }
-        
-
-        RCLCPP_INFO_THROTTLE(
-            this->get_logger(),
-            *this->get_clock(),
-            500,
-            "Axis %d Phase %d | x=%.1f y=%.1f z=%.1f r=%.3f p=%.3f yaw=%.3f",
-            axis_index,
-            phase,
-            msg.body_poses[0].x,
-            msg.body_poses[0].y,
-            msg.body_poses[0].z,
-            msg.body_poses[0].roll,
-            msg.body_poses[0].pitch,
-            msg.body_poses[0].yaw);
-    }
 
     void publishFootTargets(double t)
     {
