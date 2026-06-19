@@ -3,6 +3,7 @@
 #include "rclcpp/rclcpp.hpp"
 
 #include "geometry_msgs/msg/twist.hpp"
+#include "std_msgs/msg/int8.hpp"
 
 #include "hexapod_msgs/msg/foot_target_array.hpp"
 #include "hexapod_msgs/msg/body_pose_array.hpp"
