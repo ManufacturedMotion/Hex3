@@ -19,7 +19,7 @@ class XboxJoyNode(Node):
         self.timeout_sec = 0.5
         self.poll_rate = 20.0
         self.poll_timer = self.create_timer(1.0 / self.poll_rate, self.poll_callback)
-        self.last_joy = None
+        self.last_joy = Joy()
 
     def joy_equal(j1, j2, axis_tol=1e-5):
         if len(j1.axes) != len(j2.axes):
@@ -38,7 +38,7 @@ class XboxJoyNode(Node):
 
     def joy_callback(self, msg):
         
-        if msg.buttons[0] != last_joy.buttons[0]
+        if msg.buttons[0] != last_joy.buttons[0]:
             if msg.buttons[1]:
                 macro_pub.pub(1)
         left_y = -msg.axes[0]
