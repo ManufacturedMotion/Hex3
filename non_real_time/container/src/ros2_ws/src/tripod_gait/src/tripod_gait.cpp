@@ -62,31 +62,23 @@ void TripodGaitNode::updateGait(
                 case StepType::GROUP0:
                 case StepType::GROUP1:
                     {
-                        next_pos = (end_pos_ - start_pos_) * step_progress + start_pos_;
-                        base_body_pose = next_pos.toBodyPose();
-                        for (uint8_t i = 0; i < NUM_LEGS; i++) {
-                            next_body_poses.body_poses[i] = base_body_pose;
+                        next_pos = (_end_pos - _start_pos) * step_progress + _start_pos;
+                        step_group = static_cast<uint8_t>(current_step_type_);
+                        for (uint8_t i = 0; i < NUM_LEGS / NUM_STEP_GROUPS; i++) {
+                            active_legs[_step_groups[step_group][i]] = true;
+                            active_legs[_step_groups[(step_group^1)][i]] = false;
                         }
-                        
-                        uint8_t step_group = static_cast<uint8_t>(current_step_type_);
-                        std::array<uint8_t, NUM_LEGS / 2> lifted_legs;
+                        rapidMove(next_pos, active_legs);
+                        step_group ^= 1; 
                         for (uint8_t i = 0; i < NUM_LEGS / 2; i++) {
-                            lifted_legs[i] = step_groups_[step_group][i];
+                            active_legs[_step_groups[step_group][i]] = true;
+                            active_legs[_step_groups[(step_group^1)][i]] = false;
                         }
-
-                        Pose3D lift_leg_correction = Pose3D(base_body_pose.x, base_body_pose.y, base_body_pose.z);
-                        lift_leg_correction.x *= -2.0; //Reverse and double to go in the opposite direction the same amount
-                        lift_leg_correction.y *= -2.0;
-                        // lift_leg_correction.yaw *= -2.0; //TODO: Figure out yaw moves in this paradigm
-                        
-                        lift_leg_correction.z += -4 * step_progress * (step_progress - 1.0) * step_height_;
-
-                        for (uint8_t leg : lifted_legs) {
-                            hexapod_msgs::msg::BodyPose& leg_pose = next_body_poses.body_poses[leg];
-                            leg_pose.x = base_body_pose.x + static_cast<float>(lift_leg_correction.x);
-                            leg_pose.y = base_body_pose.y + static_cast<float>(lift_leg_correction.y);
-                            leg_pose.z = base_body_pose.z + static_cast<float>(lift_leg_correction.z);
-                        }
+                        next_pos.z -= -4 * step_progress * (step_progress - 1.0) * MAX_STEP_HEIGHT;
+                        next_pos.x *= -1.0;
+                        next_pos.y *= -1.0;
+                        next_pos.yaw *= -1.0;
+                        rapidMove(next_pos, active_legs);
                     }
                     break;
                 case StepType::RETURN_TO_NEUTRAL:
