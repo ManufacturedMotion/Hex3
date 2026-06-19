@@ -63,7 +63,7 @@ void TripodGaitNode::updateGait(
                 case StepType::GROUP1:
                     {
                         std::array<bool, NUM_LEGS> active_legs;
-                        next_pos = (_end_pos - _start_pos) * step_progress + _start_pos;
+                        next_pos = (end_pos_ - start_pos_) * step_progress + _start_pos;
                         uint8_t step_group = static_cast<uint8_t>(current_step_type_);
                         for (uint8_t i = 0; i < NUM_LEGS / NUM_STEP_GROUPS; i++) {
                             active_legs[step_groups_[step_group][i]] = true;
