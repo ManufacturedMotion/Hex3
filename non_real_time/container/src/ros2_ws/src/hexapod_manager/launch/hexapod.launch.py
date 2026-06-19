@@ -17,18 +17,17 @@ def generate_launch_description():
         'leg_groups.json'
     )
 
-    # # Gait planner
+    joy_config_file = os.path.join(
+        get_package_share_directory('control'),
+        'config',
+        'xbox_joy_config.yaml'
+    )
+
     control = Node(
         package='hexapod',
         executable='xbox_joy_config',
         name='xbox',
         output='screen'
-    )
-
-    joy_config_file = os.path.join(
-        get_package_share_directory('hexapod'),
-        'config',
-        'xbox_joy_config.yaml'
     )
 
     joy = Node(
@@ -68,4 +67,6 @@ def generate_launch_description():
     return LaunchDescription([
         inverse_kinematics,
         can_interface,
+        control,
+        joy
     ])
