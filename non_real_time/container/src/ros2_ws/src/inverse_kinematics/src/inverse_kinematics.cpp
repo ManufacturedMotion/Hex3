@@ -8,6 +8,10 @@ using json = nlohmann::json;
 InverseKinematicsNode::InverseKinematicsNode()
 : Node("inverse_kinematics")
 {
+    for (uint8_t i = 0; i < NUM_LEGS; i++) {
+        pose_received_[i] = false;
+        feet_received_[i] = false;
+    }
     loadConfig(this->declare_parameter<std::string>("ik_config", "config/ik_config.json"));
     foot_target_array_sub_ =
         create_subscription<hexapod_msgs::msg::FootTargetArray>(
@@ -153,6 +157,7 @@ void InverseKinematicsNode::footTargetArrayCallback(
 void InverseKinematicsNode::bodyPoseArrayCallback(
     const hexapod_msgs::msg::BodyPoseArray::SharedPtr msg)
 {
+    pose_received_ = True;
     latest_body_poses_ = *msg;
     RCLCPP_INFO_THROTTLE(
         this->get_logger(),
@@ -254,9 +259,6 @@ void InverseKinematicsNode::loadConfig(
 
 void InverseKinematicsNode::process()
 {
-    if (!feet_received_ || !pose_received_) {
-        return;
-    }
 
     // --- Build per-leg poses ---
     std::array<IKPose, NUM_LEGS> poses;
@@ -280,6 +282,9 @@ void InverseKinematicsNode::process()
         body_offsets);
 
     for (uint8_t i = 0; i < NUM_LEGS; i++) {
+        if (!feet_received_[i] || !pose_received_[i]) {
+            continue;
+        }
         hexapod_msgs::msg::LegCommand cmd;
 
         cmd.leg_number = i;

@@ -84,6 +84,6 @@ private:
     hexapod_msgs::msg::FootTargetArray latest_feet_;
     hexapod_msgs::msg::BodyPoseArray latest_body_poses_;
 
-    bool feet_received_{false};
-    bool pose_received_{false};
+    std::array<bool, NUM_LEGS> feet_received_;
+    std::array<bool, NUM_LEGS> pose_received_;
 };
