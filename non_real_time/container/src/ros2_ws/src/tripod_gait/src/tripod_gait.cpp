@@ -311,8 +311,8 @@ void TripodGaitNode::rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_leg
 // }
 
 double TripodGaitNode::getMaxStepMagnitude_() {
-	Pose6D current_pos = step_queue_.getCurrentQueueEndPos();
-	return max_step_length_ - sqrt(pow((current_pos.z - 100.0) / 2.0, 2) + pow(current_pos.roll, 2) + pow(current_pos.pitch, 2)) / 2.0;
+	// Pose6D current_pos = step_queue_.getCurrentQueueEndPos();
+	return max_step_length_;
 }
 
 double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, bool flipped_step_group) {	
