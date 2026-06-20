@@ -46,13 +46,13 @@ class XboxJoyNode(Node):
                 pub_msg = Int8()
                 pub_msg.data = 0
                 if msg.buttons[0]:
-                    pub_msg.data &= 0x01
+                    pub_msg.data |= 0x01
                 if msg.buttons[1]:
-                    pub_msg.data &= 0x02
+                    pub_msg.data |= 0x02
                 if msg.buttons[2]:
-                    pub_msg.data &= 0x04
+                    pub_msg.data |= 0x04
                 if msg.buttons[3]:
-                    pub_msg.data &= 0x08
+                    pub_msg.data |= 0x08
                 
                 self.macro_pub.publish(pub_msg)
         except IndexError:
