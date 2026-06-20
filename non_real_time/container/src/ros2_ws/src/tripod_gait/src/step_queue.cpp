@@ -54,7 +54,7 @@ rclcpp::Duration StepQueue::enqueue(
                 static_cast<int64_t>(((op_end_pos - end_pos_).magnitude() /
                  op_speed) * 1000000.0));
 
-            if (op_time.seconds() / 1000000000 < 0.001)
+            if (op_time.seconds() < 0.001)
             {
                 return rclcpp::Duration::from_nanoseconds(0);
             }
