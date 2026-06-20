@@ -15,7 +15,6 @@ rclcpp::Duration StepQueue::enqueue(
     //     return rclcpp::Duration::from_nanoseconds(0);
     // }
 
-    RCLCPP_INFO(logger_, "Enqueued step of type %d", static_cast<uint8_t>(op_step_type)); 
     rclcpp::Duration op_time = rclcpp::Duration::from_nanoseconds(0);
 
     switch (op_step_type)
@@ -33,7 +32,7 @@ rclcpp::Duration StepQueue::enqueue(
 
             end_pos_ += op_end_pos;
             op_time = rclcpp::Duration::from_nanoseconds(
-                static_cast<int64_t>((op_end_pos.magnitude() / op_speed) * 1000000000.0));
+                static_cast<int64_t>((op_end_pos.scaledMagnitude() / op_speed) * 1000000000.0));
 
             state_ = StepQueueState::STEPPED;
             break;
@@ -44,14 +43,14 @@ rclcpp::Duration StepQueue::enqueue(
             end_pos_ += op_end_pos;
 
             op_time = rclcpp::Duration::from_nanoseconds(
-                static_cast<int64_t>((op_end_pos.magnitude() / op_speed) * 1000000000.0));
+                static_cast<int64_t>((op_end_pos.scaledMagnitude() / op_speed) * 1000000000.0));
             break;
         }
 
         case StepType::LINEAR_MOVE_ABSOLUTE:
         {
             op_time = rclcpp::Duration::from_nanoseconds(
-                static_cast<int64_t>(((op_end_pos - end_pos_).magnitude() /
+                static_cast<int64_t>(((op_end_pos - end_pos_).scaledMagnitude() /
                  op_speed) * 1000000000.0));
 
             if (op_time.seconds() < 0.001)
@@ -71,7 +70,7 @@ rclcpp::Duration StepQueue::enqueue(
             }
 
             op_time = rclcpp::Duration::from_nanoseconds(
-                static_cast<int64_t>(((op_end_pos - end_pos_).magnitude() /
+                static_cast<int64_t>(((op_end_pos - end_pos_).scaledMagnitude() /
                  op_speed) * 2000000000.0));
 
             end_pos_ = op_end_pos;
@@ -99,7 +98,7 @@ rclcpp::Duration StepQueue::enqueue(
         op_time);
 
     last_step_type_ = op_step_type;
-    RCLCPP_INFO(logger_, "Enqueued step of type %d, which will take %f seconds; new queue length: ld", static_cast<uint8_t>(op_step_type), op_time.seconds(), size());
+    RCLCPP_INFO(logger_, "Enqueued step of type %d, which will take %f seconds; new queue length: %ld", static_cast<uint8_t>(op_step_type), op_time.seconds(), size());
 
     return op_time;
 }

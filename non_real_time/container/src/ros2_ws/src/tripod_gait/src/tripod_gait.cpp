@@ -22,11 +22,11 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 	direction_vector.z = 0.00; // For now we don't consider Z, roll, or pitch
 	direction_vector.roll = 0.00;
 	direction_vector.pitch = 0.00;
-	if (direction_vector.magnitude() < 0.001 || std::isnan(direction_vector.x)) {
+	if (direction_vector.scaledMagnitude() < 0.001 || std::isnan(direction_vector.x)) {
         RCLCPP_INFO(get_logger(), "no step to take");
 		return rclcpp::Duration::from_nanoseconds(0); // No step to take
 	}
-	double speed = v_command.magnitude();
+	double speed = v_command.scaledMagnitude();
 
 	rclcpp::Duration walk_time = rclcpp::Duration::from_nanoseconds(0);
 	double max_step_magnitude_with_flip = getMaxStepMagnitudeInDirection_(direction_vector, true);
@@ -35,8 +35,9 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 	if (max_step_magnitude_with_flip > max_step_magnitude_without_flip) {
 		next_step_type_ = static_cast<decltype(next_step_type_)>(static_cast<uint8_t>(next_step_type_) ^ 0x01);
 		max_step_magnitude = max_step_magnitude_with_flip;
+        RCLCPP_INFO(get_logger(), "Flipping step group, next step type %d", static_cast<uint8_t>(next_step_type_))
 	}
-    RCLCPP_INFO(get_logger(), "max step magnitude: %f", max_step_magnitude);
+    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "max step magnitude: %f", max_step_magnitude);
 	if (max_step_magnitude < getMaxStepMagnitude_() * 0.5) {
 		buffer0 = step_queue_.getCurrentQueueEndPos();
 		buffer0.x = 0.00;
@@ -47,7 +48,7 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 	}
 
 	Pose6D step_vector = direction_vector.unitVector() * max_step_magnitude;
-	RCLCPP_INFO(get_logger(), "Enqueueing step vector: x: %f, y: %f, z: %f, roll: %f, pitch %f, yaw: %f", 
+	RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Enqueueing step vector: x: %f, y: %f, z: %f, roll: %f, pitch %f, yaw: %f", 
         step_vector.x,
         step_vector.y,
         step_vector.z,
@@ -200,7 +201,7 @@ void TripodGaitNode::updateGait(
             RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, 
             "enqueing step based on v_command x:%f; y:%f; z:%f; roll:%f; pitch:%f; yaw:%f;", 
             v_command.x, v_command.y, v_command.z, v_command.roll, v_command.pitch, v_command.yaw);
-            enqueueMaxStepInDirection_(v_command.unitVector(), std::max(fabs(v_command.magnitude()) / max_step_speed_, 0.25));
+            enqueueMaxStepInDirection_(v_command.unitVector(), std::max(fabs(v_command.scaledMagnitude()) / max_step_speed_, 0.25));
         }
         else {
             last_step_type_ = current_step_type_;
