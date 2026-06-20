@@ -50,6 +50,7 @@ private:
     rclcpp::Duration move_time_ = rclcpp::Duration::from_nanoseconds(0);
     StepType current_step_type_ = StepType::NONE;
     StepType last_step_type_ = StepType::NONE;
+    StepType next_step_type_ = StepType::GROUP0;
 
     Pose6D start_pos_;
     Pose6D end_pos_;
