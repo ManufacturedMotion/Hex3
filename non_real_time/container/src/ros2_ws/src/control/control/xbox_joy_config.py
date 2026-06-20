@@ -61,8 +61,8 @@ class XboxJoyNode(Node):
         left_x = -msg.axes[1]
         right_x = -msg.axes[3]
         right_y = -msg.axes[2]
-        dpad_horiz = msg.axes[6]
-        dpad_vert = msg.axes[7]
+        # dpad_horiz = msg.axes[6]
+        # dpad_vert = msg.axes[7]
 
         threshold = 0.3
 
@@ -111,8 +111,8 @@ class XboxJoyNode(Node):
         twist.linear.y = discrete_y
         twist.linear.x = discrete_x if mag_right > threshold else lin_x
         twist.angular.z = ang_z
-        twist.angular.y = dpad_horiz
-        twist.angular.x = dpad_vert
+        # twist.angular.y = dpad_horiz
+        # twist.angular.x = dpad_vert
 
         self.last_twist = twist
         self.last_joy_time = self.get_clock().now()
