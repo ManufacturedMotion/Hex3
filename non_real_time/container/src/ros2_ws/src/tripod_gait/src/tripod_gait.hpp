@@ -37,10 +37,10 @@ private:
         {{1, 2, 3}}  // Group 1: Legs 2, 3, 6
     }};
 
-    double step_height_ = 40.0;
-    double max_step_length_ = 200.0;
-    double max_step_speed_ = 400.0;
-    double neutral_z_ = 180.0;
+    double step_height_ = STEP_HEIGHT;
+    double max_step_length_ = MAX_STEP_MAGNITUDE;
+    double max_step_speed_ = MAX_SPEED;
+    double neutral_z_ = NEUTRAL_Z;
 
     double last_step_progress_ = 0.0;
 
