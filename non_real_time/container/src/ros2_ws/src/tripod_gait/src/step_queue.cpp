@@ -33,7 +33,7 @@ rclcpp::Duration StepQueue::enqueue(
 
             end_pos_ += op_end_pos;
             op_time = rclcpp::Duration::from_nanoseconds(
-                static_cast<int64_t>((op_end_pos.magnitude() / op_speed) * 1000000.0));
+                static_cast<int64_t>((op_end_pos.magnitude() / op_speed) * 1000000000.0));
 
             state_ = StepQueueState::STEPPED;
             break;
@@ -72,7 +72,7 @@ rclcpp::Duration StepQueue::enqueue(
 
             op_time = rclcpp::Duration::from_nanoseconds(
                 static_cast<int64_t>(((op_end_pos - end_pos_).magnitude() /
-                 op_speed) * 2000000.0));
+                 op_speed) * 2000000000.0));
 
             end_pos_ = op_end_pos;
             state_ = StepQueueState::NEUTRAL;
