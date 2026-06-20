@@ -77,6 +77,10 @@ double Pose6D::magnitude() {
     return std::sqrt(x*x + y*y + z*z + roll*roll + pitch*pitch + yaw*yaw);
 }
 
+double Pose6D::scaledMagnitude() {
+    return std::sqrt(x*x + y*y + z*z + 10000.0 * roll*roll + 10000.0 * pitch*pitch + 10000.0 * yaw*yaw);
+}
+
 
 void Pose6D::operator+=( const Pose6D& other ) {
     x += other.x;

@@ -36,6 +36,8 @@ class Pose6D
         hexapod_msgs::msg::BodyPose toBodyPose();
 
         double magnitude();
+        double scaledMagnitude();
+
         Pose6D unitVector();
 
 };

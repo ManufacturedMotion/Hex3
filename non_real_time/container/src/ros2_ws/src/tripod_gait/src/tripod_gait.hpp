@@ -39,8 +39,8 @@ private:
     }};
 
     double step_height_ = 40.0;
-    double max_step_length_ = 100.0;
-    double max_step_speed_ = 200.0;
+    double max_step_length_ = 150.0;
+    double max_step_speed_ = 400.0;
     double neutral_z_ = 180.0;
 
     double last_step_progress_ = 0.0;
