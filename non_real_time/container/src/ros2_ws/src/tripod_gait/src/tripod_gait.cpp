@@ -33,7 +33,7 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 	double max_step_magnitude_without_flip = getMaxStepMagnitudeInDirection_(direction_vector, false);
 	double max_step_magnitude = max_step_magnitude_without_flip;
 	if (max_step_magnitude_with_flip > max_step_magnitude_without_flip) {
-		next_step_type_ = static_cast<decltype(next_step_type)>(static_cast<uint8_t>(next_step_type_) ^ 0x01);
+		next_step_type_ = static_cast<decltype(next_step_type_)>(static_cast<uint8_t>(next_step_type_) ^ 0x01);
 		max_step_magnitude = max_step_magnitude_with_flip;
 	}
     RCLCPP_INFO(get_logger(), "max step magnitude: %f", max_step_magnitude);
