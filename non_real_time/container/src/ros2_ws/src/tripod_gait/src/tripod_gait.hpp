@@ -12,9 +12,10 @@
 #define NUM_STEP_GROUPS 2
 
 enum class MacroCode {
-    STAND,
-    SIT,
-    FLIP
+    STAND = 1,
+    SIT = 2,
+    FLIP = 4,
+    WAVE = 8
 };
 
 class TripodGaitNode : public Gait
