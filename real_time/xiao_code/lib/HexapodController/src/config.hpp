@@ -82,12 +82,54 @@
 #endif
 
 #ifdef DANNY
-    #define STEP_THRESHOLD 40 
-	#define FIFO_IDLE_THRESHOLD 100
-    #define ZERO_POINTS {{-2.247282, 1.793224, -0.846757}, {0.323670, 2.155243, 0.316000}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}}
-    #define MIN_POS {{-M_PI / 3.0, -M_PI / 2.0, -1.8}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}}
-    #define MAX_POS {{M_PI / 3.0, M_PI / 2.0, 1.8}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}}
-    #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
-    #define REVERSE_AXIS {{true, false, false}, {false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}}
+   #define STEP_THRESHOLD 40
+   #define FIFO_IDLE_THRESHOLD 100
+   #define ZERO_POINTS {                    \
+      {0.709210 + CALIBRATION_OFFSET_A0,   \
+      -0.930090 + CALIBRATION_OFFSET_A1,  \
+      2.787788 + CALIBRATION_OFFSET_A2},  \
+      {1.385185 + CALIBRATION_OFFSET_A0,   \
+      -2.913029 + CALIBRATION_OFFSET_A1,  \
+      -3.120117 + CALIBRATION_OFFSET_A2}, \
+      {0.308330 + CALIBRATION_OFFSET_A0,   \
+      0.023010 + CALIBRATION_OFFSET_A1,   \
+      1.842311 + CALIBRATION_OFFSET_A2},  \
+      {-2.098486 + CALIBRATION_OFFSET_A0,  \
+      2.412952 + CALIBRATION_OFFSET_A1,   \
+      2.586292 + CALIBRATION_OFFSET_A2},  \
+      {1.394389 + CALIBRATION_OFFSET_A0,   \
+      -1.667437 + CALIBRATION_OFFSET_A1,  \
+      2.376136 + CALIBRATION_OFFSET_A2},  \
+      {2.434427 + CALIBRATION_OFFSET_A0,   \
+      -0.892777 + CALIBRATION_OFFSET_A1,  \
+      -1.036971 + CALIBRATION_OFFSET_A2}, \
+   }
+   #define MIN_POS                                                                    \
+      {                                                                               \
+         {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2},     \
+            {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
+            {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
+            {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
+            {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
+         {                                                                            \
+            -CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2     \
+         }                                                                            \
+      }
+   #define MAX_POS                                                                   \
+      {                                                                              \
+         {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2},     \
+            {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
+            {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
+            {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
+            {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
+         {                                                                           \
+            CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2     \
+         }                                                                           \
+      }
+   #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
+   #define REVERSE_AXIS                                                                                                                       \
+      {                                                                                                                                       \
+         {true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}, { true, false, false } \
+      }
 #endif
 #endif
