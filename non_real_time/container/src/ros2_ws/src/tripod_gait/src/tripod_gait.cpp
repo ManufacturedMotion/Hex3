@@ -282,6 +282,7 @@ void TripodGaitNode::rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_leg
             publishBodyPose(body_pose);
         }
     }
+    current_pos_ = pos;
 }
 
 // StepType TripodGaitNode::getNextStepType_(Pose6D direction_vector) {
