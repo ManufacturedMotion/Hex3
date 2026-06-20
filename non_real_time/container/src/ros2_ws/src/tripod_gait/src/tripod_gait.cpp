@@ -49,6 +49,10 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 	}
 
 	Pose6D step_vector = direction_vector.unitVector() * max_step_magnitude;
+    step_vector.roll /= ROTATION_MAGNITUDE_SCALE;
+    step_vector.pitch /= ROTATION_MAGNITUDE_SCALE;
+    step_vector.yaw /= ROTATION_MAGNITUDE_SCALE;
+    
 	RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Enqueueing step vector: x: %f, y: %f, z: %f, roll: %f, pitch %f, yaw: %f", 
         step_vector.x,
         step_vector.y,
@@ -338,7 +342,7 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
 	buffer2.z = 0.00; // For now we don't consider Z, roll, or pitch
 	buffer2.roll = 0.00;
 	buffer2.pitch = 0.00;
-	buffer2.yaw *= ROTATION_MAGNITUDE_SCALE; // Scale yaw to have a similar range as x and y
+	// buffer2.yaw *= ROTATION_MAGNITUDE_SCALE; // Scale yaw to have a similar range as x and y
 
 	double c = pow(buffer1.x, 2) + pow(buffer1.y, 2) + pow(buffer1.yaw, 2) - pow(getMaxStepMagnitude_(), 2);
 	double b = 2.0 * (buffer1.x * buffer2.x + buffer1.y * buffer2.y + buffer1.yaw * buffer2.yaw);
