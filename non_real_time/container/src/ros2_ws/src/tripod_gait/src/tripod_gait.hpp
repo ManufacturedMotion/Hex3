@@ -7,7 +7,6 @@
 #include "hexapod_msgs/msg/body_pose.hpp"
 #include <array>
 
-#define ROTATION_MAGNITUDE_SCALE 100.0
 #define NUM_LEGS 6
 #define NUM_STEP_GROUPS 2
 
@@ -39,7 +38,7 @@ private:
     }};
 
     double step_height_ = 40.0;
-    double max_step_length_ = 220.0;
+    double max_step_length_ = 200.0;
     double max_step_speed_ = 400.0;
     double neutral_z_ = 180.0;
 

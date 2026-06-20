@@ -26,7 +26,7 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
         RCLCPP_INFO(get_logger(), "no step to take");
 		return rclcpp::Duration::from_nanoseconds(0); // No step to take
 	}
-	double speed = v_command.scaledMagnitude();
+	double speed = scalar * max_step_speed_;
 
 	rclcpp::Duration walk_time = rclcpp::Duration::from_nanoseconds(0);
 	double max_step_magnitude_with_flip = getMaxStepMagnitudeInDirection_(direction_vector, true);
