@@ -78,7 +78,13 @@ double Pose6D::magnitude() {
 }
 
 double Pose6D::scaledMagnitude() {
-    return std::sqrt(x*x + y*y + z*z + 10000.0 * roll*roll + 10000.0 * pitch*pitch + 10000.0 * yaw*yaw);
+    return std::sqrt(
+        x*x 
+        + y*y 
+        + z*z 
+        + ROTATION_MAGNITUDE_SCALE_SQUARED * roll*roll 
+        + ROTATION_MAGNITUDE_SCALE_SQUARED * pitch*pitch 
+        + ROTATION_MAGNITUDE_SCALE_SQUARED * yaw*yaw);
 }
 
 
