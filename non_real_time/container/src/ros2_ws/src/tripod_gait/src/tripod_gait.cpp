@@ -186,7 +186,7 @@ void TripodGaitNode::updateGait(
                 break;
                 case StepType::LINEAR_MOVE_RELATIVE:
                 case StepType::LINEAR_MOVE_ABSOLUTE:
-                    next_pos = (_end_pos - _start_pos) * step_progress + _start_pos;			
+                    next_pos = (end_pos_ - start_pos_) * step_progress + start_pos_;			
                     rapidMove(next_pos);
                 break;
                 case StepType::RAPID_MOVE:
