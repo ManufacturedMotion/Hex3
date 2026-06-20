@@ -108,7 +108,7 @@ void TripodGaitNode::updateGait(
                             active_legs[step_groups_[step_group][i]] = true;
                             active_legs[step_groups_[(step_group^1)][i]] = false;
                         }
-                        next_pos.z -= -4 * step_progress * (step_progress - 1.0) * step_height_;
+                        next_pos.z += -4 * step_progress * (step_progress - 1.0) * step_height_;
                         next_pos.x *= -1.0;
                         next_pos.y *= -1.0;
                         next_pos.yaw *= -1.0;
