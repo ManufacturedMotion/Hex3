@@ -31,7 +31,7 @@ private:
     rclcpp::Duration enqueueMaxStepInDirection_(Pose6D direction_vector, double scalar);
     double getMaxStepMagnitude_();
     double getMaxStepMagnitudeInDirection_(Pose6D direction_vector, bool flipped_step_group);
-    void rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_legs);
+    void rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_legs, bool update_pos);
     void rapidMove(Pose6D pos);
     std::array<std::array<uint8_t, 3>, 2> step_groups_ = {{
         {{0, 4, 5}}, // Group 0: Legs 1, 4, 5

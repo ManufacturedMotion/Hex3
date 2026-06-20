@@ -102,7 +102,7 @@ void TripodGaitNode::updateGait(
                             active_legs[step_groups_[step_group][i]] = true;
                             active_legs[step_groups_[(step_group^1)][i]] = false;
                         }
-                        rapidMove(next_pos, active_legs);
+                        rapidMove(next_pos, active_legs, true);
                         step_group ^= 1; 
                         for (uint8_t i = 0; i < NUM_LEGS / 2; i++) {
                             active_legs[step_groups_[step_group][i]] = true;
@@ -112,7 +112,7 @@ void TripodGaitNode::updateGait(
                         next_pos.x *= -1.0;
                         next_pos.y *= -1.0;
                         next_pos.yaw *= -1.0;
-                        rapidMove(next_pos, active_legs);
+                        rapidMove(next_pos, active_legs, false);
                     }
                     break;
                 case StepType::RETURN_TO_NEUTRAL:
@@ -180,7 +180,7 @@ void TripodGaitNode::updateGait(
                         double adjusted_step_progress = step_progress < 0.5 ? 2.0 * step_progress : (step_progress - 0.5) * 2.0;
                         next_pos = (end_pos_ - start_pos_) * adjusted_step_progress + start_pos_;
                         next_pos.z -= -4 * adjusted_step_progress * (adjusted_step_progress - 1.0) * step_height_;
-                        rapidMove(next_pos, active_legs);
+                        rapidMove(next_pos, active_legs, true);
                     }
                 break;
                 case StepType::LINEAR_MOVE_RELATIVE:
@@ -264,10 +264,10 @@ void TripodGaitNode::rapidMove(Pose6D pos) {
     for (uint8_t i = 0; i < NUM_LEGS; i++) {
         active_legs[i] = true;
     }
-    rapidMove(pos, active_legs);
+    rapidMove(pos, active_legs, true);
 }
 
-void TripodGaitNode::rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_legs) {
+void TripodGaitNode::rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_legs, bool update_pos) {
     for (uint8_t i = 0; i < NUM_LEGS; i++) {
         if (active_legs[i]) {
             hexapod_msgs::msg::BodyPose body_pose;
@@ -281,7 +281,10 @@ void TripodGaitNode::rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_leg
             publishBodyPose(body_pose);
         }
     }
-    current_pos_ = pos;
+    if (update_pos)
+    {
+        current_pos_ = pos;
+    }
 }
 
 // StepType TripodGaitNode::getNextStepType_(Pose6D direction_vector) {
