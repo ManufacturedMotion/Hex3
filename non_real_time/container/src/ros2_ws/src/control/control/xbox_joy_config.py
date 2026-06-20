@@ -39,9 +39,9 @@ class XboxJoyNode(Node):
     def joy_callback(self, msg):
 
         try:
-            if msg.buttons[0] != self.last_joy.buttons[0]
-                or msg.buttons[1] != self.last_joy.buttons[1]
-                or msg.buttons[2] != self.last_joy.buttons[2]
+            if msg.buttons[0] != self.last_joy.buttons[0] \
+                or msg.buttons[1] != self.last_joy.buttons[1] \
+                or msg.buttons[2] != self.last_joy.buttons[2] \
                 or msg.buttons[3] != self.last_joy.buttons[3]:
                 pub_msg = Int8()
                 pub_msg.data = 0
