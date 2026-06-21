@@ -5,16 +5,15 @@
 #ifndef HEXA_CONFIG
 #define HEXA_CONFIG
 
-#define CALIBRATION_OFFSET_A0 1.047198
-#define CALIBRATION_OFFSET_A1 1.56976
-#define CALIBRATION_OFFSET_A2 -1.841322
+   #define CALIBRATION_OFFSET_A0 1.047198
+   #define CALIBRATION_OFFSET_A1 1.56976
+   #define CALIBRATION_OFFSET_A2 -1.841322
 
-
-#ifdef ZACK
-	#define STEP_THRESHOLD 40 
-	#define FIFO_IDLE_THRESHOLD 100
-    #define REFERENCE_POINTS
-    #define ZERO_POINTS { \
+   #ifdef ZACK
+      #define STEP_THRESHOLD 40 
+      #define FIFO_IDLE_THRESHOLD 100
+      #define REFERENCE_POINTS
+      #define ZERO_POINTS { \
          {\
             0.437185 + CALIBRATION_OFFSET_A0,  \
             -2.419088 + CALIBRATION_OFFSET_A1, \
@@ -39,17 +38,18 @@
             0.822214 + CALIBRATION_OFFSET_A0,  \
             -0.039884 + CALIBRATION_OFFSET_A1, \
             3.072563 + CALIBRATION_OFFSET_A2}  \
-    }
-    #define MIN_POS {{-M_PI / 3.0, -M_PI / 2.0, -M_PI / 2.0}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}}
-    #define MAX_POS {{M_PI / 3.0, M_PI / 2.0, M_PI / 2.0}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}}
-    #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
-    #define REVERSE_AXIS {{false, true, true}, {false, true, true}, {false, true, true}, {false, false, false}, {false, false, false}, {false, false, false}}
-#endif
+      }
+      #define MIN_POS {{-M_PI / 3.0, -M_PI / 2.0, -M_PI / 2.0}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}}
+      #define MAX_POS {{M_PI / 3.0, M_PI / 2.0, M_PI / 2.0}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}}
+      #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
+      #define REVERSE_AXIS {{false, true, true}, {false, true, true}, {false, true, true}, {false, false, false}, {false, false, false}, {false, false, false}}
+      #define TOE_IDLE_READ (float[]){0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}  
+   #endif
 
-#ifdef DILLON
-    #define STEP_THRESHOLD 40 
-	#define FIFO_IDLE_THRESHOLD 100
-    #define ZERO_POINTS {                          \
+   #ifdef DILLON
+      #define STEP_THRESHOLD 40 
+      #define FIFO_IDLE_THRESHOLD 100
+      #define ZERO_POINTS {                        \
          {                                         \
             -2.749917 + CALIBRATION_OFFSET_A0,     \
             -0.965372 + CALIBRATION_OFFSET_A1,     \
@@ -74,20 +74,23 @@
             0.391676 + CALIBRATION_OFFSET_A0,      \
             1.284978 + CALIBRATION_OFFSET_A1,      \
             -0.580834 + CALIBRATION_OFFSET_A2}     \
-    }
-    #define MIN_POS {{-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}}
-    #define MAX_POS {{M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}}
-    #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
-    #define REVERSE_AXIS {{true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}}
-#endif
+      }
+      #define MIN_POS {{-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}}
+      #define MAX_POS {{M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}}
+      #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
+      #define REVERSE_AXIS {{true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}}
+      #define TOE_IDLE_READ (float[]){0.0f, 19.0f, 0.0f, 0.0f, 0.0f, 0.0f}    
+   #endif
 
-#ifdef DANNY
-    #define STEP_THRESHOLD 40 
-	#define FIFO_IDLE_THRESHOLD 100
-    #define ZERO_POINTS {{-2.247282, 1.793224, -0.846757}, {0.323670, 2.155243, 0.316000}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}}
-    #define MIN_POS {{-M_PI / 3.0, -M_PI / 2.0, -1.8}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}}
-    #define MAX_POS {{M_PI / 3.0, M_PI / 2.0, 1.8}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}}
-    #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
-    #define REVERSE_AXIS {{true, false, false}, {false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}}
-#endif
+   #ifdef DANNY
+      #define STEP_THRESHOLD 40 
+      #define FIFO_IDLE_THRESHOLD 100
+      #define ZERO_POINTS {{-2.247282, 1.793224, -0.846757}, {0.323670, 2.155243, 0.316000}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}}
+      #define MIN_POS {{-M_PI / 3.0, -M_PI / 2.0, -1.8}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}}
+      #define MAX_POS {{M_PI / 3.0, M_PI / 2.0, 1.8}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}}
+      #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
+      #define REVERSE_AXIS {{true, false, false}, {false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}, {false, false, false}}
+      #define TOE_IDLE_READ (float[]){0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f} 
+   #endif
+
 #endif

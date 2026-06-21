@@ -604,12 +604,11 @@ void Leg::processCommandQueue()
 }
 
 float Leg::readToe() {
-    //TODO fix if toe is bad
+    
     float toe_value = toe.read();
+    //TODO remove is pressed check
+    toe.isPressed();
     float compression_distance = toe.toe_idle - toe_value;
     _length2_dynamic = _length2 + toe.exposed_length - compression_distance;
-    #if LOG_LEVEL >= CALCULATION_DEBUG
-        Serial.printf("Toe sensor reading: %f\n", toe_value);
-    #endif
     return toe_value;
 }
