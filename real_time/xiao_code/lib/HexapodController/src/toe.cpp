@@ -1,4 +1,5 @@
 #include "toe.hpp"
+#include <Wire.h>
 
 Toe::Toe(bool useGPIO)
     : _gpio_enabled(useGPIO)
@@ -6,6 +7,8 @@ Toe::Toe(bool useGPIO)
 
 bool Toe::begin()
 {
+    Wire.setTimeout(1000, true);  // 1000 us = 1 ms timeout
+
     bool ok = sensor.begin();
     Serial.printf("sensor.begin returned %d\n", ok);
     if (!ok) {
