@@ -40,18 +40,7 @@
             -0.039884 + CALIBRATION_OFFSET_A1, \
             3.072563 + CALIBRATION_OFFSET_A2}  \
     }
-    #define MIN_POS {{-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
-                    {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
-                    {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
-                    {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
-                    {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
-                    {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}}
-    #define MAX_POS {{CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
-                    {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
-                    {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
-                    {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
-                    {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
-                    {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}}
+    
     #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
     #define REVERSE_AXIS {{false, true, true}, {false, true, true}, {false, true, true}, {false, true, true}, {false, true, true}, {false, true, true}}
 #endif
@@ -85,8 +74,6 @@
             1.284978 + CALIBRATION_OFFSET_A1,      \
             -0.580834 + CALIBRATION_OFFSET_A2}     \
     }
-    #define MIN_POS {{-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}}
-    #define MAX_POS {{M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}}
     #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
     #define REVERSE_AXIS {{true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}}
 #endif
@@ -114,32 +101,23 @@
       -0.892777 + CALIBRATION_OFFSET_A1,  \
       -1.036971 + CALIBRATION_OFFSET_A2}, \
    }
-   #define MIN_POS                                                                    \
-      {                                                                               \
-         {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2},     \
-            {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
-            {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
-            {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
-            {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
-         {                                                                            \
-            -CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2     \
-         }                                                                            \
-      }
-   #define MAX_POS                                                                   \
-      {                                                                              \
-         {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2},     \
-            {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
-            {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
-            {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
-            {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
-         {                                                                           \
-            CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2     \
-         }                                                                           \
-      }
    #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
    #define REVERSE_AXIS                                                                                                                       \
       {                                                                                                                                       \
          {true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}, { true, false, false } \
       }
 #endif
+
+#define MIN_POS {{-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1 + 0.05, CALIBRATION_OFFSET_A2 - 0.05}, \
+                 {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1 + 0.05, CALIBRATION_OFFSET_A2 - 0.05},   \
+                 {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1 + 0.05, CALIBRATION_OFFSET_A2 - 0.05},   \
+                 {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1 + 0.05, CALIBRATION_OFFSET_A2 - 0.05},   \
+                 {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1 + 0.05, CALIBRATION_OFFSET_A2 - 0.05},   \
+                 {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1 + 0.05, CALIBRATION_OFFSET_A2 - 0.05}}
+#define MAX_POS {{CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1 - 0.05, -CALIBRATION_OFFSET_A2 + 0.05},    \
+                 {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1 - 0.05, -CALIBRATION_OFFSET_A2 + 0.05},    \
+                 {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1 - 0.05, -CALIBRATION_OFFSET_A2 + 0.05},    \
+                 {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1 - 0.05, -CALIBRATION_OFFSET_A2 + 0.05},    \
+                 {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1 - 0.05, -CALIBRATION_OFFSET_A2 + 0.05},    \
+                 {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1 - 0.05, -CALIBRATION_OFFSET_A2 + 0.05}}
 #endif
