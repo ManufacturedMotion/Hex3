@@ -5,6 +5,7 @@
 #include "step_queue.hpp"
 #include "hexapod_msgs/msg/foot_target_array.hpp"
 #include "hexapod_msgs/msg/body_pose.hpp"
+#include "constants.hpp"
 #include <array>
 
 #define NUM_LEGS 6
@@ -40,7 +41,6 @@ private:
     double step_height_ = STEP_HEIGHT;
     double max_step_length_ = MAX_STEP_MAGNITUDE;
     double max_step_speed_ = MAX_SPEED;
-    double neutral_z_ = NEUTRAL_Z;
 
     double last_step_progress_ = 0.0;
 
