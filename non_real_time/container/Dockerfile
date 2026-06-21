@@ -1,4 +1,4 @@
-FROM ros:iron-ros-base
+FROM ros:jazzy-ros-base
 USER 0
 
 # Get updates
@@ -9,6 +9,7 @@ apt-get upgrade -y
 ADD setup /app/setup
 RUN bash -c 'apt-get install -y $(cat /app/setup/system-requirements.txt)'
 RUN apt full-upgrade -y
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 RUN pip3 install --no-cache-dir -r /app/setup/python-requirements.txt
 
 # Put ros commands on path

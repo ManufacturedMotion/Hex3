@@ -11,10 +11,9 @@ void handleCAN();
 
 void setup() {
   Serial.begin(115200);
-  delay(7000);
+  delay(1000);
   Serial.println("Starting...");
   leg.begin();
-  delay(500);
 
   leg.initializeAxes(LEG_NUMBER);
   leg.can->begin();
@@ -28,7 +27,6 @@ void setup() {
 }
 
 void loop() {
-
   static float dir = 1.0;
   handleCAN();
   if (leg.linearMovePerform() == 0) {
@@ -41,17 +39,17 @@ void loop() {
 
 void handleCAN()
 {
-    if (CAN.available())
-    {
-        CanMsg msg = CAN.read();
-        if (leg.can)
-        {
-            leg.can->handleCanMessage(msg);
-        }
-    }
-
     if (leg.can)
     {
+        if (CAN.available())
+        {
+        
+            while (CAN.available())
+            {
+                CanMsg msg = CAN.read();
+                leg.can->handleCanMessage(msg);
+            }
+        }
         leg.can->poll();
     }
 }

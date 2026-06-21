@@ -13,13 +13,13 @@ libsdl2-dev
 libsdl2-image-dev
 libsdl2-mixer-dev
 libsdl2-ttf-dev
-ros-iron-joy
-ros-iron-teleop-tools
-ros-iron-teleop-twist-keyboard
-ros-iron-teleop-twist-joy
-ros-iron-joy-linux
-ros-iron-rqt*
-ros-iron-sensor-msgs
+ros-jazzy-joy
+ros-jazzy-teleop-tools
+ros-jazzy-teleop-twist-keyboard
+ros-jazzy-teleop-twist-joy
+ros-jazzy-joy-linux
+ros-jazzy-rqt*
+ros-jazzy-sensor-msgs
 libwayland-client0
 libwayland-server0
 wayland-protocols
@@ -28,3 +28,4 @@ xwayland
 qtwayland5
 libxcb-xinerama0
 x11-apps
+nlohmann-json3-dev

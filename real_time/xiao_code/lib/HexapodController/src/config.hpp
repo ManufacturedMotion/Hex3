@@ -17,7 +17,7 @@
     #define ZERO_POINTS { \
          {\
             0.437185 + CALIBRATION_OFFSET_A0,  \
-            -2.419088 + CALIBRATION_OFFSET_A1, \
+            -0.852893 + CALIBRATION_OFFSET_A1, \
             1.362175 + CALIBRATION_OFFSET_A2}, \
          {\
             -2.218136 + CALIBRATION_OFFSET_A0, \
@@ -40,10 +40,20 @@
             -0.039884 + CALIBRATION_OFFSET_A1, \
             3.072563 + CALIBRATION_OFFSET_A2}  \
     }
-    #define MIN_POS {{-M_PI / 3.0, -M_PI / 2.0, -M_PI / 2.0}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}, {-M_PI, -M_PI, -M_PI}}
-    #define MAX_POS {{M_PI / 3.0, M_PI / 2.0, M_PI / 2.0}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}, {M_PI, M_PI, M_PI}}
+    #define MIN_POS {{-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
+                    {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
+                    {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
+                    {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
+                    {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}, \
+                    {-CALIBRATION_OFFSET_A0, -CALIBRATION_OFFSET_A1, CALIBRATION_OFFSET_A2}}
+    #define MAX_POS {{CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
+                    {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
+                    {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
+                    {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
+                    {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}, \
+                    {CALIBRATION_OFFSET_A0, CALIBRATION_OFFSET_A1, -CALIBRATION_OFFSET_A2}}
     #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
-    #define REVERSE_AXIS {{false, true, true}, {false, true, true}, {false, true, true}, {false, false, false}, {false, false, false}, {false, false, false}}
+    #define REVERSE_AXIS {{false, true, true}, {false, true, true}, {false, true, true}, {false, true, true}, {false, true, true}, {false, true, true}}
 #endif
 
 #ifdef DILLON

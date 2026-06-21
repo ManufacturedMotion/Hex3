@@ -18,3 +18,22 @@
 
 # Production Usage
 1. Start the production container with ```./init_prod.sh```
+
+
+
+
+# Can testing commands:
+## In terminal 1:
+```
+./build.sh
+./new_dev_shell.sh
+colcon build
+source install/local_setup.bash
+ros2 launch hexapod_manager hexapod.launch.py
+```
+## In terminal 2:
+```
+./new_dev_shell.sh
+source install/local_setup.bash
+ros2 run hexapod_tester hexapod_tester
+```
