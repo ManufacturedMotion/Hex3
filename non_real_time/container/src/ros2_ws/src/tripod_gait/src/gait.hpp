@@ -8,6 +8,7 @@
 #include "hexapod_msgs/msg/foot_target_array.hpp"
 #include "hexapod_msgs/msg/body_pose_array.hpp"
 #include "pose.hpp"
+#include "constants.hpp"
 
 class Gait : public rclcpp::Node
 {
