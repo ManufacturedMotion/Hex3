@@ -4,7 +4,6 @@
 #include "hexapod_msgs/msg/body_pose.hpp"
 #include "geometry_msgs/msg/twist.hpp"
 
-#define ROTATION_MAGNITUDE_SCALE 420.0
 #define ROTATION_MAGNITUDE_SCALE_SQUARED (ROTATION_MAGNITUDE_SCALE * ROTATION_MAGNITUDE_SCALE)
 
 class Pose6D
