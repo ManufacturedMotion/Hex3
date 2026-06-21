@@ -1,21 +1,26 @@
 #ifndef HEXA_TOE
 #define HEXA_TOE
 
-    #define TOE_PIN D0  ///< Pin for toe/ground contact sensor gpio
+    #include <Arduino.h>
+    #include <Wire.h>
     #include <Adafruit_VL6180X.h>
 
-    class Toe {
+    class Toe
+    {
         public:
-            Toe(bool useGPIO = false);
+            Toe();
             bool begin();
-            float read();
+            void update();   //call regularly to update cached value, non-blocking
+            float read();    // returns latest value
             bool isPressed();
-            float toe_idle = 27.0; //toe resting reading bounces between 25-27
-            float toe_threshold = 7.0; //if reading is below we can assume fully compressed
-            float exposed_length = 47.0; //how much the toe extends beyond the end of the leg when uncompressed (mm) //TODO double check this in CAD
+            float toe_idle = 27.0f;
+            float toe_threshold = 7.0f;
+            float exposed_length = 47.0f;
         private:
             Adafruit_VL6180X sensor;
-            bool _gpio_enabled;
+            // cached value (IMPORTANT: removes blocking reads)
+            float _last_range = 0.0f;
+            bool _valid = false;
     };
 
 #endif

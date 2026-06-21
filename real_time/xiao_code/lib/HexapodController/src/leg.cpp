@@ -38,7 +38,7 @@ enum Dimension { X = 0, Y = 1, Z = 2};
 Leg::Leg() {
     _leg_number = 0;
     can = nullptr;
-    toe = Toe(false); //TODO gpio toe config in user config?
+    toe = Toe(); 
 }
 /**
  * @brief Initialize hardware - GPIO, multiplexer, and axis links
@@ -132,6 +132,7 @@ void Leg::_trackMotion() {
  */
 void Leg::runSpeed() {
     static uint32_t last_print_time = 0;
+    toe.update();
     
     // Log telemetry every 10ms
     if (millis() - last_print_time > 10) {
