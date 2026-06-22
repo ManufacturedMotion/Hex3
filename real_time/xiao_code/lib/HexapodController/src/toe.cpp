@@ -128,8 +128,9 @@ float Toe::read()
         #if LOG_LEVEL >= BASIC_DEBUG
                 Serial.println("[Toe] WARNING: read() called but no valid reading yet, returning toe_idle");
         #endif
+        _last_range = toe_idle;
         _first_read = true;
-        return toe_idle;
+        return _last_range;
     }
 
     #if LOG_LEVEL >= BASIC_DEBUG
