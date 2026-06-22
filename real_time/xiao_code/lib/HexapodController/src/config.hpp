@@ -41,6 +41,7 @@
     }
     
     #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
+    #define TOE_IDLE_READ (float[]){0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f} 
     #define REVERSE_AXIS {{false, true, true}, {false, true, true}, {false, true, true}, {false, true, true}, {false, true, true}, {false, true, true}}
 #endif
 
@@ -74,6 +75,7 @@
             -0.580834 + CALIBRATION_OFFSET_A2}     \
     }
     #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
+    #define TOE_IDLE_READ (float[]){26.7f, 19.0f, 25.5f, 29.3f, 28.32f, 26.4f} 
     #define REVERSE_AXIS {{true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}}
 #endif
 
@@ -101,6 +103,7 @@
       -1.036971 + CALIBRATION_OFFSET_A2}, \
    }
    #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
+   #define TOE_IDLE_READ (float[]){0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f} 
    #define REVERSE_AXIS                                                                                                                       \
       {                                                                                                                                       \
          {true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}, { true, false, false } \

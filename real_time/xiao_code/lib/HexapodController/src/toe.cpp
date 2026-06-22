@@ -19,6 +19,11 @@ bool Toe::begin()
         #endif
         return false;
     }
+
+    delay(20);  // IMPORTANT: let sensor boot fully
+    // hard reset continuous state
+    sensor.stopRangeContinuous();  
+    delay(5);
     sensor.startRangeContinuous(10);
     _initialized = true;
     return true;
