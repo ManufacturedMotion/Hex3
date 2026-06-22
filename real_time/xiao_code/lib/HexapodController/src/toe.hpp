@@ -22,12 +22,17 @@
             Adafruit_VL6180X sensor;
             // cached value (IMPORTANT: removes blocking reads)
             float _last_range = 0.0f;
-            bool _valid = false;
+            bool _first_read = false; //for EMA filtering
+            bool _connected = false;
+            bool _initialized = false;
             static constexpr uint8_t CALIB_SAMPLES = 30;
             float _calib_buffer[CALIB_SAMPLES] = {0};
             uint8_t _calib_index = 0;
             uint8_t _calib_count = 0;
             float _calib_sum = 0.0f;
+            bool probeSensor();
+            uint32_t _last_probe_ms = 0;
+            uint32_t _probe_interval_ms = 50;
         };
 
 #endif

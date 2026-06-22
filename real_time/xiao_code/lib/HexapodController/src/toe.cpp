@@ -7,7 +7,7 @@ bool Toe::begin()
 {
     Wire.setTimeout(2, true);
     bool ok = sensor.begin();
-
+    Serial.printf("toe idle is %f\n", toe_idle);
     #if LOG_LEVEL >= BASIC_DEBUG
         Serial.printf("[Toe] sensor.begin returned: %d\n", ok);
     #endif
@@ -20,11 +20,37 @@ bool Toe::begin()
         return false;
     }
     sensor.startRangeContinuous(10);
+    _initialized = true;
     return true;
 }
 
 void Toe::update()
 {
+
+    if (!_initialized)
+    {
+        #if LOG_LEVEL >= BASIC_DEBUG
+            Serial.println("[Toe] WARNING: update() called but not initialized, returning toe_idle");
+        #endif
+        _last_range = toe_idle;
+        return;
+    }
+
+    if (millis() - _last_probe_ms >= _probe_interval_ms)
+    {
+        _last_probe_ms = millis();
+        _connected = probeSensor();
+        if (!_connected)
+        {
+            #if LOG_LEVEL >= BASIC_DEBUG
+                Serial.println("[Toe] WARNING: sensor probe failed, sensor may be disconnected");
+            #endif
+            _last_range = toe_idle; // reset to idle on probe failure
+            _first_read = false; //reset first read so we get smooth readings if sensor recovers
+            return;
+        }
+    }
+
     uint8_t raw = sensor.readRangeResult();
     if (sensor.readRangeStatus() != VL6180X_ERROR_NONE)
         return;
@@ -61,11 +87,21 @@ void Toe::update()
     // -------------------------
     // NORMAL MODE -- EMA filter approach
     // -------------------------
-    if (!_valid)
+    if(!_connected)
+    {
+        #if LOG_LEVEL >= BASIC_DEBUG
+            Serial.println("[Toe] WARNING: update() called but sensor not connected, returning toe_idle");
+        #endif
+        _last_range = toe_idle; // return to idle if not connected
+        _first_read = false; //reset first read so we get smooth readings if sensor recovers
+        return;
+    }
+
+    if (!_first_read)
     {
         // first valid reading, initialize _last_range directly to avoid startup spikes
         _last_range = new_val;
-        _valid = true;
+        _first_read = true;
     }
     else
     {
@@ -79,21 +115,23 @@ void Toe::update()
 
 float Toe::read()
 {
-    if (!_valid)
-    {
-        if (CALIBRATING_TOE)
-        {
-            #if LOG_LEVEL >= BASIC_DEBUG
-                Serial.printf("[Toe] WARNING: read() called but still calibrating, returning current average, %f", _last_range);
-            #endif
-            return _last_range; // return current average during calibration
-        }
 
+    if (CALIBRATING_TOE)
+    {
         #if LOG_LEVEL >= BASIC_DEBUG
-             Serial.println("[Toe] WARNING: read() called but no valid reading yet, returning toe_idle");
+            Serial.printf("[Toe] WARNING: read() called but still calibrating, returning current average, %f", _last_range);
         #endif
+        return _last_range; // return current average during calibration
+    }
+
+    if (!_first_read){
+        #if LOG_LEVEL >= BASIC_DEBUG
+                Serial.println("[Toe] WARNING: read() called but no valid reading yet, returning toe_idle");
+        #endif
+        _first_read = true;
         return toe_idle;
     }
+
     #if LOG_LEVEL >= BASIC_DEBUG
         Serial.printf("[Toe] read() -> %f\n", _last_range);
     #endif
@@ -109,4 +147,11 @@ bool Toe::isPressed()
             Serial.printf("[Toe] isPressed() -> distance: %f, threshold: %f, pressed: %d\n", distance, toe_threshold, pressed);
     #endif  
     return pressed;
+}
+
+//periodically check this to confirm if sensor is still operational
+bool Toe::probeSensor()
+{
+    Wire.beginTransmission(0x29); // VL6180X default address
+    return Wire.endTransmission() == 0;
 }
