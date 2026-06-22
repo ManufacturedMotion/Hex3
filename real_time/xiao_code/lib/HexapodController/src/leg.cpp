@@ -38,7 +38,7 @@ enum Dimension { X = 0, Y = 1, Z = 2};
 Leg::Leg() {
     _leg_number = 0;
     can = nullptr;
-    // toe = Toe(false); //TODO gpio toe config in user config?
+    toe = Toe(); 
 }
 /**
  * @brief Initialize hardware - GPIO, multiplexer, and axis links
@@ -132,6 +132,7 @@ void Leg::_trackMotion() {
  */
 void Leg::runSpeed() {
     static uint32_t last_print_time = 0;
+    toe.update();
     
     // Log telemetry every 10ms
     if (millis() - last_print_time > 10) {
@@ -603,13 +604,11 @@ void Leg::processCommandQueue()
 }
 
 float Leg::readToe() {
-    return 0;
-    // //TODO fix if toe is bad
-    // float toe_value = toe.read();
-    // float compression_distance = toe.toe_idle - toe_value;
-    // _length2_dynamic = _length2 + toe.exposed_length - compression_distance;
-    // #if LOG_LEVEL >= CALCULATION_DEBUG
-    //     Serial.printf("Toe sensor reading: %f\n", toe_value);
-    // #endif
-    // return toe_value;
+    
+    float toe_value = toe.read();
+    //TODO remove is pressed check
+    toe.isPressed();
+    float compression_distance = toe.toe_idle - toe_value;
+    _length2_dynamic = _length2 + toe.exposed_length - compression_distance;
+    return toe_value;
 }

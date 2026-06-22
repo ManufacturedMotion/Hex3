@@ -5,16 +5,15 @@
 #ifndef HEXA_CONFIG
 #define HEXA_CONFIG
 
-#define CALIBRATION_OFFSET_A0 1.047198
-#define CALIBRATION_OFFSET_A1 1.56976
-#define CALIBRATION_OFFSET_A2 -1.841322
+   #define CALIBRATION_OFFSET_A0 1.047198
+   #define CALIBRATION_OFFSET_A1 1.56976
+   #define CALIBRATION_OFFSET_A2 -1.841322
 
-
-#ifdef ZACK
-	#define STEP_THRESHOLD 40 
-	#define FIFO_IDLE_THRESHOLD 100
-    #define REFERENCE_POINTS
-    #define ZERO_POINTS { \
+   #ifdef ZACK
+      #define STEP_THRESHOLD 40 
+      #define FIFO_IDLE_THRESHOLD 100
+      #define REFERENCE_POINTS
+      #define ZERO_POINTS { \
          {\
             0.437185 + CALIBRATION_OFFSET_A0,  \
             -0.852893 + CALIBRATION_OFFSET_A1, \
@@ -45,14 +44,14 @@
     #define REVERSE_AXIS {{false, true, true}, {false, true, true}, {false, true, true}, {false, true, true}, {false, true, true}, {false, true, true}}
 #endif
 
-#ifdef DILLON
-    #define STEP_THRESHOLD 40 
-	#define FIFO_IDLE_THRESHOLD 100
-    #define ZERO_POINTS {                          \
+   #ifdef DILLON
+      #define STEP_THRESHOLD 40 
+      #define FIFO_IDLE_THRESHOLD 100
+      #define ZERO_POINTS {                        \
          {                                         \
-            0.210666 + CALIBRATION_OFFSET_A0,      \
-            -2.637411 + CALIBRATION_OFFSET_A1,     \
-            -0.004057 + CALIBRATION_OFFSET_A2},    \
+            -2.749917 + CALIBRATION_OFFSET_A0,     \
+            -0.965372 + CALIBRATION_OFFSET_A1,     \
+            -2.756018 + CALIBRATION_OFFSET_A2},    \
          {                                         \
             0.043462 + CALIBRATION_OFFSET_A0,      \
             -1.766109 + CALIBRATION_OFFSET_A1,     \

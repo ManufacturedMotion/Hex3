@@ -1,21 +1,38 @@
 #ifndef HEXA_TOE
 #define HEXA_TOE
 
-    #define TOE_PIN D0  ///< Pin for toe/ground contact sensor gpio
+    #include <Arduino.h>
+    #include <Wire.h>
     #include <Adafruit_VL6180X.h>
+    #include "config.hpp"
+    #include "user_config.hpp"
 
-    class Toe {
+    class Toe
+    {
         public:
-            Toe(bool useGPIO = false);
+            Toe();
             bool begin();
-            float read();
+            void update();   //call regularly to update cached value, non-blocking
+            float read();    // returns latest value
             bool isPressed();
-            float toe_idle = 27.0; //toe resting reading bounces between 25-27
-            float toe_threshold = 7.0; //if reading is below we can assume fully compressed
-            float exposed_length = 47.0; //how much the toe extends beyond the end of the leg when uncompressed (mm) //TODO double check this in CAD
+            float toe_idle = TOE_IDLE_READ[LEG_NUMBER]; 
+            float toe_threshold = 0.075f; //percentage of remaining range to consider "pressed"
+            float exposed_length = 47.0f;
         private:
             Adafruit_VL6180X sensor;
-            bool _gpio_enabled;
-    };
+            // cached value (IMPORTANT: removes blocking reads)
+            float _last_range = 0.0f;
+            bool _first_read = false; //for EMA filtering
+            bool _connected = false;
+            bool _initialized = false;
+            static constexpr uint8_t CALIB_SAMPLES = 30;
+            float _calib_buffer[CALIB_SAMPLES] = {0};
+            uint8_t _calib_index = 0;
+            uint8_t _calib_count = 0;
+            float _calib_sum = 0.0f;
+            bool probeSensor();
+            uint32_t _last_probe_ms = 0;
+            uint32_t _probe_interval_ms = 50;
+        };
 
 #endif
