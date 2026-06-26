@@ -53,7 +53,8 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
     step_vector.pitch /= ROTATION_MAGNITUDE_SCALE;
     step_vector.yaw /= ROTATION_MAGNITUDE_SCALE;
     
-	RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Enqueueing step vector: x: %f, y: %f, z: %f, roll: %f, pitch %f, yaw: %f", 
+	RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, 
+        "Enqueueing step vector: x: %f, y: %f, z: %f, roll: %f, pitch %f, yaw: %f", 
         step_vector.x,
         step_vector.y,
         step_vector.z,
@@ -69,10 +70,10 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
     switch(static_cast<MacroCode>(macro_num))
     {
         case MacroCode::STAND:
-            step_queue_.enqueue(Pose6D(0, 0, -200, 0, 0, 0), 100, StepType::RAPID_MOVE);
+            step_queue_.enqueue(Pose6D(0, 0, -180, 0, 0, 0), 100, StepType::RAPID_MOVE);
         break;
         case MacroCode::SIT:
-            step_queue_.enqueue(Pose6D(0, 0, -120, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -140, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
         break;
         default:
         break;
@@ -316,8 +317,13 @@ void TripodGaitNode::rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_leg
 // }
 
 double TripodGaitNode::getMaxStepMagnitude_() {
-	// Pose6D current_pos = step_queue_.getCurrentQueueEndPos();
-	return max_step_length_;
+	Pose6D current_pos = step_queue_.getCurrentQueueEndPos();
+	return max_step_length_ 
+        - sqrt(
+            (180.0 - current_pos.z) * (180.0 - current_pos.z) 
+            + (current_pos.roll * ROTATION_MAGNITUDE_SCALE) * (current_pos.roll * ROTATION_MAGNITUDE_SCALE)
+            + (current_pos.pitch * ROTATION_MAGNITUDE_SCALE) * (current_pos.pitch * ROTATION_MAGNITUDE_SCALE)
+            );
 }
 
 double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, bool flipped_step_group) {	
@@ -342,7 +348,6 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
 	buffer2.z = 0.00; // For now we don't consider Z, roll, or pitch
 	buffer2.roll = 0.00;
 	buffer2.pitch = 0.00;
-	// buffer2.yaw *= ROTATION_MAGNITUDE_SCALE; // Scale yaw to have a similar range as x and y
 
 	double c = pow(buffer1.x, 2) + pow(buffer1.y, 2) + pow(buffer1.yaw, 2) - pow(getMaxStepMagnitude_(), 2);
 	double b = 2.0 * (buffer1.x * buffer2.x + buffer1.y * buffer2.y + buffer1.yaw * buffer2.yaw);
