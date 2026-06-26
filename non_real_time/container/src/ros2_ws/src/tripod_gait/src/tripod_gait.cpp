@@ -70,7 +70,7 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
     switch(static_cast<MacroCode>(macro_num))
     {
         case MacroCode::STAND:
-            step_queue_.enqueue(Pose6D(0, 0, -180, 0, 0, 0), 100, StepType::RAPID_MOVE);
+            step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, 0), 100, StepType::RAPID_MOVE);
         break;
         case MacroCode::SIT:
             step_queue_.enqueue(Pose6D(0, 0, -140, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
@@ -323,7 +323,7 @@ double TripodGaitNode::getMaxStepMagnitude_() {
             (180.0 - current_pos.z) * (180.0 - current_pos.z) 
             + (current_pos.roll * ROTATION_MAGNITUDE_SCALE) * (current_pos.roll * ROTATION_MAGNITUDE_SCALE)
             + (current_pos.pitch * ROTATION_MAGNITUDE_SCALE) * (current_pos.pitch * ROTATION_MAGNITUDE_SCALE)
-            );
+        );
 }
 
 double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, bool flipped_step_group) {	
