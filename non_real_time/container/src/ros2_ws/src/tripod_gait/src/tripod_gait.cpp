@@ -355,7 +355,14 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
 	// buffer2.pitch = 0.00;
 	
 	
-
+    RCLCPP_INFO(
+        get_logger(),
+        "buffer1=(%f,%f,%f) max=%f",
+        buffer1.x,
+        buffer1.y,
+        buffer1.yaw,
+        getMaxStepMagnitude_()
+    );
 	double c = pow(buffer1.x, 2) + pow(buffer1.y, 2) + pow(buffer1.yaw, 2) - pow(getMaxStepMagnitude_(), 2);
 	double b = 2.0 * (buffer1.x * buffer2.x + buffer1.y * buffer2.y + buffer1.yaw * buffer2.yaw);
 	double a = pow(buffer2.x, 2) + pow(buffer2.y, 2) + pow(buffer2.yaw, 2);
