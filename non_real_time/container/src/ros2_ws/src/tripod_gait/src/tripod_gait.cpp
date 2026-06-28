@@ -3,7 +3,7 @@
 #include <cmath>
 
 TripodGaitNode::TripodGaitNode()
-    : Gait("tripod_gait", Pose6D(400.0, 400.0, 400.0, 4.0, 4.0, 4.0))
+    : Gait("tripod_gait", Pose6D(400.0, 400.0, 400.0, 1.0, 1.0, 1.0))
 {
     RCLCPP_INFO(get_logger(), "TripodGaitNode started");
 }
@@ -53,8 +53,7 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
     step_vector.pitch /= ROTATION_MAGNITUDE_SCALE;
     step_vector.yaw /= ROTATION_MAGNITUDE_SCALE;
     
-	RCLCPP_INFO(get_logger(),
-        "Enqueueing step vector: x: %f, y: %f, z: %f, roll: %f, pitch %f, yaw: %f", 
+	RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Enqueueing step vector: x: %f, y: %f, z: %f, roll: %f, pitch %f, yaw: %f", 
         step_vector.x,
         step_vector.y,
         step_vector.z,
@@ -70,10 +69,10 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
     switch(static_cast<MacroCode>(macro_num))
     {
         case MacroCode::STAND:
-            step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, 0), 100, StepType::RAPID_MOVE);
+            step_queue_.enqueue(Pose6D(0, 0, -200, 0, 0, 0), 100, StepType::RAPID_MOVE);
         break;
         case MacroCode::SIT:
-            step_queue_.enqueue(Pose6D(0, 0, -140, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -120, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
         break;
         default:
         break;
@@ -317,15 +316,8 @@ void TripodGaitNode::rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_leg
 // }
 
 double TripodGaitNode::getMaxStepMagnitude_() {
-	Pose6D current_pos = step_queue_.getCurrentQueueEndPos();
-	double max_step_magnitude = max_step_length_ 
-        - sqrt(
-            ((-180.0 - current_pos.z) * (-180.0 - current_pos.z))
-            + ((current_pos.roll * ROTATION_MAGNITUDE_SCALE) * (current_pos.roll * ROTATION_MAGNITUDE_SCALE))
-            + ((current_pos.pitch * ROTATION_MAGNITUDE_SCALE) * (current_pos.pitch * ROTATION_MAGNITUDE_SCALE))
-        );
-    RCLCPP_INFO(get_logger(), "Max step magnitude: %f; max_step_length_: %f, current z: %f, current roll: %f;current pitch: %f", max_step_magnitude, max_step_length_, current_pos.z, current_pos.roll, current_pos.pitch);
-    return max_step_magnitude;
+	// Pose6D current_pos = step_queue_.getCurrentQueueEndPos();
+	return max_step_length_;
 }
 
 double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, bool flipped_step_group) {	
@@ -342,30 +334,18 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
 	buffer1.z = 0.00; // For now we don't consider Z, roll, or pitch
 	buffer1.roll = 0.00;
 	buffer1.pitch = 0.00;
-    // buffer1.yaw *= ROTATION_MAGNITUDE_SCALE;
-
 	if (flipped_step_group) {
 		buffer1 *= -1.0; // If the step group has been flipped, then the previous step was in the opposite direction
 	}
-
-    direction_vector.z = 0.0;  // For now we don't consider Z, roll, or pitch
-    direction_vector.roll = 0.0;
-    direction_vector.pitch = 0.0;
-    Pose6D buffer2 = direction_vector.unitVector();
-	// buffer2.z = 0.00;
-	// buffer2.roll = 0.00;
-	// buffer2.pitch = 0.00;
 	
-    RCLCPP_INFO(
-        get_logger(),
-        "buffer1=(%f,%f,%f) max=%f",
-        buffer1.x,
-        buffer1.y,
-        buffer1.yaw,
-        getMaxStepMagnitude_()
-    );
+	Pose6D buffer2 = direction_vector.unitVector();
+	buffer2.z = 0.00; // For now we don't consider Z, roll, or pitch
+	buffer2.roll = 0.00;
+	buffer2.pitch = 0.00;
+	// buffer2.yaw *= ROTATION_MAGNITUDE_SCALE; // Scale yaw to have a similar range as x and y
+
 	double c = pow(buffer1.x, 2) + pow(buffer1.y, 2) + pow(buffer1.yaw, 2) - pow(getMaxStepMagnitude_(), 2);
-	double b = 2.0 * pow(buffer1.x, 2) + pow(buffer1.y, 2) + pow(buffer1.yaw, 2);
+	double b = 2.0 * (buffer1.x * buffer2.x + buffer1.y * buffer2.y + buffer1.yaw * buffer2.yaw);
 	double a = pow(buffer2.x, 2) + pow(buffer2.y, 2) + pow(buffer2.yaw, 2);
 
 	// Solve the quadratic equation for the step magnitude
@@ -373,24 +353,15 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
 	double step_magnitude;
 	if (discriminant < 0.0) {
 		// No solution, return 0
-        RCLCPP_INFO(get_logger(), "NO solution returning 0.0");
 		step_magnitude = 0.00;
 	}
 	else if (fabs(discriminant) <= 0.001) {
 		// One solution, use it
-        RCLCPP_INFO(get_logger(), "Only one solution returning it");
 		step_magnitude = -b / (2.0 * a);
 	}
 	else {
 		// Two solutions, use the positive one (if there is one)
-        RCLCPP_INFO(get_logger(), "Two solutions");
 		step_magnitude = ((-b + sqrt(discriminant)) / (2.0 * a)) > 0.00 ? (-b + sqrt(discriminant)) / (2.0 * a) : (-b - sqrt(discriminant)) / (2.0 * a);
 	}
-
-    RCLCPP_INFO(
-        get_logger(),
-        "a=%f b=%f c=%f disc=%f step=%f",
-        a, b, c, discriminant, step_magnitude
-    );
 	return step_magnitude;
 }
