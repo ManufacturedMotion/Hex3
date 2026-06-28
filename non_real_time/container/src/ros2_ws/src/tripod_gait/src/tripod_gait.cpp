@@ -15,14 +15,15 @@ TripodGaitNode::TripodGaitNode()
 }
 
 rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vector, double scalar) {
-    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000,
-        "Direction vector is: x: %f, y: %f, x: %f, roll: %f, pitch: %f, yaw: %f",
+    RCLCPP_INFO(get_logger(),
+        "Direction vector is: x: %f, y: %f, x: %f, roll: %f, pitch: %f, yaw: %f\n scalar: %f",
         direction_vector.x,
         direction_vector.y,
         direction_vector.z,
         direction_vector.roll,
         direction_vector.pitch,
-        direction_vector.yaw
+        direction_vector.yaw,
+        scalar
     );
     Pose6D buffer0;
 
