@@ -343,6 +343,7 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
 	buffer1.roll = 0.00;
 	buffer1.pitch = 0.00;
     // buffer1.yaw *= ROTATION_MAGNITUDE_SCALE;
+
 	if (flipped_step_group) {
 		buffer1 *= -1.0; // If the step group has been flipped, then the previous step was in the opposite direction
 	}
@@ -354,7 +355,6 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
 	// buffer2.z = 0.00;
 	// buffer2.roll = 0.00;
 	// buffer2.pitch = 0.00;
-	
 	
     RCLCPP_INFO(
         get_logger(),
@@ -373,14 +373,17 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
 	double step_magnitude;
 	if (discriminant < 0.0) {
 		// No solution, return 0
+        RCLCPP_INFO(get_logger(), "NO solution returning 0.0");
 		step_magnitude = 0.00;
 	}
 	else if (fabs(discriminant) <= 0.001) {
 		// One solution, use it
+        RCLCPP_INFO(get_logger(), "Only one solution returning it");
 		step_magnitude = -b / (2.0 * a);
 	}
 	else {
 		// Two solutions, use the positive one (if there is one)
+        RCLCPP_INFO(get_logger(), "Two solutions");
 		step_magnitude = ((-b + sqrt(discriminant)) / (2.0 * a)) > 0.00 ? (-b + sqrt(discriminant)) / (2.0 * a) : (-b - sqrt(discriminant)) / (2.0 * a);
 	}
 
