@@ -30,7 +30,7 @@ rclcpp::Duration StepQueue::enqueue(
                 end_pos_.yaw *= -1.0;
             }
 
-            end_pos_ += op_end_pos;
+            end_pos_ = op_end_pos;
             op_time = rclcpp::Duration::from_nanoseconds(
                 static_cast<int64_t>((op_end_pos.scaledMagnitude() / op_speed) * 1000000000.0));
 
