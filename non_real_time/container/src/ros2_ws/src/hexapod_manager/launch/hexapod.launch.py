@@ -59,7 +59,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         inverse_kinematics,
-        # can_interface,
+        can_interface,
         control,
         joy
     ])
