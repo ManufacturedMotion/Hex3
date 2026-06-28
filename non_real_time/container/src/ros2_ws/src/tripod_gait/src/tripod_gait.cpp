@@ -363,9 +363,9 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
         buffer1.yaw,
         getMaxStepMagnitude_()
     );
-	double c = pow(buffer1.x, 2) + pow(buffer1.y, 2) + pow(buffer1.yaw, 2) - pow(getMaxStepMagnitude_(), 2);
-	double b = 2.0 * (buffer1.x * buffer2.x + buffer1.y * buffer2.y + buffer1.yaw * buffer2.yaw);
-	double a = pow(buffer2.x, 2) + pow(buffer2.y, 2) + pow(buffer2.yaw, 2);
+	double c = pow(buffer1.x, 2) + pow(buffer1.y, 2) + pow(buffer1.yaw * ROTATION_MAGNITUDE_SCALE, 2) - pow(getMaxStepMagnitude_(), 2);
+	double b = 2.0 * pow(buffer1.x, 2) + pow(buffer1.y) + pow(buffer1.yaw * ROTATION_MAGNITUDE_SCALE, 2);
+	double a = pow(buffer2.x, 2) + pow(buffer2.y, 2) + pow(buffer2.yaw * ROTATION_MAGNITUDE_SCALE, 2);
 
 	// Solve the quadratic equation for the step magnitude
 	double discriminant = pow(b, 2) - 4.0 * a * c;
