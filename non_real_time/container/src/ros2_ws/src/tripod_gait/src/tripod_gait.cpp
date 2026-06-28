@@ -324,7 +324,7 @@ double TripodGaitNode::getMaxStepMagnitude_() {
             + ((current_pos.roll * ROTATION_MAGNITUDE_SCALE) * (current_pos.roll * ROTATION_MAGNITUDE_SCALE))
             + ((current_pos.pitch * ROTATION_MAGNITUDE_SCALE) * (current_pos.pitch * ROTATION_MAGNITUDE_SCALE))
         );
-    RCLCPP_INFO(get_logger(), "Max step magnitude: %f; max_step_length_: %f, current z: %f, current roll: %f;current pitch: %f", max_step_magnitude, max_step_length_, current_pos.z, current_pos.roll, current_pos.yaw);
+    RCLCPP_INFO(get_logger(), "Max step magnitude: %f; max_step_length_: %f, current z: %f, current roll: %f;current pitch: %f", max_step_magnitude, max_step_length_, current_pos.z, current_pos.roll, current_pos.pitch);
     return max_step_magnitude;
 }
 
@@ -346,13 +346,13 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
 		buffer1 *= -1.0; // If the step group has been flipped, then the previous step was in the opposite direction
 	}
 
-    // direction_vector.z = 0.0;  // For now we don't consider Z, roll, or pitch
-    // direction_vector.roll = 0.0;
-    // direction_vector.yaw = 0.0;
+    direction_vector.z = 0.0;  // For now we don't consider Z, roll, or pitch
+    direction_vector.roll = 0.0;
+    direction_vector.pitch = 0.0;
     Pose6D buffer2 = direction_vector.unitVector();
-	buffer2.z = 0.00;
-	buffer2.roll = 0.00;
-	buffer2.pitch = 0.00;
+	// buffer2.z = 0.00;
+	// buffer2.roll = 0.00;
+	// buffer2.pitch = 0.00;
 	
 	
 
