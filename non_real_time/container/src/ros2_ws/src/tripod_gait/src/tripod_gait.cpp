@@ -3,7 +3,13 @@
 #include <cmath>
 
 TripodGaitNode::TripodGaitNode()
-    : Gait("tripod_gait", Pose6D(400.0, 400.0, 400.0, 4.0, 4.0, 4.0))
+    : Gait("tripod_gait", Pose6D(
+        MAX_SPEED, 
+        MAX_SPEED, 
+        MAX_SPEED, 
+        MAX_SPEED / ROTATION_MAGNITUDE_SCALE, 
+        MAX_SPEED / ROTATION_MAGNITUDE_SCALE, 
+        MAX_SPEED / ROTATION_MAGNITUDE_SCALE))
 {
     RCLCPP_INFO(get_logger(), "TripodGaitNode started");
 }
