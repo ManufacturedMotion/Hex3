@@ -382,5 +382,11 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
 		// Two solutions, use the positive one (if there is one)
 		step_magnitude = ((-b + sqrt(discriminant)) / (2.0 * a)) > 0.00 ? (-b + sqrt(discriminant)) / (2.0 * a) : (-b - sqrt(discriminant)) / (2.0 * a);
 	}
+
+    RCLCPP_INFO(
+        get_logger(),
+        "a=%f b=%f c=%f disc=%f step=%f",
+        a, b, c, discriminant, step_magnitude
+    );
 	return step_magnitude;
 }
