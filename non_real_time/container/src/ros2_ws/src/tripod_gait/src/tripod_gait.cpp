@@ -320,9 +320,9 @@ double TripodGaitNode::getMaxStepMagnitude_() {
 	Pose6D current_pos = step_queue_.getCurrentQueueEndPos();
 	double max_step_magnitude = max_step_length_ 
         - sqrt(
-            (180.0 - current_pos.z) * (180.0 - current_pos.z) 
-            + (current_pos.roll * ROTATION_MAGNITUDE_SCALE) * (current_pos.roll * ROTATION_MAGNITUDE_SCALE)
-            + (current_pos.pitch * ROTATION_MAGNITUDE_SCALE) * (current_pos.pitch * ROTATION_MAGNITUDE_SCALE)
+            ((-180.0 - current_pos.z) * (-180.0 - current_pos.z))
+            + ((current_pos.roll * ROTATION_MAGNITUDE_SCALE) * (current_pos.roll * ROTATION_MAGNITUDE_SCALE))
+            + ((current_pos.pitch * ROTATION_MAGNITUDE_SCALE) * (current_pos.pitch * ROTATION_MAGNITUDE_SCALE))
         );
     RCLCPP_INFO(get_logger(), "Max step magnitude: %f; max_step_length_: %f, current z: %f, current roll: %f;current pitch: %f", max_step_magnitude, max_step_length_, current_pos.z, current_pos.roll, current_pos.yaw);
     return max_step_magnitude;
