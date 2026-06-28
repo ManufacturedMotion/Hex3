@@ -53,7 +53,7 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
     step_vector.pitch /= ROTATION_MAGNITUDE_SCALE;
     step_vector.yaw /= ROTATION_MAGNITUDE_SCALE;
     
-	RCLCPP_INFO(get_logger(), *get_clock(), 1000, 
+	RCLCPP_INFO(get_logger(),
         "Enqueueing step vector: x: %f, y: %f, z: %f, roll: %f, pitch %f, yaw: %f", 
         step_vector.x,
         step_vector.y,
