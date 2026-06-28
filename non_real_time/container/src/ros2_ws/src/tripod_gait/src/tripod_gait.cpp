@@ -342,6 +342,7 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
 	buffer1.z = 0.00; // For now we don't consider Z, roll, or pitch
 	buffer1.roll = 0.00;
 	buffer1.pitch = 0.00;
+    buffer1.yaw *= ROTATION_MAGNITUDE_SCALE;
 	if (flipped_step_group) {
 		buffer1 *= -1.0; // If the step group has been flipped, then the previous step was in the opposite direction
 	}
@@ -363,9 +364,9 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
         buffer1.yaw,
         getMaxStepMagnitude_()
     );
-	double c = pow(buffer1.x, 2) + pow(buffer1.y, 2) + pow(buffer1.yaw * ROTATION_MAGNITUDE_SCALE, 2) - pow(getMaxStepMagnitude_(), 2);
-	double b = 2.0 * pow(buffer1.x, 2) + pow(buffer1.y, 2) + pow(buffer1.yaw * ROTATION_MAGNITUDE_SCALE, 2);
-	double a = pow(buffer2.x, 2) + pow(buffer2.y, 2) + pow(buffer2.yaw * ROTATION_MAGNITUDE_SCALE, 2);
+	double c = pow(buffer1.x, 2) + pow(buffer1.y, 2) + pow(buffer1.yaw, 2) - pow(getMaxStepMagnitude_(), 2);
+	double b = 2.0 * pow(buffer1.x, 2) + pow(buffer1.y, 2) + pow(buffer1.yaw, 2);
+	double a = pow(buffer2.x, 2) + pow(buffer2.y, 2) + pow(buffer2.yaw, 2);
 
 	// Solve the quadratic equation for the step magnitude
 	double discriminant = pow(b, 2) - 4.0 * a * c;
