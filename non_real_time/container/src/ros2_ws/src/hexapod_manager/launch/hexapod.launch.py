@@ -44,18 +44,18 @@ def generate_launch_description():
         ],
     )
 
-    # # CAN interface
-    # can_interface = Node(
-    #     package='can',
-    #     executable='can_interface',
-    #     name='can_interface',
-    #     output='screen',
-    #     parameters=[
-    #         {
-    #             'leg_groups_config' : can_config_file
-    #         }
-    #     ],
-    # )
+    # CAN interface
+    can_interface = Node(
+        package='can',
+        executable='can_interface',
+        name='can_interface',
+        output='screen',
+        parameters=[
+            {
+                'leg_groups_config' : can_config_file
+            }
+        ],
+    )
 
     return LaunchDescription([
         inverse_kinematics,
