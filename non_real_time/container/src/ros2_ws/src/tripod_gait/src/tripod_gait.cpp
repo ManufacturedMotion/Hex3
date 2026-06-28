@@ -342,7 +342,7 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
 	buffer1.z = 0.00; // For now we don't consider Z, roll, or pitch
 	buffer1.roll = 0.00;
 	buffer1.pitch = 0.00;
-    buffer1.yaw *= ROTATION_MAGNITUDE_SCALE;
+    // buffer1.yaw *= ROTATION_MAGNITUDE_SCALE;
 	if (flipped_step_group) {
 		buffer1 *= -1.0; // If the step group has been flipped, then the previous step was in the opposite direction
 	}
