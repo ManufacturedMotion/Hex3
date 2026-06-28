@@ -318,12 +318,14 @@ void TripodGaitNode::rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_leg
 
 double TripodGaitNode::getMaxStepMagnitude_() {
 	Pose6D current_pos = step_queue_.getCurrentQueueEndPos();
-	return max_step_length_ 
+	double max_step_magnitude = max_step_length_ 
         - sqrt(
             (180.0 - current_pos.z) * (180.0 - current_pos.z) 
             + (current_pos.roll * ROTATION_MAGNITUDE_SCALE) * (current_pos.roll * ROTATION_MAGNITUDE_SCALE)
             + (current_pos.pitch * ROTATION_MAGNITUDE_SCALE) * (current_pos.pitch * ROTATION_MAGNITUDE_SCALE)
         );
+    RCLCPP_INFO(get_logger(), "Max step magnitude: %f", max_step_magnitude);
+    return max_step_magnitude;
 }
 
 double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, bool flipped_step_group) {	
