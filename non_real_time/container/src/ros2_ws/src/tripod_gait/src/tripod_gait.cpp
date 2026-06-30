@@ -3,20 +3,27 @@
 #include <cmath>
 
 TripodGaitNode::TripodGaitNode()
-    : Gait("tripod_gait", Pose6D(400.0, 400.0, 400.0, 1.0, 1.0, 1.0))
+    : Gait("tripod_gait", Pose6D(
+        MAX_SPEED, 
+        MAX_SPEED, 
+        MAX_SPEED, 
+        MAX_SPEED / ROTATION_MAGNITUDE_SCALE, 
+        MAX_SPEED / ROTATION_MAGNITUDE_SCALE, 
+        MAX_SPEED / ROTATION_MAGNITUDE_SCALE))
 {
     RCLCPP_INFO(get_logger(), "TripodGaitNode started");
 }
 
 rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vector, double scalar) {
-    RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000,
-        "Direction vector is: x: %f, y: %f, x: %f, roll: %f, pitch: %f, yaw: %f",
+    RCLCPP_INFO(get_logger(),
+        "Direction vector is: x: %f, y: %f, x: %f, roll: %f, pitch: %f, yaw: %f\n scalar: %f",
         direction_vector.x,
         direction_vector.y,
         direction_vector.z,
         direction_vector.roll,
         direction_vector.pitch,
-        direction_vector.yaw
+        direction_vector.yaw,
+        scalar
     );
     Pose6D buffer0;
 
@@ -69,10 +76,10 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
     switch(static_cast<MacroCode>(macro_num))
     {
         case MacroCode::STAND:
-            step_queue_.enqueue(Pose6D(0, 0, -200, 0, 0, 0), 100, StepType::RAPID_MOVE);
+            step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, 0), 100, StepType::RAPID_MOVE);
         break;
         case MacroCode::SIT:
-            step_queue_.enqueue(Pose6D(0, 0, -120, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -140, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
         break;
         default:
         break;
@@ -334,6 +341,7 @@ double TripodGaitNode::getMaxStepMagnitudeInDirection_(Pose6D direction_vector, 
 	buffer1.z = 0.00; // For now we don't consider Z, roll, or pitch
 	buffer1.roll = 0.00;
 	buffer1.pitch = 0.00;
+    buffer1.yaw *= ROTATION_MAGNITUDE_SCALE;
 	if (flipped_step_group) {
 		buffer1 *= -1.0; // If the step group has been flipped, then the previous step was in the opposite direction
 	}
