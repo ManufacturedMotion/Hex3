@@ -79,15 +79,15 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
             step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, 0), 100, StepType::RAPID_MOVE);
         break;
         case MacroCode::SIT:
-            step_queue_.enqueue(Pose6D(0, 0, -140, 0, 0, 0), 100, StepType::RAPID_MOVE);
+            step_queue_.enqueue(Pose6D(0, 0, -140, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
         break;
         case MacroCode::SLOW_STAND:
-            step_queue_.enqueue(Pose6D(0, 0, -100, 0, 0, 0), 40, StepType::RAPID_MOVE);
-            step_queue_.enqueue(Pose6D(0, 0, -60, 0, 0, 0), 40, StepType::GROUP0);
-            step_queue_.enqueue(Pose6D(0, 0, -60, 0, 0, 0), 40, StepType::GROUP1);
-            step_queue_.enqueue(Pose6D(0, 0, -60, 0, 0, 0), 40, StepType::GROUP0);
-            step_queue_.enqueue(Pose6D(0, 0, -60, 0, 0, 0), 40, StepType::GROUP1);
-            // final pos should be same as original stand -- (0, 0, -220, 0, 0, 0)
+            step_queue_.enqueue(Pose6D(0, 0, -140, 0, 0, 0), 40, StepType::LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -20, 0, 0, 0), 40, StepType::GROUP0);
+            step_queue_.enqueue(Pose6D(0, 0, -20, 0, 0, 0), 40, StepType::GROUP1);
+            step_queue_.enqueue(Pose6D(0, 0, -20, 0, 0, 0), 40, StepType::GROUP0);
+            step_queue_.enqueue(Pose6D(0, 0, -20, 0, 0, 0), 40, StepType::GROUP1);
+            // final pos will be SIT(-140) + 4 * (-20) = -220 (same as STAND)
         break;
         default:
         break;
@@ -241,17 +241,20 @@ void TripodGaitNode::updateGait(
 				}
 			}
 			
-			switch(current_step_type_) {
-				case StepType::RETURN_TO_NEUTRAL:
-				case StepType::RAPID_MOVE:
-				case StepType::LINEAR_MOVE_ABSOLUTE:
-				case StepType::GROUP0:
-				case StepType::GROUP1:
-				case StepType::LINEAR_MOVE_RELATIVE:
-				default:
-					end_pos_ = current_pos_ + step_queue_.front()->end_pos;
-					break;
-			}
+            switch(current_step_type_) {
+                case StepType::RETURN_TO_NEUTRAL:
+                case StepType::RAPID_MOVE:
+                case StepType::LINEAR_MOVE_ABSOLUTE:
+                    end_pos_ = step_queue_.front()->end_pos;
+                    break;
+                case StepType::GROUP0:
+                case StepType::GROUP1:
+                case StepType::LINEAR_MOVE_RELATIVE:
+                default:
+                    // These are relative offsets applied to the current pose
+                    end_pos_ = current_pos_ + step_queue_.front()->end_pos;
+                    break;
+            }
 			start_pos_ = current_pos_;
 			move_time_ = step_queue_.front()->time;
 			move_start_time_ = current_time;
