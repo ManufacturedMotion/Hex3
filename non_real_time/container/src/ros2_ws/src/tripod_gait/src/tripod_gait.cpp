@@ -82,12 +82,17 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
             step_queue_.enqueue(Pose6D(0, 0, -140, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
         break;
         case MacroCode::SLOW_STAND:
-            step_queue_.enqueue(Pose6D(0, 0, -140, 0, 0, 0), 40, StepType::LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, -20, 0, 0, 0), 40, StepType::GROUP0);
-            step_queue_.enqueue(Pose6D(0, 0, -20, 0, 0, 0), 40, StepType::GROUP1);
-            step_queue_.enqueue(Pose6D(0, 0, -20, 0, 0, 0), 40, StepType::GROUP0);
-            step_queue_.enqueue(Pose6D(0, 0, -20, 0, 0, 0), 40, StepType::GROUP1);
-            // final pos will be SIT(-140) + 4 * (-20) = -220 (same as STAND)
+            step_queue_.enqueueWait(rclcpp::Duration::from_seconds(2.0)); //pause before standing up so I can help lift some of the weight off the robot
+            step_queue_.enqueue(Pose6D(0, 0, -140, 0, 0, 0), 40, StepType::RAPID_MOVE);
+            step_queue_.enqueue(Pose6D(0, 0, -10, 0, 0, 0), 40, StepType::GROUP0);
+            step_queue_.enqueue(Pose6D(0, 0, -10, 0, 0, 0), 40, StepType::GROUP1);
+            step_queue_.enqueue(Pose6D(0, 0, -10, 0, 0, 0), 40, StepType::GROUP0);
+            step_queue_.enqueue(Pose6D(0, 0, -10, 0, 0, 0), 40, StepType::GROUP1);
+            step_queue_.enqueue(Pose6D(0, 0, -10, 0, 0, 0), 40, StepType::GROUP0);
+            step_queue_.enqueue(Pose6D(0, 0, -10, 0, 0, 0), 40, StepType::GROUP1);
+            step_queue_.enqueue(Pose6D(0, 0, -10, 0, 0, 0), 40, StepType::GROUP0);
+            step_queue_.enqueue(Pose6D(0, 0, -10, 0, 0, 0), 40, StepType::GROUP1);
+            // final pos will still be SIT(-140) + 8 * (-10) = -220 (same as STAND)
         break;
         default:
         break;
@@ -245,6 +250,7 @@ void TripodGaitNode::updateGait(
                 case StepType::RETURN_TO_NEUTRAL:
                 case StepType::RAPID_MOVE:
                 case StepType::LINEAR_MOVE_ABSOLUTE:
+                case StepType::WAIT:
                     end_pos_ = step_queue_.front()->end_pos;
                     break;
                 case StepType::GROUP0:
