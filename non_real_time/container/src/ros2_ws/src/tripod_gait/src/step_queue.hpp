@@ -15,7 +15,6 @@ enum class StepType {
     LINEAR_MOVE_ABSOLUTE = 253,
     RETURN_TO_NEUTRAL = 252,
     RAPID_MOVE = 251,
-    WAIT = 250,
     NONE = 255,
 };
 
@@ -56,9 +55,6 @@ public:
         Pose6D end_pos,
         double speed,
         StepType step_type);
-
-    rclcpp::Duration enqueueWait(
-        rclcpp::Duration wait_time);
 
     bool dequeue();
 

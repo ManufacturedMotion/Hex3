@@ -87,12 +87,6 @@ rclcpp::Duration StepQueue::enqueue(
             break;
         }
 
-        case StepType::WAIT:
-        {
-            op_time = rclcpp::Duration::from_nanoseconds(0);
-            break;
-        }
-
         default:
             return rclcpp::Duration::from_nanoseconds(0);
     }
@@ -106,26 +100,6 @@ rclcpp::Duration StepQueue::enqueue(
     last_step_type_ = op_step_type;
     RCLCPP_INFO(logger_, "Enqueued step of type %d, which will take %f seconds; new queue length: %ld", static_cast<uint8_t>(op_step_type), op_time.seconds(), size());
 
-    return op_time;
-}
-
-rclcpp::Duration StepQueue::enqueueWait(
-    rclcpp::Duration wait_time)
-{
-    if (wait_time.nanoseconds() <= 0)
-    {
-        return rclcpp::Duration::from_nanoseconds(0);
-    }
-
-    auto op_time = wait_time;
-    queue_.emplace_back(
-        end_pos_,
-        DEFAULT_MOVE_SPEED,
-        StepType::WAIT,
-        op_time);
-
-    last_step_type_ = StepType::WAIT;
-    RCLCPP_INFO(logger_, "Enqueued wait step of %f seconds; new queue length: %ld", op_time.seconds(), size());
     return op_time;
 }
 
