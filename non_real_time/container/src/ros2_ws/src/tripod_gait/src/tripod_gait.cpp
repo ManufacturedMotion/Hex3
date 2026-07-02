@@ -83,10 +83,16 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
         break;
         case MacroCode::SLOW_STAND:
             step_queue_.enqueueWait(rclcpp::Duration::from_seconds(3.0));
-            step_queue_.enqueue(Pose6D(0, 0, -100, 0, 0, 0), 20, StepType::RAPID_MOVE);
-            step_queue_.enqueue(Pose6D(0, 0, -160, 0, 0, 0), 20, StepType::GROUP0);
-            step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, 0), 20, StepType::GROUP1);
-            step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, 0), 20, StepType::GROUP0);
+            step_queue_.enqueue(Pose6D(0, 0, -100, 0, 0, 0), 40, StepType::RAPID_MOVE);
+            step_queue_.enqueue(Pose6D(0, 0, -30, 0, 0, 0), 40, StepType::GROUP0);
+            step_queue_.enqueue(Pose6D(0, 0, -30, 0, 0, 0), 40, StepType::GROUP1);
+            step_queue_.enqueue(Pose6D(0, 0, -30, 0, 0, 0), 40, StepType::GROUP0);
+            step_queue_.enqueue(Pose6D(0, 0, -30, 0, 0, 0), 40, StepType::GROUP1);
+            step_queue_.enqueue(Pose6D(0, 0, -30, 0, 0, 0), 40, StepType::GROUP0);
+            step_queue_.enqueue(Pose6D(0, 0, -30, 0, 0, 0), 40, StepType::GROUP1);
+            step_queue_.enqueue(Pose6D(0, 0, -30, 0, 0, 0), 40, StepType::GROUP0);
+            step_queue_.enqueue(Pose6D(0, 0, -30, 0, 0, 0), 40, StepType::GROUP1);
+            // final pos should be same as original stand -- (0, 0, -220, 0, 0, 0)
         break;
         default:
         break;
