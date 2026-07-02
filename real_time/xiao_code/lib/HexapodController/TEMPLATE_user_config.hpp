@@ -3,7 +3,7 @@
 
 #define LOG_LEVEL 1
 #define LEG_NUMBER 2
-//set to true to enable calibration routine for toe sensor
+//set to true to enable calibration routine for toe sensor. use LOG_LEVEL 2
 #define CALIBRATING_TOE false 
 
 // Telemetry logging mode: choose Cartesian or joint-space values in serial telemetry output

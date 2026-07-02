@@ -53,12 +53,7 @@ void Leg::begin(){
     axes[0].link(D8, D10, 5, mux);
     axes[1].link(D11, D12, D15, D16, 6, mux);
     axes[2].link(D17, D18, 7, mux);
-    // bool toe_init_success = toe.begin();
-    // #if LOG_LEVEL >= BASIC_DEBUG
-    //     if (!toe_init_success) {
-    //         Serial.println("Failed to initialize toe sensor");
-    //     }
-    // #endif
+    toe.begin();
 }
 
 /**
@@ -606,8 +601,7 @@ void Leg::processCommandQueue()
 float Leg::readToe() {
     
     float toe_value = toe.read();
-    //TODO remove is pressed check
-    toe.isPressed();
+    //toe.isPressed();
     float compression_distance = toe.toe_idle - toe_value;
     _length2_dynamic = _length2 + toe.exposed_length - compression_distance;
     return toe_value;
