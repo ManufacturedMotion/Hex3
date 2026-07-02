@@ -46,7 +46,8 @@ class XboxJoyNode(Node):
                 pub_msg = Int8()
                 pub_msg.data = 0
                 if msg.buttons[0]:
-                    pub_msg.data |= 0x01
+                    #pub_msg.data |= 0x01
+                    pub_msg.data |= 0x10 #testing slow stand for when prusa is mounted
                 if msg.buttons[1]:
                     pub_msg.data |= 0x02
                 if msg.buttons[2]:
