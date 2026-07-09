@@ -11,7 +11,7 @@ void handleCAN();
 
 void setup() {
   Serial.begin(115200);
-  delay(1000);
+  delay(3000);
   Serial.println("Starting...");
   leg.begin();
 
