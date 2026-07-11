@@ -6,7 +6,7 @@ Toe::Toe(){}
 
 bool Toe::begin()
 {
-    Wire.setTimeout(20, false);
+    Wire.setTimeout(20, true);
     bool ok = sensor.begin();
     Serial.printf("toe idle is %f\n", toe_idle);
     #if LOG_LEVEL >= BASIC_DEBUG
@@ -33,9 +33,9 @@ bool Toe::begin()
 
 void Toe::update()
 {
-    #if LOG_LEVEL >= BASIC_DEBUG
+    // #if LOG_LEVEL >= BASIC_DEBUG
         Serial.printf("[Toe] update() called, state=%d\n", static_cast<int>(state));
-    #endif
+    // #endif
     switch(state)
     {
         case ToeState::UNINITIALIZED:
@@ -65,9 +65,9 @@ void Toe::update()
             if (millis() - _last_read_ms > _read_interval_ms)
             {
                 if (!sensor.isRangeComplete()) {
-                    #if LOG_LEVEL >= BASIC_DEBUG
+                    // #if LOG_LEVEL >= BASIC_DEBUG
                         Serial.println("[Toe] WARNING: sensor range not complete, skipping read");
-                    #endif
+                    // #endif
                     _unchanged_count++;
                     if (_unchanged_count >= TOE_MAX_UNCHANGED_COUNT) {
                         bool ok = sensor.begin();
@@ -98,13 +98,20 @@ void Toe::update()
                 }
                 else
                 {
-                    if (new_val - _last_range < 0.001f) {
+                    if (fabs(new_val - _last_range) < 0.001f) {
                         _unchanged_count++;
                     } else {
                         _unchanged_count = 0;
                     }
                     if (_unchanged_count >= TOE_MAX_UNCHANGED_COUNT) {
-                        // sensor.stopRangeContinuous();
+                        bool ok = sensor.begin();
+                        if (!ok) {
+                            #if LOG_LEVEL >= BASIC_DEBUG
+                                Serial.println("[Toe] ERROR: sensor.begin failed during reset, check wiring and I2C address");
+                            #endif
+                            state = ToeState::ERROR;
+                            return;
+                        }
                         state = ToeState::RESET_1;
                         _last_action_time = millis();
                         _unchanged_count = 0;
@@ -115,13 +122,13 @@ void Toe::update()
             break;
         }
         case ToeState::RESET_1:
-            _last_range = toe_idle; // reset to idle during reset
+            // _last_range = toe_idle; // reset to idle during reset
             // TODO: Fix this reset sequence, it causes the rp2350 to reboot
-            // if (millis() - _last_action_time > TOE_RESET_ACTION_DELAY_MS) {
-            //     sensor.stopRangeContinuous();
-            //     state = ToeState::RESET_2;
-            //     _last_action_time = millis();
-            // }
+            if (millis() - _last_action_time > TOE_RESET_ACTION_DELAY_MS) {
+                sensor.stopRangeContinuous();
+                state = ToeState::RESET_2;
+                _last_action_time = millis();
+            }
             break;
 
         case ToeState::RESET_2:
@@ -269,6 +276,7 @@ bool Toe::isPressed()
 //periodically check this to confirm if sensor is still operational
 bool Toe::probeSensor()
 {
-    Wire.beginTransmission(0x29); // VL6180X default address
-    return Wire.endTransmission() == 0;
+    return true;
+    // Wire.beginTransmission(0x29); // VL6180X default address
+    // return Wire.endTransmission() == 0;
 }

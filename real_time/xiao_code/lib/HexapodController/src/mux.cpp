@@ -6,6 +6,7 @@
 Mux::Mux() {}
 
 void Mux::begin(){
+    Wire.setClock(400000); // Set I2C clock to 400kHz
     if (_initialized) {
         return;
     }

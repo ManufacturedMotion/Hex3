@@ -9,7 +9,7 @@
     #include "config.hpp"
     #include "user_config.hpp"
 
-    #define TOE_MAX_UNCHANGED_COUNT 10 // number of consecutive readings that are unchanged before reinitializing sensor
+    #define TOE_MAX_UNCHANGED_COUNT 20 // number of consecutive readings that are unchanged before reinitializing sensor
     #define TOE_RESET_ACTION_DELAY_MS 50
 
     enum class ToeState {
@@ -53,7 +53,7 @@
             uint8_t _unchanged_count = 0;
 
             float _last_read_ms = 0;
-            float _read_interval_ms = 10; //ms between reads
+            float _read_interval_ms = 100; //ms between reads
             uint8_t _median_buffer[3] = {0, 0, 0};
             uint8_t _median_index = 0;
             uint8_t _median_count = 0;
