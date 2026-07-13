@@ -23,7 +23,7 @@ void setup() {
   // leg.setAxisTargetPos(0, 0.00);
   // leg.setAxisTargetPos(1, 0.00);
   // leg.setAxisTargetPos(2, 0.00);
-  leg.rapidMove(0, 100.0, -240.0);
+  //leg.rapidMove(0, 100.0, -240.0);
 }
 
 void loop() {

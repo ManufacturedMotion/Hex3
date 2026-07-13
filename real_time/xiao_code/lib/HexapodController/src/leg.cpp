@@ -38,7 +38,7 @@ enum Dimension { X = 0, Y = 1, Z = 2};
 Leg::Leg() {
     _leg_number = 0;
     can = nullptr;
-    toe = Toe(); 
+    //toe = Toe(); 
 }
 /**
  * @brief Initialize hardware - GPIO, multiplexer, and axis links
@@ -50,10 +50,10 @@ Leg::Leg() {
  */
 void Leg::begin(){
     mux.begin();
-    axes[0].link(D8, D10, 5, mux);
+    axes[0].link(D8, D10, 7, mux);
     axes[1].link(D11, D12, D15, D16, 6, mux);
-    axes[2].link(D17, D18, 7, mux);
-    toe.begin();
+    axes[2].link(D17, D18, 5, mux);
+    //toe.begin();
 }
 
 /**
@@ -127,7 +127,7 @@ void Leg::_trackMotion() {
  */
 void Leg::runSpeed() {
     static uint32_t last_print_time = 0;
-    toe.update();
+    //toe.update();
     
     // Log telemetry every 10ms
     if (millis() - last_print_time > 10) {
