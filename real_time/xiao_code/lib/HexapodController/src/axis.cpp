@@ -465,12 +465,12 @@ uint8_t Axis::setFeedforwardVelocity(float velocity) {
  * PWM frequency is fixed at PWM_FREQUENCY (50kHz).
  *
  * @param dir Desired rotation direction (true=forward, false=reverse)
- * @param duty_cycle Desired PWM duty cycle in range [0.0, 100.0] (constrained)
+ * @param duty_cycle Desired PWM duty cycle in range [0.0, 80.0] (constrained)
  * @return Always 0 (success)
  */
 uint8_t Axis::_setDutyCycle(bool dir, float duty_cycle) {
-    float max_duty_cycle = 100.0;
-    _duty_cycle = constrain(duty_cycle, 0.0, 100.0);
+    float max_duty_cycle = 80.0;
+    _duty_cycle = constrain(duty_cycle, 0.0, max_duty_cycle);
     _dir = dir;
     
     if (_reverse_axis) {
