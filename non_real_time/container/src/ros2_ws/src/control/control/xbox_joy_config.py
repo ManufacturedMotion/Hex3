@@ -41,17 +41,17 @@ class XboxJoyNode(Node):
         try:
             if msg.buttons[0] != self.last_joy.buttons[0] \
                 or msg.buttons[1] != self.last_joy.buttons[1] \
-                or msg.buttons[2] != self.last_joy.buttons[2] \
-                or msg.buttons[3] != self.last_joy.buttons[3]:
+                or msg.buttons[3] != self.last_joy.buttons[3] \
+                or msg.buttons[4] != self.last_joy.buttons[4]:
                 pub_msg = Int8()
                 pub_msg.data = 0
                 if msg.buttons[0]:
                     pub_msg.data |= 0x01
                 if msg.buttons[1]:
                     pub_msg.data |= 0x02
-                if msg.buttons[2]:
-                    pub_msg.data |= 0x04
                 if msg.buttons[3]:
+                    pub_msg.data |= 0x04
+                if msg.buttons[4]:
                     pub_msg.data |= 0x08
                 
                 self.macro_pub.publish(pub_msg)

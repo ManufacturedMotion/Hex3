@@ -27,6 +27,7 @@
 	#define LEG_POSITION_TRACK_INTERVAL_MS 6       ///< Position tracking update interval (ms)
 	#define LEG_VELOCITY_TRACK_INTERVAL_MS 30      ///< Velocity/acceleration tracking interval (ms)
 	#define MAX_LINEAR_ACCELERATION 500.0          ///< Maximum linear acceleration (mm/s^2)
+	#define TOE_UPDATE_INTERVAL_MS 30                ///< Minimum interval between toe sensor updates (ms)
 
 	class Can;
 	enum move_stage {ACCELERATING, CRUISING, DECELERATING, STOPPED, UNINITIALIZED};
@@ -68,6 +69,11 @@
 			double _length1 = 96.00;                     ///< Length of first joint link (mm)
 			double _length2 = 150.5; 		   			 ///< Length of second joint link (mm) 
 			double _length2_dynamic = _length2;             ///< Length of second joint link (mm) with adjustement for toe compression
+
+			float _last_compression_distance = 0.0f; ///< Last measured compression distance of the toe sensor (mm)
+			uint32_t _last_toe_update_time = 0;      ///< Timestamp of last toe update
+			void _updateToe();
+			float _toe_value = 0.0f; ///< Cached toe sensor value (mm)
 			
 			// Kinematics calculation methods
 			/// Move all axes to target angles calculated by inverse kinematics

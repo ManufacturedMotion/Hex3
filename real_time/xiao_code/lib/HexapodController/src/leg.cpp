@@ -38,7 +38,7 @@ enum Dimension { X = 0, Y = 1, Z = 2};
 Leg::Leg() {
     _leg_number = 0;
     can = nullptr;
-    toe = Toe(); 
+    // toe = Toe(); 
 }
 /**
  * @brief Initialize hardware - GPIO, multiplexer, and axis links
@@ -53,7 +53,7 @@ void Leg::begin(){
     axes[0].link(D8, D10, 5, mux);
     axes[1].link(D11, D12, D15, D16, 6, mux);
     axes[2].link(D17, D18, 7, mux);
-    toe.begin();
+    // toe.begin();
 }
 
 /**
@@ -127,7 +127,8 @@ void Leg::_trackMotion() {
  */
 void Leg::runSpeed() {
     static uint32_t last_print_time = 0;
-    toe.update();
+    _updateToe();
+
     
     // Log telemetry every 10ms
     if (millis() - last_print_time > 10) {
@@ -140,17 +141,18 @@ void Leg::runSpeed() {
             axes[0].getDutyCycle(), axes[1].getDutyCycle(), axes[2].getDutyCycle(),
             voltage_sensor.filteredRead());
 #elif TELEMETRY_LOGGING_SPACE == TELEMETRY_LOGGING_SPACE_JOINT
-        Serial.printf("{\"Joint\": {\"pos\": [%f, %f, %f], \"vel\": [%f, %f, %f], \"acc\": [%f, %f, %f], \"duty\": [%f, %f, %f]}, \"voltage\": %f}\n",
+        Serial.printf("{\"Joint\": {\"pos\": [%f, %f, %f], \"vel\": [%f, %f, %f], \"acc\": [%f, %f, %f], \"duty\": [%f, %f, %f]}, \"voltage\": %f, \"toe\": %f}\n",
             axes[0].getCurrentPos(), axes[1].getCurrentPos(), axes[2].getCurrentPos(),
             axes[0].getCurrentVelocity(), axes[1].getCurrentVelocity(), axes[2].getCurrentVelocity(),
             axes[0].getCurrentAcceleration(), axes[1].getCurrentAcceleration(), axes[2].getCurrentAcceleration(),
             axes[0].getDutyCycle(), axes[1].getDutyCycle(), axes[2].getDutyCycle(),
-            voltage_sensor.filteredRead());
+            voltage_sensor.filteredRead(),readToe());
 #elif TELEMETRY_LOGGING_SPACE != TELEMETRY_LOGGING_SPACE_NONE
         Serial.printf("{\"Error\": \"Invalid TELEMETRY_LOGGING_SPACE value\"}\n");
 #endif
     }
     
+    rapidMove(_current_cartesian[X], _current_cartesian[Y], _current_cartesian[Z]); // maintain current position if no new command
     // Execute PID control and motor commands for all axes
     for (uint8_t j = 0; j < NUM_AXES_PER_LEG; j++) {
         axes[j].moveToPos();
@@ -599,10 +601,23 @@ void Leg::processCommandQueue()
 }
 
 float Leg::readToe() {
+    return _toe_value;
+}
+
+void Leg::_updateToe() {
+    // toe.update();
+    // if (millis() - _last_toe_update_time < TOE_UPDATE_INTERVAL_MS) {
+    //     return;
+    // }
+    // _last_toe_update_time = millis();
     
-    float toe_value = toe.read();
-    //toe.isPressed();
-    float compression_distance = toe.toe_idle - toe_value;
-    _length2_dynamic = _length2 + toe.exposed_length - compression_distance;
-    return toe_value;
+    // float toe_value = toe.read();
+    // //toe.isPressed();
+    // float compression_distance = toe.toe_idle - toe_value;
+    // if (fabs(compression_distance - _last_compression_distance) > 1.0f) {
+    //     _last_compression_distance = compression_distance;
+    // }
+    // _length2_dynamic = _length2 + toe.exposed_length - _last_compression_distance;
+    // _toe_value = toe_value;
+    _toe_value = 0.0;
 }

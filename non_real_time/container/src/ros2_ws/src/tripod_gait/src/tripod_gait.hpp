@@ -34,8 +34,8 @@ private:
     void rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_legs, bool update_pos);
     void rapidMove(Pose6D pos);
     std::array<std::array<uint8_t, 3>, 2> step_groups_ = {{
-        {{0, 4, 5}}, // Group 0: Legs 1, 4, 5
-        {{1, 2, 3}}  // Group 1: Legs 2, 3, 6
+        {{0, 2, 4}}, // Group 0: Legs 1, 4, 5
+        {{1, 3, 5}}  // Group 1: Legs 2, 3, 6
     }};
 
     double step_height_ = STEP_HEIGHT;

@@ -15,21 +15,21 @@
       #define REFERENCE_POINTS
       #define ZERO_POINTS { \
          {\
-            0.437185  + CALIBRATION_OFFSET_A0,  \
+            -2.662991 + CALIBRATION_OFFSET_A0,  \
             -0.852893 + CALIBRATION_OFFSET_A1,  \
-            1.362175  + CALIBRATION_OFFSET_A2}, \
+            -0.836020 + CALIBRATION_OFFSET_A2}, \
          {\
             -2.218136 + CALIBRATION_OFFSET_A0, \
             -2.822525 + CALIBRATION_OFFSET_A1, \
-            0.161068  + CALIBRATION_OFFSET_A2}, \
+            -0.051068  + CALIBRATION_OFFSET_A2}, \
          {\
-            -0.932660 + CALIBRATION_OFFSET_A0, \
+            -2.435961 + CALIBRATION_OFFSET_A0, \
             0.365087  + CALIBRATION_OFFSET_A1,  \
-            -2.994330 + CALIBRATION_OFFSET_A2},\
+            -2.998932 + CALIBRATION_OFFSET_A2},\
          {\
-            2.451301  + CALIBRATION_OFFSET_A0,  \
+            0.920388  + CALIBRATION_OFFSET_A0,  \
             0.897379  + CALIBRATION_OFFSET_A1,  \
-            2.142971  + CALIBRATION_OFFSET_A2}, \
+            1.992971  + CALIBRATION_OFFSET_A2}, \
          {\
             1.911340  + CALIBRATION_OFFSET_A0,  \
             0.579845  + CALIBRATION_OFFSET_A1,  \

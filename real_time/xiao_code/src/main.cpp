@@ -5,14 +5,24 @@
 #include "leg.hpp"
 #include "can.hpp"
 #include <RP2040_PWM.h>
+#include <hardware/watchdog.h>
+#include "hardware/resets.h"
+
 
 Leg leg;
 void handleCAN();
 
 void setup() {
   Serial.begin(115200);
-  delay(1000);
+  delay(3000);
   Serial.println("Starting...");
+
+  // for (uint8_t i = 0; i < 20; i++) {
+    uint32_t reasons = watchdog_hw->reason;
+
+    Serial.printf("watchdog reason: 0x%08lx\n", reasons);
+    // delay(1000);
+  // }
   leg.begin();
 
   leg.initializeAxes(LEG_NUMBER);
@@ -24,6 +34,17 @@ void setup() {
   // leg.setAxisTargetPos(1, 0.00);
   // leg.setAxisTargetPos(2, 0.00);
   leg.rapidMove(0, 100.0, -240.0);
+  
+  if (watchdog_caused_reboot()) {
+      Serial.println("Watchdog reboot");
+      while (true) {
+          // Blink LED to indicate watchdog reboot
+          digitalWrite(LED_BUILTIN, HIGH);
+          delay(500);
+          digitalWrite(LED_BUILTIN, LOW);
+          delay(500);
+      }
+  }
 }
 
 void loop() {
