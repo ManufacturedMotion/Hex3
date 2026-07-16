@@ -67,7 +67,7 @@
 			uint8_t _leg_number;                         ///< Identifier for this leg (0-5)
 			double _length0 = 112.929;                   ///< Length of base link (mm)
 			double _length1 = 96.00;                     ///< Length of first joint link (mm)
-			double _length2 = 150.5; 		   			 ///< Length of second joint link (mm) 
+			double _length2 = 196.55; 		   			 ///< Length of second joint link (mm) 
 			double _length2_dynamic = _length2;             ///< Length of second joint link (mm) with adjustement for toe compression
 
 			float _last_compression_distance = 0.0f; ///< Last measured compression distance of the toe sensor (mm)
