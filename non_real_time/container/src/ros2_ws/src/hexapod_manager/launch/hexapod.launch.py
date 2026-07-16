@@ -57,9 +57,18 @@ def generate_launch_description():
         ],
     )
 
+    # Tripod Gait
+    tripod_gait = Node(
+        package='tripod_gait',
+        executable='tripod_gait',
+        name='tripod_gait',
+        output='screen',
+    )
+
     return LaunchDescription([
         inverse_kinematics,
         can_interface,
+        tripod_gait,
         control,
         joy
     ])
