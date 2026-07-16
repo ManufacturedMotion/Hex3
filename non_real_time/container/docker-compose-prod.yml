@@ -10,4 +10,4 @@ services:
       - /dev/input/:/dev/input/
     privileged: true
     entrypoint: ["bash", "/app/src/entry_point.sh"]
-   # restart: unless-stopped
+    restart: always
