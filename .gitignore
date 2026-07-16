@@ -51,4 +51,5 @@ colcon_ws/log/
 .pio/
 .pioenvs/
 .pio/libdeps/
- 
+
+real_time/xiao_code/.vscode/extensions.json 
