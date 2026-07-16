@@ -6,9 +6,8 @@ source /opt/ros/$ROS_DISTRO/setup.bash
 
 cd /app/src/ros2_ws
 
-# Rebuild only the packages needed for the hexapod launch when the source tree is mounted in.
-# This avoids rebuilding the full workspace while still ensuring the required nodes are installed.
-colcon build --packages-up-to hexapod_manager inverse_kinematics can control tripod_gait
+# Build the full workspace so the latest nodes are installed before launch.
+colcon build
 
 # Source the local workspace
 source install/local_setup.bash
