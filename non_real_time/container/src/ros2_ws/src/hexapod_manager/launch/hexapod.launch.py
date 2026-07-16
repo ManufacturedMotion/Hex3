@@ -21,7 +21,9 @@ def generate_launch_description():
         package='control',
         executable='xbox_joy_config',
         name='control',
-        output='screen'
+        output='screen',
+        respawn=True,
+        respawn_delay=2.0,
     )
 
     joy = Node(
@@ -29,6 +31,8 @@ def generate_launch_description():
         executable='joy_node',
         name='joy',
         output='screen',
+        respawn=True,
+        respawn_delay=2.0,
     )
 
     # Inverse kinematics
