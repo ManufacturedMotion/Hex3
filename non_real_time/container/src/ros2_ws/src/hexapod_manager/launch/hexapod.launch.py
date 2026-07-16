@@ -21,7 +21,9 @@ def generate_launch_description():
         package='control',
         executable='xbox_joy_config',
         name='control',
-        output='screen'
+        output='screen',
+        respawn=True,
+        respawn_delay=2.0,
     )
 
     joy = Node(
@@ -29,6 +31,8 @@ def generate_launch_description():
         executable='joy_node',
         name='joy',
         output='screen',
+        respawn=True,
+        respawn_delay=2.0,
     )
 
     # Inverse kinematics
@@ -57,9 +61,18 @@ def generate_launch_description():
         ],
     )
 
+    # Tripod Gait
+    tripod_gait = Node(
+        package='tripod_gait',
+        executable='tripod_gait',
+        name='tripod_gait',
+        output='screen',
+    )
+
     return LaunchDescription([
         inverse_kinematics,
         can_interface,
+        tripod_gait,
         control,
         joy
     ])
