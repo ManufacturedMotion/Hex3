@@ -242,8 +242,11 @@ void TripodGaitNode::updateGait(
                             z = 520.0f;
                             x = 80.0f * std::sin(4.0f * M_PI * (step_progress - 0.25f) / 0.5f);
                         }
-                        else {
+                        else if (step_progress < 0.97f) {
                             z = 520.0f * (1.0f - (step_progress - 0.75f) / 0.25f);
+                        }
+                        else {
+                            z = 0.0f;
                         }
                         Pose6D next_leg_pos = Pose6D(x, y, z, 0.0f, 0.0f, 0.0f);
                         legRapidMove(leg_num, next_leg_pos);
