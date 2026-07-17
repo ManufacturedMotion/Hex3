@@ -51,4 +51,7 @@ colcon_ws/log/
 .pio/
 .pioenvs/
 .pio/libdeps/
- 
+
+# Ignore local robot config overrides
+non_real_time/container/src/ros2_ws/src/hexapod_manager/config/robot_name.local.txt
+
