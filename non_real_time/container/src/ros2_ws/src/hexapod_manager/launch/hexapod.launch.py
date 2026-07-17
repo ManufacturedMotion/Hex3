@@ -19,18 +19,28 @@ def _load_robot_name():
             if name:
                 return name
 
-    return 'Hewey'
+    return None
+
+
+def _get_default_domain_id(robot_name):
+    domain_map = {
+        'Hewey': '10',
+        'Dewey': '20',
+        'Louie': '30',
+    }
+    return domain_map.get(robot_name, '0')
 
 
 def generate_launch_description():
 
-    robot_name = _load_robot_name()
+    robot_name = _load_robot_name() or 'default'
+    domain_id = _get_default_domain_id(robot_name)
 
     ros_domain_id = LaunchConfiguration('ros_domain_id')
 
     declare_ros_domain_id = DeclareLaunchArgument(
         'ros_domain_id',
-        default_value='10' if robot_name == 'Hewey' else '20' if robot_name == 'Dewey' else '30',
+        default_value=domain_id,
         description='ROS 2 domain ID for this robot instance'
     )
 
