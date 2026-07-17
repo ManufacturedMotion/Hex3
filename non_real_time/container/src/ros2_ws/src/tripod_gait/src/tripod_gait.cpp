@@ -85,6 +85,7 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
         case MacroCode::FLIP:
             step_queue_.enqueue(Pose6D(0, 0, -240, 0, -1.0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
             step_queue_.enqueue(Pose6D(0, 0, -240, 0, -1.5, M_PI), 100, StepType::FLIP);
+            step_queue_.enqueue(Pose6D(0, 0, -260, 0, 0, 0), 200, StepType::LINEAR_MOVE_ABSOLUTE);
             // step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, M_PI), 100, StepType::LINEAR_MOVE_ABSOLUTE);
             // step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, M_PI), 100, StepType::RAPID_MOVE);
             break;
@@ -230,8 +231,6 @@ void TripodGaitNode::updateGait(
                             case 3:
                             case 4:
                             break;
-                            case 5:
-                                rapidMove(Pose6D(0, 0, -260, 0, 0, 0));
                             break;
                         }
                         // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Running flip step");
