@@ -9,7 +9,7 @@
 #include <array>
 
 #define NUM_LEGS 6
-#define NUM_STEP_GROUPS 2
+#define NUM_STEP_GROUPS 3
 
 enum class MacroCode {
     STAND = 1,
@@ -33,9 +33,10 @@ private:
     double getMaxStepMagnitudeInDirection_(Pose6D direction_vector, bool flipped_step_group);
     void rapidMove(Pose6D pos, std::array<bool, NUM_LEGS> active_legs, bool update_pos);
     void rapidMove(Pose6D pos);
-    std::array<std::array<uint8_t, 3>, 2> step_groups_ = {{
-        {{0, 2, 4}}, // Group 0: Legs 1, 4, 5
-        {{1, 3, 5}}  // Group 1: Legs 2, 3, 6
+    std::array<std::array<uint8_t, 2>, 3> step_groups_ = {{
+        {{0, 3}}, // Group 0: legs 1 and 4
+        {{1, 4}}, // Group 1: legs 2 and 5
+        {{2, 5}}  // Group 2: legs 3 and 6
     }};
 
     double step_height_ = STEP_HEIGHT;

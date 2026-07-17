@@ -11,6 +11,7 @@
 enum class StepType {
     GROUP0 = 0,
     GROUP1 = 1,
+    GROUP2 = 2,
     LINEAR_MOVE_RELATIVE = 254,
     LINEAR_MOVE_ABSOLUTE = 253,
     RETURN_TO_NEUTRAL = 252,

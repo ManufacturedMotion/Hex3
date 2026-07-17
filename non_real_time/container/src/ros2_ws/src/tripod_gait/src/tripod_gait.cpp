@@ -1,5 +1,6 @@
 #include "tripod_gait.hpp"
 #include "step_queue.hpp"
+#include <algorithm>
 #include <cmath>
 
 TripodGaitNode::TripodGaitNode()
@@ -86,19 +87,19 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
             // step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, M_PI), 100, StepType::LINEAR_MOVE_ABSOLUTE);
             // step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, M_PI), 100, StepType::RAPID_MOVE);
         case MacroCode::WAVE:
-            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_5_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_5_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_4_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_4_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_3_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_3_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_2_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_2_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_1_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_1_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_0_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_0_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -260, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, 260, 0, 0, 0), 100, StepType::LEG_5_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -260, 0, 0, 0), 100, StepType::LEG_5_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, 260, 0, 0, 0), 100, StepType::LEG_4_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -260, 0, 0, 0), 100, StepType::LEG_4_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, 260, 0, 0, 0), 100, StepType::LEG_3_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -260, 0, 0, 0), 100, StepType::LEG_3_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, 260, 0, 0, 0), 100, StepType::LEG_2_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -260, 0, 0, 0), 100, StepType::LEG_2_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, 260, 0, 0, 0), 100, StepType::LEG_1_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -260, 0, 0, 0), 100, StepType::LEG_1_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, 260, 0, 0, 0), 100, StepType::LEG_0_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -260, 0, 0, 0), 100, StepType::LEG_0_LINEAR_MOVE_ABSOLUTE);
 
         default:
         break;
@@ -126,19 +127,20 @@ void TripodGaitNode::updateGait(
             switch(current_step_type_) {
                 case StepType::GROUP0:
                 case StepType::GROUP1:
+                case StepType::GROUP2:
                     {
                         std::array<bool, NUM_LEGS> active_legs;
+                        std::fill(active_legs.begin(), active_legs.end(), false);
                         next_pos = (end_pos_ - start_pos_) * step_progress + start_pos_;
                         uint8_t step_group = static_cast<uint8_t>(current_step_type_);
-                        for (uint8_t i = 0; i < NUM_LEGS / NUM_STEP_GROUPS; i++) {
+                        for (uint8_t i = 0; i < 2; i++) {
                             active_legs[step_groups_[step_group][i]] = true;
-                            active_legs[step_groups_[(step_group^1)][i]] = false;
                         }
                         rapidMove(next_pos, active_legs, true);
-                        step_group ^= 1; 
-                        for (uint8_t i = 0; i < NUM_LEGS / 2; i++) {
-                            active_legs[step_groups_[step_group][i]] = true;
-                            active_legs[step_groups_[(step_group^1)][i]] = false;
+                        uint8_t next_step_group = static_cast<uint8_t>((step_group + 1) % NUM_STEP_GROUPS);
+                        std::fill(active_legs.begin(), active_legs.end(), false);
+                        for (uint8_t i = 0; i < 2; i++) {
+                            active_legs[step_groups_[next_step_group][i]] = true;
                         }
                         next_pos.z += -4 * step_progress * (step_progress - 1.0) * step_height_;
                         next_pos.x *= -1.0;
@@ -150,13 +152,18 @@ void TripodGaitNode::updateGait(
                 case StepType::RETURN_TO_NEUTRAL:
                     {
                         uint8_t step_group;
-                        if ((last_step_progress_ < 0.5 && step_progress >= 0.5) || (last_step_progress_ >= 0.5 && step_progress < 0.5)) {
-                            // Switch step groups
+                        bool switch_groups = (last_step_progress_ < 0.5 && step_progress >= 0.5) || (last_step_progress_ >= 0.5 && step_progress < 0.5);
+                        if (switch_groups) {
                             if (step_progress < 0.5) {
                                 switch(last_step_type_) {
                                     case StepType::GROUP0:
+                                        step_group = 0;
+                                        break;
                                     case StepType::GROUP1:
-                                        step_group = static_cast<uint8_t>(last_step_type_);
+                                        step_group = 1;
+                                        break;
+                                    case StepType::GROUP2:
+                                        step_group = 2;
                                         break;
                                     default:
                                         step_group = 0;
@@ -164,15 +171,18 @@ void TripodGaitNode::updateGait(
                                 }
                             }
                             else {
-                                // Since return to neutral doesn't move the body, we reset the position when moving switching which legs are moving
-                                // to neutral as the opposite set of legs is in the reverse position as the other set of legs
                                 start_pos_.x *= -1.0;
                                 start_pos_.y *= -1.0;
                                 start_pos_.yaw *= -1.0;
                                 switch(last_step_type_) {
                                     case StepType::GROUP0:
+                                        step_group = 1;
+                                        break;
                                     case StepType::GROUP1:
-                                        step_group = static_cast<uint8_t>(last_step_type_) ^ 1;
+                                        step_group = 2;
+                                        break;
+                                    case StepType::GROUP2:
+                                        step_group = 0;
                                         break;
                                     default:
                                         step_group = 1;
@@ -183,8 +193,13 @@ void TripodGaitNode::updateGait(
                             if (step_progress < 0.5) {
                                 switch(last_step_type_) {
                                     case StepType::GROUP0:
+                                        step_group = 0;
+                                        break;
                                     case StepType::GROUP1:
-                                        step_group = static_cast<uint8_t>(last_step_type_);
+                                        step_group = 1;
+                                        break;
+                                    case StepType::GROUP2:
+                                        step_group = 2;
                                         break;
                                     default:
                                         step_group = 0;
@@ -192,12 +207,15 @@ void TripodGaitNode::updateGait(
                                 }
                             }
                             else {
-                                // Since return to neutral doesn't move the body, we reset the position when moving switching which legs are moving
-                                // to neutral as the opposite set of legs is in the reverse position as the other set of legs
                                 switch(last_step_type_) {
                                     case StepType::GROUP0:
+                                        step_group = 1;
+                                        break;
                                     case StepType::GROUP1:
-                                        step_group = static_cast<uint8_t>(last_step_type_) ^ 1;
+                                        step_group = 2;
+                                        break;
+                                    case StepType::GROUP2:
+                                        step_group = 0;
                                         break;
                                     default:
                                         step_group = 1;
@@ -205,9 +223,9 @@ void TripodGaitNode::updateGait(
                             }
                         }
                         std::array<bool, NUM_LEGS> active_legs;
-                        for (uint8_t i = 0; i < NUM_LEGS / NUM_STEP_GROUPS; i++) {
+                        std::fill(active_legs.begin(), active_legs.end(), false);
+                        for (uint8_t i = 0; i < 2; i++) {
                             active_legs[step_groups_[step_group][i]] = true;
-                            active_legs[step_groups_[(step_group^1)][i]] = false;
                         }
                         double adjusted_step_progress = step_progress < 0.5 ? 2.0 * step_progress : (step_progress - 0.5) * 2.0;
                         next_pos = (end_pos_ - start_pos_) * adjusted_step_progress + start_pos_;
@@ -253,7 +271,7 @@ void TripodGaitNode::updateGait(
             last_step_type_ = current_step_type_;
 			current_step_type_ = step_queue_.front()->step_type;
 			if (current_step_type_ == StepType::GROUP0) {
-				if (last_step_type_ == StepType::GROUP1) {
+				if (last_step_type_ == StepType::GROUP2) {
 					current_pos_.x *= -1.0;
 					current_pos_.y *= -1.0;
 					current_pos_.yaw *= -1.0;
@@ -261,6 +279,13 @@ void TripodGaitNode::updateGait(
 			}
 			else if (current_step_type_ == StepType::GROUP1) {
 				if (last_step_type_ == StepType::GROUP0) {
+					current_pos_.x *= -1.0;
+					current_pos_.y *= -1.0;
+					current_pos_.yaw *= -1.0;
+				}
+			}
+			else if (current_step_type_ == StepType::GROUP2) {
+				if (last_step_type_ == StepType::GROUP1) {
 					current_pos_.x *= -1.0;
 					current_pos_.y *= -1.0;
 					current_pos_.yaw *= -1.0;
@@ -281,6 +306,7 @@ void TripodGaitNode::updateGait(
 					break;
 				case StepType::GROUP0:
 				case StepType::GROUP1:
+				case StepType::GROUP2:
 				case StepType::LINEAR_MOVE_RELATIVE:
 				default:
 					end_pos_ = current_pos_ + step_queue_.front()->end_pos;

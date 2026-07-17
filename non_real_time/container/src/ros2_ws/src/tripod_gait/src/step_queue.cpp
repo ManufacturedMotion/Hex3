@@ -21,6 +21,7 @@ rclcpp::Duration StepQueue::enqueue(
     {
         case StepType::GROUP0:
         case StepType::GROUP1:
+        case StepType::GROUP2:
         {
             if (!(state_ == StepQueueState::NEUTRAL ||
                   last_step_type_ == op_step_type)) // If switching groups from a non neutral position, then flip X, Y, and Yaw
