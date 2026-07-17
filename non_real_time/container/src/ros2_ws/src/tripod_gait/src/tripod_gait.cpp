@@ -223,6 +223,7 @@ void TripodGaitNode::updateGait(
                     {
                         RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Running single leg step of type %d", static_cast<uint8_t>(current_step_type_));
                         std::array<bool, NUM_LEGS> active_legs;
+                        std::fill(active_legs.begin(), active_legs.end(), false);
                         uint8_t leg_num = static_cast<uint8_t>(current_step_type_) - static_cast<uint8_t>(StepType::LEG_0_LINEAR_MOVE_ABSOLUTE);
                         active_legs[leg_num] = true;
                         next_pos = (end_pos_ - start_pos_) * step_progress + start_pos_;
