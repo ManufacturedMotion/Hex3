@@ -50,29 +50,29 @@
       #define FIFO_IDLE_THRESHOLD 100
       #define ZERO_POINTS {                        \
          {                                         \
-            -2.749917 + CALIBRATION_OFFSET_A0,     \
-            -0.965372 + CALIBRATION_OFFSET_A1,     \
-            -2.756018 + CALIBRATION_OFFSET_A2},    \
+            1.193437 + CALIBRATION_OFFSET_A0,      \
+            -1.839243 + CALIBRATION_OFFSET_A1,     \
+            2.647651 + CALIBRATION_OFFSET_A2},     \
          {                                         \
-            0.043462 + CALIBRATION_OFFSET_A0,      \
-            -1.766109 + CALIBRATION_OFFSET_A1,     \
-            0.759866 + CALIBRATION_OFFSET_A2},     \
-         {                                         \
-            0.348724 + CALIBRATION_OFFSET_A0,      \
-            0.198920 + CALIBRATION_OFFSET_A1,      \
-            1.043652 + CALIBRATION_OFFSET_A2},     \
-         {                                         \
-            1.799870 + CALIBRATION_OFFSET_A0,      \
-            -2.832226 + CALIBRATION_OFFSET_A1,     \
-            2.703419 + CALIBRATION_OFFSET_A2},     \
-         {                                         \
-            1.108045 + CALIBRATION_OFFSET_A0,      \
-            -1.677139 + CALIBRATION_OFFSET_A1,     \
-            0.319613 + CALIBRATION_OFFSET_A2},     \
-         {                                         \
-            0.391676 + CALIBRATION_OFFSET_A0,      \
-            1.284978 + CALIBRATION_OFFSET_A1,      \
-            -0.580834 + CALIBRATION_OFFSET_A2}     \
+            0.070563 + CALIBRATION_OFFSET_A0,      \
+            0.398835 + CALIBRATION_OFFSET_A1,     \
+            -2.417554 + CALIBRATION_OFFSET_A2},    \                                     
+         { \
+            1.849981 + CALIBRATION_OFFSET_A0,      \
+            -0.187146 + CALIBRATION_OFFSET_A1,     \
+            -0.581379 + CALIBRATION_OFFSET_A2},    \   
+         { \ 
+            0.447922 + CALIBRATION_OFFSET_A0,      \
+            1.087592 + CALIBRATION_OFFSET_A1,     \
+            1.388253 + CALIBRATION_OFFSET_A2},    \   
+         { \
+            0.401903 + CALIBRATION_OFFSET_A0,      \
+            -2.394544 + CALIBRATION_OFFSET_A1,     \
+            0.748583 + CALIBRATION_OFFSET_A2},    \    
+         { \
+            -1.770214 + CALIBRATION_OFFSET_A0,      \
+            -2.675262 + CALIBRATION_OFFSET_A1,     \
+            -0.562971 + CALIBRATION_OFFSET_A2},    \   
     }
     #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
     #define TOE_IDLE_READ (float[]){26.7f, 19.0f, 25.5f, 29.3f, 28.32f, 26.4f} 
