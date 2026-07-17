@@ -271,6 +271,12 @@ void TripodGaitNode::updateGait(
 				case StepType::RETURN_TO_NEUTRAL:
 				case StepType::RAPID_MOVE:
 				case StepType::LINEAR_MOVE_ABSOLUTE:
+                case StepType::LEG_5_LINEAR_MOVE_ABSOLUTE:
+                case StepType::LEG_4_LINEAR_MOVE_ABSOLUTE:
+                case StepType::LEG_3_LINEAR_MOVE_ABSOLUTE:
+                case StepType::LEG_2_LINEAR_MOVE_ABSOLUTE:
+                case StepType::LEG_1_LINEAR_MOVE_ABSOLUTE:
+                case StepType::LEG_0_LINEAR_MOVE_ABSOLUTE:
 					end_pos_ = step_queue_.front()->end_pos;
 					break;
 				case StepType::GROUP0:
