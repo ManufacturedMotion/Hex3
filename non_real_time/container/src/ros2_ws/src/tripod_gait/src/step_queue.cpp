@@ -80,7 +80,7 @@ rclcpp::Duration StepQueue::enqueue(
 
         case StepType::FLIP:
         {
-            op_time = rclcpp::Duration::from_nanoseconds(10000000000);
+            op_time = rclcpp::Duration::from_nanoseconds(5000000000);
 
             end_pos_ = op_end_pos;
             state_ = StepQueueState::NEUTRAL;
