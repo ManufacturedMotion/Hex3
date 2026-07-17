@@ -83,7 +83,8 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
             step_queue_.enqueue(Pose6D(0, 0, -180, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
         break;
         case MacroCode::FLIP:
-            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 1.5, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -240, 0, -1.0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -240, 0, -1.5, M_PI), 100, StepType::FLIP);
             // step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, M_PI), 100, StepType::LINEAR_MOVE_ABSOLUTE);
             // step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, M_PI), 100, StepType::RAPID_MOVE);
             break;
@@ -95,20 +96,6 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
                 step_queue_.enqueue(Pose6D(0, 0, -240, 0, -1.5, 0), 100, wave_step_type);
             }
             break;
-            // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
-            // step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_5_LINEAR_MOVE_ABSOLUTE);
-            // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_5_LINEAR_MOVE_ABSOLUTE);
-            // step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_4_LINEAR_MOVE_ABSOLUTE);
-            // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_4_LINEAR_MOVE_ABSOLUTE);
-            // step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_3_LINEAR_MOVE_ABSOLUTE);
-            // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_3_LINEAR_MOVE_ABSOLUTE);
-            // step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_2_LINEAR_MOVE_ABSOLUTE);
-            // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_2_LINEAR_MOVE_ABSOLUTE);
-            // step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_1_LINEAR_MOVE_ABSOLUTE);
-            // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_1_LINEAR_MOVE_ABSOLUTE);
-            // step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_0_LINEAR_MOVE_ABSOLUTE);
-            // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_0_LINEAR_MOVE_ABSOLUTE);
-
         default:
         break;
     } 
@@ -222,6 +209,44 @@ void TripodGaitNode::updateGait(
                         next_pos = (end_pos_ - start_pos_) * adjusted_step_progress + start_pos_;
                         next_pos.z += -4 * adjusted_step_progress * (adjusted_step_progress - 1.0) * step_height_;
                         rapidMove(next_pos, active_legs, true);
+                    }
+                break;
+
+                case StepType::FLIP:
+                    {
+                        // Starts off at 0, 0, -240, 0, -1.0, 0
+                        uint8_t stage = static_cast<uint8_t>(step_progress * 10.0);
+                        std::array<bool, NUM_LEGS> active_legs;
+                        std::fill(active_legs.begin(), active_legs.end(), false);
+                        active_legs[2] = true;
+                        ative_legs[3] = true;
+                        rapidMove(Pose6D(0, 0, 260, 0, -1.0, 0), active_legs, false);
+                        // float x = 0.0f, y = 0.0f, z = -240.0f, roll = 0.0f, pitch = -1.0f, yaw = 0.0f;
+                        // switch(stage) {
+                        //     case 0:
+                        //         x = 
+                        //     case 1:
+                        //     case 2:
+                        //     case 3:
+                        //     case 4:
+                        //         next_pos = (end_pos_ - start_pos_) * step_progress + start_pos_;
+                        //         next_pos.z += -4 * step_progress * (step_progress - 1.0) * step_height_;
+                        //         rapidMove(next_pos);
+                        //         break;
+                        //     case 5:
+                        //     case 6:
+                        //     case 7:
+                        //     case 8:
+                        //     case 9:
+                        //         next_pos = (end_pos_ - start_pos_) * step_progress + start_pos_;
+                        //         next_pos.z += -4 * step_progress * (step_progress - 1.0) * step_height_;
+                        //         next_pos.roll += M_PI * step_progress;
+                        //         rapidMove(next_pos);
+                        //         break;
+                        // }
+                        // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Running flip step");
+                        // std::array<bool, NUM_LEGS> active_legs;
+                        
                     }
                 break;
 
