@@ -87,6 +87,26 @@ rclcpp::Duration StepQueue::enqueue(
             break;
         }
 
+        case StepType::LEG_5_LINEAR_MOVE_ABSOLUTE:
+        case StepType::LEG_4_LINEAR_MOVE_ABSOLUTE:
+        case StepType::LEG_3_LINEAR_MOVE_ABSOLUTE:
+        case StepType::LEG_2_LINEAR_MOVE_ABSOLUTE:
+        case StepType::LEG_1_LINEAR_MOVE_ABSOLUTE:
+        case StepType::LEG_0_LINEAR_MOVE_ABSOLUTE:
+        {
+            op_time = rclcpp::Duration::from_nanoseconds(
+                static_cast<int64_t>(((op_end_pos - end_pos_).scaledMagnitude() /
+                 op_speed) * 1000000000.0));
+
+            if (op_time.seconds() < 0.001)
+            {
+                return rclcpp::Duration::from_nanoseconds(0);
+            }
+
+            end_pos_ = op_end_pos;
+            break;
+        }
+        
         default:
             return rclcpp::Duration::from_nanoseconds(0);
     }

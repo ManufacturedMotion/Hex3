@@ -83,9 +83,23 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
         break;
         case MacroCode::FLIP:
             step_queue_.enqueue(Pose6D(0, 0, -240, 0, 1.5, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
-
             // step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, M_PI), 100, StepType::LINEAR_MOVE_ABSOLUTE);
             // step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, M_PI), 100, StepType::RAPID_MOVE);
+        case MacroCode::WAVE:
+            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 1.5, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 1.5, 0), 100, StepType::LEG_5_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 1.5, 0), 100, StepType::LEG_5_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 1.5, 0), 100, StepType::LEG_4_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 1.5, 0), 100, StepType::LEG_4_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 1.5, 0), 100, StepType::LEG_3_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 1.5, 0), 100, StepType::LEG_3_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 1.5, 0), 100, StepType::LEG_2_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 1.5, 0), 100, StepType::LEG_2_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 1.5, 0), 100, StepType::LEG_1_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 1.5, 0), 100, StepType::LEG_1_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 1.5, 0), 100, StepType::LEG_0_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 1.5, 0), 100, StepType::LEG_0_LINEAR_MOVE_ABSOLUTE);
+            
         default:
         break;
     } 
@@ -198,6 +212,19 @@ void TripodGaitNode::updateGait(
                         double adjusted_step_progress = step_progress < 0.5 ? 2.0 * step_progress : (step_progress - 0.5) * 2.0;
                         next_pos = (end_pos_ - start_pos_) * adjusted_step_progress + start_pos_;
                         next_pos.z += -4 * adjusted_step_progress * (adjusted_step_progress - 1.0) * step_height_;
+                        rapidMove(next_pos, active_legs, true);
+                    }
+                break;
+                case StepType::LEG_5_LINEAR_MOVE_ABSOLUTE:
+                case StepType::LEG_4_LINEAR_MOVE_ABSOLUTE:
+                case StepType::LEG_3_LINEAR_MOVE_ABSOLUTE:
+                case StepType::LEG_2_LINEAR_MOVE_ABSOLUTE:
+                case StepType::LEG_1_LINEAR_MOVE_ABSOLUTE:
+                    {
+                        std::array<bool, NUM_LEGS> active_legs;
+                        uint8_t leg_num = static_cast<uint8_t>(current_step_type_) - static_cast<uint8_t>(StepType::LEG_0_LINEAR_MOVE_ABSOLUTE);
+                        active_legs[leg_num] = true;
+                        next_pos = (end_pos_ - start_pos_) * step_progress + start_pos_;
                         rapidMove(next_pos, active_legs, true);
                     }
                 break;
