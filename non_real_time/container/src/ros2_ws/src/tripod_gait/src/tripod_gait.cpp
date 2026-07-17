@@ -229,9 +229,9 @@ void TripodGaitNode::updateGait(
                         std::array<bool, NUM_LEGS> active_legs;
                         std::fill(active_legs.begin(), active_legs.end(), false);
                         uint8_t leg_num = static_cast<uint8_t>(current_step_type_) - static_cast<uint8_t>(StepType::LEG_0_WAVE);
-                        x = 0.0f;
-                        y = 0.0f;
-                        z = 0.0f;
+                        float x = 0.0f;
+                        float y = 0.0f;
+                        float z = 0.0f;
                         if (step_progress < 0.25f) {
                             y = -4 * step_progress * (step_progress - 1.0) * 40.0f;
                             z = 260.0f * (step_progress / 0.25f);
