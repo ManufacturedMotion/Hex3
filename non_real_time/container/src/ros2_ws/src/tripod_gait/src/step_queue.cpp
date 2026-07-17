@@ -85,7 +85,7 @@ rclcpp::Duration StepQueue::enqueue(
         case StepType::LEG_1_WAVE:
         case StepType::LEG_0_WAVE:
         {
-            op_time = rclcpp::Duration::from_nanoseconds(2000000000);
+            op_time = rclcpp::Duration::from_nanoseconds(4000000000);
 
             end_pos_ = op_end_pos;
             state_ = StepQueueState::NEUTRAL;
