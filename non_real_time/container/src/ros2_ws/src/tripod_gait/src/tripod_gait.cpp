@@ -231,7 +231,7 @@ void TripodGaitNode::updateGait(
                             case 4:
                             break;
                             case 5:
-                                rapidMove(Pose6D(0, 0, -260, 0, 0, 0), true);
+                                rapidMove(Pose6D(0, 0, -260, 0, 0, 0));
                             break;
                         }
                         // RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Running flip step");
