@@ -44,6 +44,8 @@ private:
 
     double last_step_progress_ = 0.0;
 
+    void legRapidMove(uint8_t leg_num, Pose6D pos);
+
     bool step_in_progress_ = false;
     rclcpp::Duration move_start_time_ = rclcpp::Duration::from_nanoseconds(0);
     rclcpp::Duration move_time_ = rclcpp::Duration::from_nanoseconds(0);
