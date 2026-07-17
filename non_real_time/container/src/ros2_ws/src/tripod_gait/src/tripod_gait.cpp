@@ -234,7 +234,8 @@ void TripodGaitNode::updateGait(
                         float y = 0.0f;
                         float z = 0.0f;
                         if (step_progress < 0.25f) {
-                            y = -4 * (4.0 * step_progress) * ((4.0 * step_progress) - 1.0) * 200.0f;
+                            float step_progress_scaled = step_progress / 0.25f;
+                            y = -4 * (step_progress_scaled) * (step_progress_scaled - 1.0) * 200.0f;
                             z = 520.0f * (step_progress / 0.25f);
                         }
                         else if (step_progress < 0.75f)
@@ -243,7 +244,9 @@ void TripodGaitNode::updateGait(
                             x = 80.0f * std::sin(4.0f * M_PI * (step_progress - 0.25f) / 0.5f);
                         }
                         else if (step_progress < 0.97f) {
-                            z = 520.0f * (1.0f - (step_progress - 0.75f) / 0.25f);
+                            float step_progress_scaled = (step_progress - 0.75f) / 0.25f;
+                            z = 520.0f * (1.0f - step_progress_scaled);
+                            y = -4 * (step_progress_scaled) * (step_progress_scaled - 1.0) * 200.0f;
                         }
                         else {
                             z = 0.0f;
