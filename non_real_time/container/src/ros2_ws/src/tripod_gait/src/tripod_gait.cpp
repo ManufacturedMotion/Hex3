@@ -41,11 +41,12 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
 	double max_step_magnitude_with_flip = getMaxStepMagnitudeInDirection_(direction_vector, true);
 	double max_step_magnitude_without_flip = getMaxStepMagnitudeInDirection_(direction_vector, false);
 	double max_step_magnitude = max_step_magnitude_without_flip;
+	const auto step_type = next_step_type_;
 	if (max_step_magnitude_with_flip > max_step_magnitude_without_flip) {
-		next_step_type_ = static_cast<decltype(next_step_type_)>(static_cast<uint8_t>(next_step_type_) ^ 0x01);
 		max_step_magnitude = max_step_magnitude_with_flip;
-        RCLCPP_INFO(get_logger(), "Flipping step group, next step type %d", static_cast<uint8_t>(next_step_type_));
 	}
+	next_step_type_ = static_cast<decltype(next_step_type_)>((static_cast<uint8_t>(step_type) + 1) % NUM_STEP_GROUPS);
+    RCLCPP_INFO(get_logger(), "Selected step group %d for the next step", static_cast<uint8_t>(step_type));
     RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "max step magnitude: %f", max_step_magnitude);
 	if (max_step_magnitude < getMaxStepMagnitude_() * 0.5) {
 		buffer0 = step_queue_.getCurrentQueueEndPos();
@@ -69,7 +70,7 @@ rclcpp::Duration TripodGaitNode::enqueueMaxStepInDirection_(Pose6D direction_vec
         step_vector.pitch,
         step_vector.yaw
     );
-    walk_time += step_queue_.enqueue(step_vector * fabs(scalar), speed, next_step_type_);
+    walk_time += step_queue_.enqueue(step_vector * fabs(scalar), speed, step_type);
 	return walk_time;
 }
 
@@ -137,16 +138,6 @@ void TripodGaitNode::updateGait(
                             active_legs[step_groups_[step_group][i]] = true;
                         }
                         rapidMove(next_pos, active_legs, true);
-                        uint8_t next_step_group = static_cast<uint8_t>((step_group + 1) % NUM_STEP_GROUPS);
-                        std::fill(active_legs.begin(), active_legs.end(), false);
-                        for (uint8_t i = 0; i < 2; i++) {
-                            active_legs[step_groups_[next_step_group][i]] = true;
-                        }
-                        next_pos.z += -4 * step_progress * (step_progress - 1.0) * step_height_;
-                        next_pos.x *= -1.0;
-                        next_pos.y *= -1.0;
-                        next_pos.yaw *= -1.0;
-                        rapidMove(next_pos, active_legs, false);
                     }
                     break;
                 case StepType::RETURN_TO_NEUTRAL:
