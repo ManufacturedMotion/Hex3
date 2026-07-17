@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, SetEnvironmentVariable
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, SetEnvironmentVariable
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
@@ -70,13 +70,20 @@ def generate_launch_description():
         respawn_delay=2.0,
     )
 
-    joy = Node(
-        package='joy',
-        executable='joy_node',
-        name='joy',
+    joy_device = os.environ.get('JOY_DEVICE', '/dev/joystick')
+    joy_start_delay = float(os.environ.get('JOY_START_DELAY', '5.0'))
+
+    joy = ExecuteProcess(
+        cmd=[
+            '/bin/bash',
+            '-c',
+            (
+                f"sleep {joy_start_delay}; "
+                f"while [ ! -e '{joy_device}' ]; do echo 'Waiting for joystick device {joy_device}...'; sleep 1; done; "
+                f"exec ros2 run joy joy_node --ros-args -p dev:={joy_device}"
+            ),
+        ],
         output='screen',
-        respawn=True,
-        respawn_delay=2.0,
     )
 
     # Inverse kinematics
