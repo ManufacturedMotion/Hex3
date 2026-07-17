@@ -85,9 +85,10 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
             step_queue_.enqueue(Pose6D(0, 0, -240, 0, 1.5, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
             // step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, M_PI), 100, StepType::LINEAR_MOVE_ABSOLUTE);
             // step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, M_PI), 100, StepType::RAPID_MOVE);
+            break;
         case MacroCode::WAVE:
             step_queue_.enqueue(Pose6D(0, 0, -240, 0, -1.5, 0), 100, StepType::LEG_5_WAVE);
-
+            break;
             // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
             // step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_5_LINEAR_MOVE_ABSOLUTE);
             // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_5_LINEAR_MOVE_ABSOLUTE);
@@ -233,19 +234,20 @@ void TripodGaitNode::updateGait(
                         float y = 0.0f;
                         float z = 0.0f;
                         if (step_progress < 0.25f) {
-                            y = -4 * step_progress * (step_progress - 1.0) * 40.0f;
-                            z = 260.0f * (step_progress / 0.25f);
+                            y = -4 * step_progress * (step_progress - 1.0) * 100.0f;
+                            z = 520.0f * (step_progress / 0.25f);
                         }
                         else if (step_progress < 0.75f)
                         {
-                            z = 260.0f;
+                            z = 520.0f;
                             x = 80.0f * std::sin(4.0f * M_PI * (step_progress - 0.25f) / 0.5f);
                         }
                         else {
-                            z = 260.0f * (1.0f - (step_progress - 0.75f) / 0.25f);
+                            z = 520.0f * (1.0f - (step_progress - 0.75f) / 0.25f);
                         }
                         Pose6D next_leg_pos = Pose6D(x, y, z, 0.0f, 0.0f, 0.0f);
                         legRapidMove(leg_num, next_leg_pos);
+                        break;
                     }
 
                 case StepType::LEG_5_LINEAR_MOVE_ABSOLUTE:
