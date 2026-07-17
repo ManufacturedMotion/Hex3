@@ -1,6 +1,7 @@
 #include "tripod_gait.hpp"
 #include "step_queue.hpp"
 #include <cmath>
+#include <cstdlib>
 
 TripodGaitNode::TripodGaitNode()
     : Gait("tripod_gait", Pose6D(
@@ -87,7 +88,12 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
             // step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, M_PI), 100, StepType::RAPID_MOVE);
             break;
         case MacroCode::WAVE:
-            step_queue_.enqueue(Pose6D(0, 0, -240, 0, -1.5, 0), 100, StepType::LEG_5_WAVE);
+            {
+                const uint8_t leg_index = static_cast<uint8_t>(std::rand() % NUM_LEGS);
+                const StepType wave_step_type = static_cast<StepType>(
+                    static_cast<uint8_t>(StepType::LEG_0_WAVE) + leg_index);
+                step_queue_.enqueue(Pose6D(0, 0, -240, 0, -1.5, 0), 100, wave_step_type);
+            }
             break;
             // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
             // step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_5_LINEAR_MOVE_ABSOLUTE);
