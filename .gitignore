@@ -53,3 +53,6 @@ colcon_ws/log/
 .pio/libdeps/
 
 real_time/xiao_code/.vscode/extensions.json 
+# Ignore local robot config overrides
+non_real_time/container/src/ros2_ws/src/hexapod_manager/config/robot_name.local.txt
+
