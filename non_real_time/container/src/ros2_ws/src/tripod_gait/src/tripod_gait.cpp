@@ -231,7 +231,7 @@ void TripodGaitNode::updateGait(
                         uint8_t leg_num = static_cast<uint8_t>(current_step_type_) - static_cast<uint8_t>(StepType::LEG_0_WAVE);
                         x = 0.0f;
                         y = 0.0f;
-
+                        z = 0.0f;
                         if (step_progress < 0.25f) {
                             y = -4 * step_progress * (step_progress - 1.0) * 40.0f;
                             z = 260.0f * (step_progress / 0.25f);
@@ -241,8 +241,11 @@ void TripodGaitNode::updateGait(
                             z = 260.0f;
                             x = 80.0f * std::sin(4.0f * M_PI * (step_progress - 0.25f) / 0.5f);
                         }
-                        else
+                        else {
                             z = 260.0f * (1.0f - (step_progress - 0.75f) / 0.25f);
+                        }
+                        Pose6D next_leg_pos = Pose6D(x, y, z, 0.0f, 0.0f, 0.0f);
+                        legRapidMove(leg_num, next_leg_pos);
                     }
 
                 case StepType::LEG_5_LINEAR_MOVE_ABSOLUTE:
@@ -345,7 +348,12 @@ void TripodGaitNode::updateGait(
 void TripodGaitNode::legRapidMove(uint8_t leg_num, Pose6D pos) {
     hexapod_msgs::msg::FootTarget foot_target;
     foot_target.leg_number = leg_num;
-    foot_target.target_pose = pos.toBodyPose();
+    foot_target.x = pos.x;
+    foot_target.y = pos.y;
+    foot_target.z = pos.z;
+    foot_target.roll = pos.roll;
+    foot_target.pitch = pos.pitch;
+    foot_target.yaw = pos.yaw;
     publishFootTarget(foot_target);
 }
 
