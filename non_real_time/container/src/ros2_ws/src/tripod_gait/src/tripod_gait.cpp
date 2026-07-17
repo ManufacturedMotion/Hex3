@@ -221,6 +221,7 @@ void TripodGaitNode::updateGait(
                 case StepType::LEG_2_LINEAR_MOVE_ABSOLUTE:
                 case StepType::LEG_1_LINEAR_MOVE_ABSOLUTE:
                     {
+                        RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Running single leg step of type %d", static_cast<uint8_t>(current_step_type_));
                         std::array<bool, NUM_LEGS> active_legs;
                         uint8_t leg_num = static_cast<uint8_t>(current_step_type_) - static_cast<uint8_t>(StepType::LEG_0_LINEAR_MOVE_ABSOLUTE);
                         active_legs[leg_num] = true;
