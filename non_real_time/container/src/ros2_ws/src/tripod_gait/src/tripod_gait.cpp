@@ -131,6 +131,8 @@ void TripodGaitNode::updateGait(
                 case StepType::GROUP2:
                     {
                         std::array<bool, NUM_LEGS> active_legs;
+
+                        // Move legs on the ground
                         std::fill(active_legs.begin(), active_legs.end(), true);
                         next_pos = (end_pos_ - start_pos_) * step_progress + start_pos_;
                         uint8_t step_group = static_cast<uint8_t>(current_step_type_);
@@ -138,9 +140,11 @@ void TripodGaitNode::updateGait(
                             active_legs[step_groups_[step_group][i]] = false;
                         }
                         rapidMove(next_pos, active_legs, true);
+
+                        //Move the lifted legs
                         std::fill(active_legs.begin(), active_legs.end(), false);
                         for (uint8_t i = 0; i < 2; i++) {
-                            active_legs[step_groups_[step_group][i]] = false;
+                            active_legs[step_groups_[step_group][i]] = true;
                         }
                         next_pos.z += -4 * step_progress * (step_progress - 1.0) * step_height_;
                         next_pos.x *= -1.0;
