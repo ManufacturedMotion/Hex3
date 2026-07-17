@@ -218,9 +218,9 @@ void TripodGaitNode::updateGait(
                         uint8_t stage = static_cast<uint8_t>(step_progress * 10.0);
                         std::array<bool, NUM_LEGS> active_legs;
                         std::fill(active_legs.begin(), active_legs.end(), false);
-                        active_legs[2] = true;
                         active_legs[3] = true;
-                        rapidMove(Pose6D(0, 0, 260, 0, -1.0, 0), active_legs, false);
+                        active_legs[4] = true;
+                        rapidMove(Pose6D(0, 0, 260, 0, 0, 0), active_legs, false);
                         // float x = 0.0f, y = 0.0f, z = -240.0f, roll = 0.0f, pitch = -1.0f, yaw = 0.0f;
                         // switch(stage) {
                         //     case 0:
