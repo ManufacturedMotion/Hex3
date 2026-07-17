@@ -234,7 +234,7 @@ void TripodGaitNode::updateGait(
                         float y = 0.0f;
                         float z = 0.0f;
                         if (step_progress < 0.25f) {
-                            y = -4 * step_progress * 4.0 * (step_progress - 1.0) * 100.0f;
+                            y = -4 * step_progress * (4.0 * step_progress - 1.0) * 100.0f;
                             z = 520.0f * (step_progress / 0.25f);
                         }
                         else if (step_progress < 0.75f)
