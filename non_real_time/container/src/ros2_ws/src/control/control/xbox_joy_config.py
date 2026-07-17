@@ -119,6 +119,7 @@ class XboxJoyNode(Node):
         self.last_twist = twist
         self.last_joy_time = self.get_clock().now()
         self.last_joy = msg
+        self.watchdog_triggered = False
 
     def poll_callback(self):
         now = self.get_clock().now()
@@ -131,16 +132,15 @@ class XboxJoyNode(Node):
         else:
             self.cmd_vel_pub.publish(self.last_twist)
 
-        # If we go too long without fresh controller input, exit so the
-        # launch system's respawn behavior can restart the node.
+        # If we go too long without fresh controller input, stop sending stale
+        # motion commands and wait for the controller to reconnect.
         if elapsed_sec > self.watchdog_timeout_sec and not self.watchdog_triggered:
             self.watchdog_triggered = True
+            self.last_twist = Twist()
             self.get_logger().warning(
-                'No controller input received for %.1f seconds; shutting down to allow respawn',
+                'No controller input received for %.1f seconds; holding zero motion until input resumes',
                 self.watchdog_timeout_sec
             )
-            self.destroy_node()
-            rclpy.shutdown()
 
 def main(args=None):
     rclpy.init(args=args)
