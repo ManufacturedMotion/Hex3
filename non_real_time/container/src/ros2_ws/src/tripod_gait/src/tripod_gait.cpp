@@ -86,19 +86,21 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
             // step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, M_PI), 100, StepType::LINEAR_MOVE_ABSOLUTE);
             // step_queue_.enqueue(Pose6D(0, 0, -220, 0, 0, M_PI), 100, StepType::RAPID_MOVE);
         case MacroCode::WAVE:
-            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_5_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_5_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_4_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_4_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_3_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_3_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_2_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_2_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_1_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_1_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_0_LINEAR_MOVE_ABSOLUTE);
-            step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_0_LINEAR_MOVE_ABSOLUTE);
+            step_queue_.enqueue(Pose6D(0, 0, -240, 0, -1.5, 0), 100, StepType::LEG_5_WAVE);
+
+            // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LINEAR_MOVE_ABSOLUTE);
+            // step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_5_LINEAR_MOVE_ABSOLUTE);
+            // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_5_LINEAR_MOVE_ABSOLUTE);
+            // step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_4_LINEAR_MOVE_ABSOLUTE);
+            // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_4_LINEAR_MOVE_ABSOLUTE);
+            // step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_3_LINEAR_MOVE_ABSOLUTE);
+            // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_3_LINEAR_MOVE_ABSOLUTE);
+            // step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_2_LINEAR_MOVE_ABSOLUTE);
+            // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_2_LINEAR_MOVE_ABSOLUTE);
+            // step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_1_LINEAR_MOVE_ABSOLUTE);
+            // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_1_LINEAR_MOVE_ABSOLUTE);
+            // step_queue_.enqueue(Pose6D(0, 0, 240, 0, 0, 0), 100, StepType::LEG_0_LINEAR_MOVE_ABSOLUTE);
+            // step_queue_.enqueue(Pose6D(0, 0, -240, 0, 0, 0), 100, StepType::LEG_0_LINEAR_MOVE_ABSOLUTE);
 
         default:
         break;
@@ -215,6 +217,34 @@ void TripodGaitNode::updateGait(
                         rapidMove(next_pos, active_legs, true);
                     }
                 break;
+
+                case StepType::LEG_5_WAVE:
+                case StepType::LEG_4_WAVE:
+                case StepType::LEG_3_WAVE:
+                case StepType::LEG_2_WAVE:
+                case StepType::LEG_1_WAVE:
+                case StepType::LEG_0_WAVE:
+                    {
+                        RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, "Running single leg step of type %d", static_cast<uint8_t>(current_step_type_));
+                        std::array<bool, NUM_LEGS> active_legs;
+                        std::fill(active_legs.begin(), active_legs.end(), false);
+                        uint8_t leg_num = static_cast<uint8_t>(current_step_type_) - static_cast<uint8_t>(StepType::LEG_0_WAVE);
+                        x = 0.0f;
+                        y = 0.0f;
+
+                        if (step_progress < 0.25f) {
+                            y = -4 * step_progress * (step_progress - 1.0) * 40.0f;
+                            z = 260.0f * (step_progress / 0.25f);
+                        }
+                        else if (step_progress < 0.75f)
+                        {
+                            z = 260.0f;
+                            x = 80.0f * std::sin(4.0f * M_PI * (step_progress - 0.25f) / 0.5f);
+                        }
+                        else
+                            z = 260.0f * (1.0f - (step_progress - 0.75f) / 0.25f);
+                    }
+
                 case StepType::LEG_5_LINEAR_MOVE_ABSOLUTE:
                 case StepType::LEG_4_LINEAR_MOVE_ABSOLUTE:
                 case StepType::LEG_3_LINEAR_MOVE_ABSOLUTE:
@@ -310,6 +340,13 @@ void TripodGaitNode::updateGait(
             
 		}
     }
+}
+
+void TripodGaitNode::legRapidMove(uint8_t leg_num, Pose6D pos) {
+    hexapod_msgs::msg::FootTarget foot_target;
+    foot_target.leg_number = leg_num;
+    foot_target.target_pose = pos.toBodyPose();
+    publishFootTarget(foot_target);
 }
 
 void TripodGaitNode::rapidMove(Pose6D pos) {

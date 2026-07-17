@@ -78,6 +78,20 @@ rclcpp::Duration StepQueue::enqueue(
             break;
         }
 
+        case StepType::LEG_5_WAVE:
+        case StepType::LEG_4_WAVE:
+        case StepType::LEG_3_WAVE:
+        case StepType::LEG_2_WAVE:
+        case StepType::LEG_1_WAVE:
+        case StepType::LEG_0_WAVE:
+        {
+            op_time = rclcpp::Duration::from_nanoseconds(1000000000);
+
+            end_pos_ = op_end_pos;
+            state_ = StepQueueState::NEUTRAL;
+            break;
+        }
+
         case StepType::RAPID_MOVE:
         {
             op_time = rclcpp::Duration::from_nanoseconds(100000000);

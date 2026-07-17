@@ -21,6 +21,13 @@ enum class StepType {
     LEG_2_LINEAR_MOVE_ABSOLUTE = 247,
     LEG_1_LINEAR_MOVE_ABSOLUTE = 246,
     LEG_0_LINEAR_MOVE_ABSOLUTE = 245,
+    FLIP = 244,
+    LEG_5_WAVE = 243,
+    LEG_4_WAVE = 242,
+    LEG_3_WAVE = 241,
+    LEG_2_WAVE = 240,
+    LEG_1_WAVE = 239,
+    LEG_0_WAVE = 238,
     NONE = 255,
 };
 
