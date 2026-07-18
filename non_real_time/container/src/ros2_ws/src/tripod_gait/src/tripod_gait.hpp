@@ -14,8 +14,8 @@
 enum class MacroCode {
     STAND = 1,
     SIT = 2,
-    FLIP = 4,
-    WAVE = 8
+    FLIP = 255,
+    WAVE = 4
 };
 
 class TripodGaitNode : public Gait

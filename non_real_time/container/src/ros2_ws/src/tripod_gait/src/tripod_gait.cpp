@@ -91,7 +91,7 @@ void TripodGaitNode::runMacro(int8_t macro_num) {
             break;
         case MacroCode::WAVE:
             {
-                const uint8_t leg_index = static_cast<uint8_t>(std::rand() % NUM_LEGS);
+                const uint8_t leg_index = 0;
                 const StepType wave_step_type = static_cast<StepType>(
                     static_cast<uint8_t>(StepType::LEG_0_WAVE) + leg_index);
                 step_queue_.enqueue(Pose6D(0, 0, -240, 0, -1.5, 0), 100, wave_step_type);
