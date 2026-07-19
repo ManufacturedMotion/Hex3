@@ -83,30 +83,30 @@
    #define STEP_THRESHOLD 40
    #define FIFO_IDLE_THRESHOLD 100
    #define ZERO_POINTS {                    \
-      {0.547631 + CALIBRATION_OFFSET_A0,   \
+      {0.613592 + CALIBRATION_OFFSET_A0,   \
       -0.952602 + CALIBRATION_OFFSET_A1,  \
-      2.787243 + CALIBRATION_OFFSET_A2},  \
-      {2.426758 + CALIBRATION_OFFSET_A0,   \
-      -0.886641 + CALIBRATION_OFFSET_A1,  \
-      -1.106000 + CALIBRATION_OFFSET_A2}, \
-      {1.334563 + CALIBRATION_OFFSET_A0,   \
-      -1.788622 + CALIBRATION_OFFSET_A1,  \
-      2.397612 + CALIBRATION_OFFSET_A2}, \
-      {-2.032525 + CALIBRATION_OFFSET_A0,   \
-      2.235010 + CALIBRATION_OFFSET_A1,  \
-      2.583224 + CALIBRATION_OFFSET_A2}, \
-      {0.305262 + CALIBRATION_OFFSET_A0,   \
-      -0.075165 + CALIBRATION_OFFSET_A1,  \
-      1.826971 + CALIBRATION_OFFSET_A2}, \
-      {1.481825 + CALIBRATION_OFFSET_A0,   \
-      -2.913029 + CALIBRATION_OFFSET_A1,  \
-      -3.129321 + CALIBRATION_OFFSET_A2}, \
+      2.804117 + CALIBRATION_OFFSET_A2},  \
+      {2.443631 + CALIBRATION_OFFSET_A0,   \
+      -0.898913 + CALIBRATION_OFFSET_A1,  \
+      -1.032369 + CALIBRATION_OFFSET_A2}, \
+      {1.316156 + CALIBRATION_OFFSET_A0,   \
+      -1.790156 + CALIBRATION_OFFSET_A1,  \
+      2.337787 + CALIBRATION_OFFSET_A2}, \
+      {-2.332674 + CALIBRATION_OFFSET_A0,   \
+      2.267224 + CALIBRATION_OFFSET_A1,  \
+      2.597029 + CALIBRATION_OFFSET_A2}, \
+      {0.325204 + CALIBRATION_OFFSET_A0,   \
+      -0.070563 + CALIBRATION_OFFSET_A1,  \
+      1.816233 + CALIBRATION_OFFSET_A2}, \
+      {1.448078 + CALIBRATION_OFFSET_A0,   \
+      -2.900758 + CALIBRATION_OFFSET_A1,  \
+      -3.112447 + CALIBRATION_OFFSET_A2}, \
    }
    #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
    #define TOE_IDLE_READ (float[]){0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f} 
    #define REVERSE_AXIS                                                                                                                       \
       {                                                                                                                                       \
-         {true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}, {true, false, false}, { true, false, false } \
+         {true, false, false}, {true, false, false}, {true, false, true}, {true, false, false}, {true, false, false}, { true, false, false } \
       }
 #endif
 
