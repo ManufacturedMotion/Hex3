@@ -28,7 +28,7 @@
             -2.998932 + CALIBRATION_OFFSET_A2},\
          {\
             0.920388  + CALIBRATION_OFFSET_A0,  \
-            0.897379  + CALIBRATION_OFFSET_A1,  \
+            -0.997088 + CALIBRATION_OFFSET_A1,  \
             1.992971  + CALIBRATION_OFFSET_A2}, \
          {\
             1.911340  + CALIBRATION_OFFSET_A0,  \
@@ -42,7 +42,12 @@
     
     #define SCALE_FACT {{1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}, {1, 1, 1}}
     #define TOE_IDLE_READ (float[]){0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f} 
-    #define REVERSE_AXIS {{false, true, true}, {false, true, true}, {false, true, true}, {false, true, true}, {false, true, true}, {false, true, true}}
+    #define REVERSE_AXIS {{false, true, true}, \
+    {false, true, true}, \
+    {false, true, true}, \
+    {false, true, false}, \
+    {false, true, false}, \
+    {false, true, true}}
 #endif
 
    #ifdef DILLON

@@ -1,6 +1,6 @@
 #pragma once
 
 #define ROTATION_MAGNITUDE_SCALE 150.0
-#define MAX_STEP_MAGNITUDE 50.0
-#define MAX_SPEED 200.0
+#define MAX_STEP_MAGNITUDE 30.0
+#define MAX_SPEED 150.0
 #define STEP_HEIGHT 40.0

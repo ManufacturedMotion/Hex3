@@ -29,7 +29,7 @@ void setup() {
   leg.can->begin();
   leg.setAxisControlConstants(0, 20.0, 0.015, 3.0, 4.500, 0.0);
   leg.setAxisControlConstants(1, 20.0, 0.015, 3.0, 4.500, 0.0);
-  leg.setAxisControlConstants(2, 20.0, 0.015, 3.0, 4.500, 0.0);
+  leg.setAxisControlConstants(2, 20.0, 0.015, 6.0, 12.500, 0.0);
   // leg.setAxisTargetPos(0, 0.00);
   // leg.setAxisTargetPos(1, 0.00);
   // leg.setAxisTargetPos(2, 0.00);
